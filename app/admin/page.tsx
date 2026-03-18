@@ -388,6 +388,7 @@ function QuotesTab() {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Tarih</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Müşteri</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Paket</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Talep Türü</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Malzeme</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Metraj</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Fiyat</th>
@@ -416,6 +417,14 @@ function QuotesTab() {
                                     <td className="px-6 py-4 text-sm text-slate-200">
                                         <div className="font-medium">{quote.package_name}</div>
                                         <div className="text-xs text-slate-500">{quote.brand_name}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${quote.request_type === "pdf_quote"
+                                            ? "bg-purple-500/20 text-purple-400 border-purple-500/30"
+                                            : "bg-green-500/20 text-green-400 border-green-500/30"
+                                            }`}>
+                                            {quote.request_type === "pdf_quote" ? "Teklif Verildi" : "Sipariş Onayı"}
+                                        </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-200">
                                         {quote.material_type === "tasyunu" ? "Taşyünü" : "EPS"} {quote.thickness_cm}cm

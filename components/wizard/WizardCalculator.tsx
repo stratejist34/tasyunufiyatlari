@@ -336,6 +336,32 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         if (!selectedPackageForPdf) return;
         setIsSubmittingPdf(true);
         try {
+            const customerAddress = [data.deliveryAddress, data.district, data.city]
+                .filter(Boolean)
+                .join(' / ');
+
+            const quotePayload = buildQuotePayload(selectedPackageForPdf, 'pdf_quote', {
+                customerName: data.relatedPerson,
+                customerEmail: data.email || '',
+                customerPhone: data.phone,
+                customerCompany: data.customerCompany || '',
+                customerAddress,
+                cityName: data.city || getSelectedCityName() || '',
+            });
+
+            const quoteRes = await fetch('/api/quotes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(quotePayload),
+            });
+
+            const quoteResult = await quoteRes.json();
+            if (!quoteRes.ok || !quoteResult.ok) {
+                throw new Error(quoteResult.error || "Teklif kaydı oluşturulamadı.");
+            }
+
             await generateQuotePDF(buildPdfData(selectedPackageForPdf, data));
             setShowPdfOfferModal(false);
             setSelectedPackageForPdf(null);
@@ -621,7 +647,18 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         setShowQuoteModal(true);
     };
 
-    const buildQuotePayload = (pkg: CalculatedPackage) => {
+    const buildQuotePayload = (
+        pkg: CalculatedPackage,
+        submissionType: 'whatsapp_order' | 'pdf_quote',
+        overrides?: {
+            customerName?: string;
+            customerEmail?: string;
+            customerPhone?: string;
+            customerCompany?: string;
+            customerAddress?: string;
+            cityName?: string;
+        }
+    ) => {
         const selectedBrand = brands.find(b => b.id === selectedBrandId);
         const selectedCity = selectedCityCode
             ? shippingZones.find(z => z.city_code === selectedCityCode)
@@ -632,11 +669,13 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         const totalPrice = roundToKurus(priceWithoutVat + vatAmount);
 
         return {
-            customerName: quoteForm.customerName.trim(),
-            customerEmail: quoteForm.customerEmail.trim().toLowerCase(),
-            customerPhone: quoteForm.customerPhone.trim(),
-            customerCompany: quoteForm.customerCompany.trim(),
-            customerAddress: quoteForm.customerAddress.trim(),
+            customerName: overrides?.customerName ?? quoteForm.customerName.trim(),
+            customerEmail: overrides?.customerEmail ?? quoteForm.customerEmail.trim().toLowerCase(),
+            customerPhone: overrides?.customerPhone ?? quoteForm.customerPhone.trim(),
+            customerCompany: overrides?.customerCompany ?? quoteForm.customerCompany.trim(),
+            customerAddress: overrides?.customerAddress ?? quoteForm.customerAddress.trim(),
+            submissionType,
+            sourceChannel: 'wizard',
             materialType: selectedMalzeme,
             brandId: selectedBrandId!,
             brandName: selectedBrand?.name || pkg.plateBrandName,
@@ -645,7 +684,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
             thicknessCm: Number(selectedKalinlik),
             areaM2: Number(metraj) || 0,
             cityCode: String(selectedCityCode || ""),
-            cityName: selectedCity?.city_name || "",
+            cityName: overrides?.cityName ?? (selectedCity?.city_name || ""),
             districtCode: null,
             districtName: null,
             packageName: pkg.definition.name,
@@ -680,7 +719,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         setIsSubmittingQuote(true);
 
         try {
-            const quotePayload = buildQuotePayload(selectedPackageForQuote);
+            const quotePayload = buildQuotePayload(selectedPackageForQuote, 'whatsapp_order');
             const quoteRes = await fetch('/api/quotes', {
                 method: 'POST',
                 headers: {

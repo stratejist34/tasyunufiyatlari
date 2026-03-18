@@ -7,21 +7,18 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 function mapQuotePayload(payload: ReturnType<typeof apiQuoteSchema.parse>) {
   return {
     customer_name: payload.customerName,
-    customer_email: payload.customerEmail,
+    customer_email: payload.customerEmail || null,
     customer_phone: payload.customerPhone,
     customer_company: payload.customerCompany || null,
     customer_address: payload.customerAddress || null,
     material_type: payload.materialType,
     brand_id: payload.brandId,
     brand_name: payload.brandName,
-    model_id: payload.modelId ?? null,
     model_name: payload.modelName || null,
     thickness_cm: payload.thicknessCm,
     area_m2: payload.areaM2,
     city_code: payload.cityCode,
     city_name: payload.cityName,
-    district_code: payload.districtCode || null,
-    district_name: payload.districtName || null,
     package_name: payload.packageName,
     package_description: payload.packageDescription || null,
     plate_brand_name: payload.plateBrandName,
@@ -41,6 +38,9 @@ function mapQuotePayload(payload: ReturnType<typeof apiQuoteSchema.parse>) {
     lorry_fill_percentage: payload.lorryFillPercentage ?? null,
     truck_fill_percentage: payload.truckFillPercentage ?? null,
     package_items: payload.packageItems,
+    request_type: payload.submissionType,
+    source_channel: payload.sourceChannel,
+    status: payload.submissionType === 'pdf_quote' ? 'quoted' : 'pending',
   }
 }
 
@@ -67,7 +67,10 @@ export async function POST(req: NextRequest) {
     }
 
     const analyticsPayload = {
-      event_type: 'quote_submitted',
+      event_type:
+        payload.submissionType === 'pdf_quote'
+          ? 'pdf_quote_requested'
+          : 'whatsapp_order_requested',
       quote_id: data.id,
       material_type: payload.materialType,
       brand_id: payload.brandId,
@@ -83,6 +86,8 @@ export async function POST(req: NextRequest) {
         plateBrandName: payload.plateBrandName,
         accessoryBrandName: payload.accessoryBrandName,
         vehicleType: payload.vehicleType || null,
+        submissionType: payload.submissionType,
+        sourceChannel: payload.sourceChannel,
       },
     }
 
