@@ -26,17 +26,6 @@ function trToAscii(input: string): string {
         .replace(/ş/g, 's');
 }
 
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-    let binary = '';
-    const bytes = new Uint8Array(buffer);
-    const chunkSize = 0x8000;
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-        const chunk = bytes.subarray(i, i + chunkSize);
-        binary += String.fromCharCode(...chunk);
-    }
-    return btoa(binary);
-}
-
 // Container içindeki tüm resimlerin yüklenmesini bekleyen Promise
 const waitForImages = (element: HTMLElement): Promise<void> => {
     const images = Array.from(element.querySelectorAll('img'));
@@ -93,6 +82,117 @@ interface PDFQuoteData {
     items: PDFQuoteItem[];
     isShippingIncluded?: boolean;
     shippingWarning?: string;
+}
+
+function buildSafeFileName(data: PDFQuoteData): string {
+    const safeStr = (s: string) => trToAscii(s || '').replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+    let namePart = safeStr(data.customerCompany);
+    if (!namePart || namePart.length < 2) {
+        namePart = safeStr(data.relatedPerson);
+    }
+
+    let locationPart = safeStr(data.city || data.cityName);
+    const district = safeStr(data.district || '');
+    if (district && locationPart && !locationPart.includes(district) && district.toLowerCase() !== 'merkez') {
+        locationPart = `${locationPart}-${district}`;
+    }
+
+    const metrajPart = `${data.metraj}m2`;
+    const matType = safeStr(data.materialLongName || (data.materialType === 'tasyunu' ? 'Tas Yunu' : 'EPS'));
+    const productDetail = `${data.thickness}cm-${safeStr(data.plateBrandName)}-${matType}`;
+
+    return `${namePart}_${locationPart}_${metrajPart}_${productDetail}_TEKLIFI.pdf`;
+}
+
+function addWrappedText(doc: jsPDF, text: string, x: number, y: number, maxWidth: number, lineHeight = 6): number {
+    const lines = doc.splitTextToSize(text, maxWidth);
+    doc.text(lines, x, y);
+    return y + (lines.length * lineHeight);
+}
+
+function generateFallbackQuotePDF(data: PDFQuoteData): void {
+    const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+        compress: true
+    });
+
+    const fmtMoney = (v: number) => `${v.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`;
+    let y = 16;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.text('Fiyat Teklifi', 14, y);
+    y += 10;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(`Referans: ${data.refCode}`, 14, y);
+    doc.text(`Tarih: ${new Date().toLocaleString('tr-TR')}`, 140, y, { align: 'right' });
+    y += 8;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Musteri Bilgileri', 14, y);
+    y += 6;
+    doc.setFont('helvetica', 'normal');
+    y = addWrappedText(doc, `Firma: ${data.customerCompany || '-'}`, 14, y, 180);
+    y = addWrappedText(doc, `Ilgili Kisi: ${data.relatedPerson}`, 14, y, 180);
+    y = addWrappedText(doc, `Telefon: ${data.phone}`, 14, y, 180);
+    y = addWrappedText(doc, `Mail: ${data.email || '-'}`, 14, y, 180);
+    y = addWrappedText(doc, `Adres: ${data.deliveryAddress || '-'}`, 14, y, 180);
+    y += 4;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Sistem Bilgileri', 14, y);
+    y += 6;
+    doc.setFont('helvetica', 'normal');
+    y = addWrappedText(doc, `Paket: ${data.packageName}`, 14, y, 180);
+    y = addWrappedText(doc, `Sistem: ${data.systemDescription || '-'}`, 14, y, 180);
+    y = addWrappedText(doc, `Sehir: ${data.city || data.cityName}`, 14, y, 180);
+    y = addWrappedText(doc, `Metraj: ${data.metraj} m2`, 14, y, 180);
+    y = addWrappedText(doc, `Kalinlik: ${data.thickness} cm`, 14, y, 180);
+    y += 4;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Kalemler', 14, y);
+    y += 6;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    data.items.forEach((item, index) => {
+        if (y > 260) {
+            doc.addPage();
+            y = 16;
+        }
+        y = addWrappedText(
+            doc,
+            `${index + 1}. ${item.description} | Miktar: ${item.quantity} ${item.unit} | Birim: ${fmtMoney(item.unitPrice)} | Tutar: ${fmtMoney(item.totalPrice)}`,
+            14,
+            y,
+            182,
+            5
+        );
+        y += 1;
+    });
+
+    if (y > 240) {
+        doc.addPage();
+        y = 16;
+    }
+
+    y += 4;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Ara Toplam: ${fmtMoney(data.priceWithoutVat)}`, 14, y);
+    y += 7;
+    doc.text(`KDV: ${fmtMoney(data.vatAmount)}`, 14, y);
+    y += 7;
+    doc.text(`Genel Toplam: ${fmtMoney(data.grandTotal)}`, 14, y);
+    y += 7;
+    doc.text(`m2 Fiyat: ${fmtMoney(data.pricePerM2)}`, 14, y);
+
+    doc.save(buildSafeFileName(data));
 }
 
 // --- Ana Fonksiyon ---
@@ -463,30 +563,12 @@ export async function generateQuotePDF(data: PDFQuoteData): Promise<void> {
 
             doc.addImage(imgData, 'JPEG', 0, 0, finalWidth, finalHeight, undefined, 'FAST');
 
-            // Dosya ismi oluşturma (Eski logic korunarak)
-            const safeStr = (s: string) => trToAscii(s || '').replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-
-            let namePart = safeStr(data.customerCompany);
-            if (!namePart || namePart.length < 2) {
-                namePart = safeStr(data.relatedPerson);
-            }
-
-            let locationPart = safeStr(data.city || data.cityName);
-            const district = safeStr(data.district || '');
-            if (district && locationPart && !locationPart.includes(district) && district.toLowerCase() !== 'merkez') {
-                locationPart = `${locationPart}-${district}`;
-            }
-
-            const metrajPart = `${data.metraj}m2`;
-            const matType = safeStr(data.materialLongName || (data.materialType === 'tasyunu' ? 'Tas Yunu' : 'EPS'));
-            const productDetail = `${data.thickness}cm-${safeStr(data.plateBrandName)}-${matType}`;
-
-            const fileName = `${namePart}_${locationPart}_${metrajPart}_${productDetail}_TEKLIFI.pdf`;
-
-            doc.save(fileName);
+            doc.save(buildSafeFileName(data));
+        } catch (error) {
+            console.error('Rich PDF render failed, falling back to basic PDF:', error);
+            generateFallbackQuotePDF(data);
         } finally {
             container.remove();
         }
     }
 }
-
