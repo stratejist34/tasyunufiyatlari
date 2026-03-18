@@ -621,6 +621,58 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         setShowQuoteModal(true);
     };
 
+    const buildQuotePayload = (pkg: CalculatedPackage) => {
+        const selectedBrand = brands.find(b => b.id === selectedBrandId);
+        const selectedCity = selectedCityCode
+            ? shippingZones.find(z => z.city_code === selectedCityCode)
+            : null;
+
+        const priceWithoutVat = roundToKurus((pkg.totalProductCost || 0) + (pkg.shippingCost || 0));
+        const vatAmount = roundToKurus(priceWithoutVat * 0.20);
+        const totalPrice = roundToKurus(priceWithoutVat + vatAmount);
+
+        return {
+            customerName: quoteForm.customerName.trim(),
+            customerEmail: quoteForm.customerEmail.trim().toLowerCase(),
+            customerPhone: quoteForm.customerPhone.trim(),
+            customerCompany: quoteForm.customerCompany.trim(),
+            customerAddress: quoteForm.customerAddress.trim(),
+            materialType: selectedMalzeme,
+            brandId: selectedBrandId!,
+            brandName: selectedBrand?.name || pkg.plateBrandName,
+            modelId: null,
+            modelName: selectedModel || null,
+            thicknessCm: Number(selectedKalinlik),
+            areaM2: Number(metraj) || 0,
+            cityCode: String(selectedCityCode || ""),
+            cityName: selectedCity?.city_name || "",
+            districtCode: null,
+            districtName: null,
+            packageName: pkg.definition.name,
+            packageDescription: pkg.definition.description || null,
+            plateBrandName: pkg.plateBrandName,
+            accessoryBrandName: pkg.accessoryBrandName,
+            totalPrice,
+            pricePerM2: roundToKurus(pkg.pricePerM2 * 1.20),
+            shippingCost: roundToKurus(pkg.shippingCost || 0),
+            discountPercentage: 0,
+            priceWithoutVat,
+            vatAmount,
+            packageCount: pkg.logistics?.packageCount || 0,
+            packageSizeM2: pkg.logistics?.packageSizeM2 || 0,
+            itemsPerPackage: pkg.logistics?.itemsPerPackage || 0,
+            vehicleType: pkg.logistics?.vehicleType || 'none',
+            lorryCapacityPackages: pkg.logistics?.lorryCapacityPackages || null,
+            truckCapacityPackages: pkg.logistics?.truckCapacityPackages || null,
+            lorryFillPercentage: pkg.logistics?.lorryFillPercentage || null,
+            truckFillPercentage: pkg.logistics?.truckFillPercentage || null,
+            packageItems: {
+                items: pkg.items,
+                logistics: pkg.logistics || null,
+            },
+        };
+    };
+
     const handleSubmitQuote = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedPackageForQuote) return;
@@ -628,6 +680,20 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         setIsSubmittingQuote(true);
 
         try {
+            const quotePayload = buildQuotePayload(selectedPackageForQuote);
+            const quoteRes = await fetch('/api/quotes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(quotePayload),
+            });
+
+            const quoteResult = await quoteRes.json();
+            if (!quoteRes.ok || !quoteResult.ok) {
+                throw new Error(quoteResult.error || "Teklif kaydı oluşturulamadı.");
+            }
+
             const message = generateWhatsAppMessage(
                 selectedPackageForQuote,
                 Number(metraj) || 0,
@@ -831,6 +897,48 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                                         onChange={e => setQuoteForm({ ...quoteForm, customerName: e.target.value })}
                                         className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-orange-500 outline-none"
                                         placeholder="Adınız Soyadınız"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-300 mb-1">Telefon</label>
+                                    <input
+                                        required
+                                        type="tel"
+                                        value={quoteForm.customerPhone}
+                                        onChange={e => setQuoteForm({ ...quoteForm, customerPhone: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-orange-500 outline-none"
+                                        placeholder="05XXXXXXXXX"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-300 mb-1">E-posta</label>
+                                    <input
+                                        required
+                                        type="email"
+                                        value={quoteForm.customerEmail}
+                                        onChange={e => setQuoteForm({ ...quoteForm, customerEmail: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-orange-500 outline-none"
+                                        placeholder="ornek@firma.com"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-300 mb-1">Firma</label>
+                                    <input
+                                        type="text"
+                                        value={quoteForm.customerCompany}
+                                        onChange={e => setQuoteForm({ ...quoteForm, customerCompany: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-orange-500 outline-none"
+                                        placeholder="Opsiyonel"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-300 mb-1">Adres</label>
+                                    <textarea
+                                        value={quoteForm.customerAddress}
+                                        onChange={e => setQuoteForm({ ...quoteForm, customerAddress: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-orange-500 outline-none resize-none"
+                                        rows={3}
+                                        placeholder="Opsiyonel teslimat adresi"
                                     />
                                 </div>
                                 <button

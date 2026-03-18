@@ -1216,6 +1216,19 @@ function ProductsTab() {
         <div className="bg-slate-900/80 backdrop-blur-md rounded-xl shadow-xl border border-slate-800/50 p-6">
             <h2 className="text-lg font-semibold text-white mb-4">Ürün Kataloğu</h2>
 
+            {(() => {
+                const totalPlateVariantCount = plates.reduce(
+                    (total, plate) => total + (plate.thickness_options?.length || 0),
+                    0
+                );
+                const filteredPlateVariantCount = filteredPlates.reduce(
+                    (total, plate) => total + (plate.thickness_options?.length || 0),
+                    0
+                );
+                const accessoryTypeCount = Object.keys(accessoriesByType).length;
+
+                return (
+                    <>
             {/* Product Type Tabs */}
             <div className="flex gap-2 mb-6 border-b border-slate-700/50">
                 <button
@@ -1226,7 +1239,10 @@ function ProductsTab() {
                         }`}
                 >
                     <ClipboardList className="w-4 h-4" />
-                    Levhalar ({filteredPlates.length}/{plates.length})
+                    Levha Aileleri ({filteredPlates.length}/{plates.length})
+                    <span className="text-xs text-slate-500">
+                        • {filteredPlateVariantCount}/{totalPlateVariantCount} varyant
+                    </span>
                 </button>
                 <button
                     onClick={() => setActiveProductTab("accessories")}
@@ -1236,9 +1252,15 @@ function ProductsTab() {
                         }`}
                 >
                     <Wrench className="w-4 h-4" />
-                    Aksesuarlar ({accessories.length})
+                    Aksesuar Kayıtları ({accessories.length})
+                    <span className="text-xs text-slate-500">
+                        • {accessoryTypeCount} tür
+                    </span>
                 </button>
             </div>
+                    </>
+                );
+            })()}
 
             {loading ? (
                 <p className="text-slate-400">Yükleniyor...</p>

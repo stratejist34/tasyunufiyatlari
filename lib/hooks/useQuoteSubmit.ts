@@ -1,5 +1,4 @@
 import { useMutation } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
 
 /**
  * Teklif talebini Supabase'e gönderir
@@ -19,14 +18,18 @@ import { supabase } from '@/lib/supabase';
 export function useQuoteSubmit() {
   return useMutation({
     mutationFn: async (quoteData: any) => {
-      const { data, error } = await supabase
-        .from('quotes')
-        .insert(quoteData)
-        .select()
-        .single();
+      const response = await fetch('/api/quotes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quoteData),
+      });
 
-      if (error) {
-        console.error('Teklif gönderme hatası:', error);
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        console.error('Teklif gönderme hatası:', data);
         throw new Error('Teklif gönderilemedi. Lütfen tekrar deneyin.');
       }
 
