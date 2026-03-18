@@ -163,12 +163,13 @@ interface SafetyCheckResult {
  * Ek DB çağrısı yapmaz; sadece mevcut satır verisini kullanır (O(n)).
  *
  * HARD BLOCK:
- *   - requires_review=true + |price_change_pct| > 40  → "High price deviation detected (>40%)"
+ *   - requires_review=true + |price_change_pct| > 100 → "Extreme price deviation detected (>100%)"
  *   - herhangi bir satırda severity=error uyarısı     → "Rows with error severity present"
  *
  * WARNING (console.warn, throw yapmaz):
  *   - applicable satır / toplam > %70                 → "Large scale update (>70% rows affected)"
  *   - raw_kdv_hint='unknown' oranı > %30              → "High unknown KDV ratio (>30%)"
+ *   - requires_review=true olan satır var              → "Manual review rows present"
  *
  * Defensive: price_change_pct yoksa veya sayı değilse o kural ignore edilir.
  */
@@ -181,13 +182,13 @@ function validateApplySafety(rows: MatchResultDbRow[]): SafetyCheckResult {
     }
 
     // ---- HARD BLOCK: yüksek fiyat sapması ----
-    const hasHighDeviation = rows.some(r => {
+    const hasExtremeDeviation = rows.some(r => {
         if (!r.requires_review) return false;
         const pct = r.price_change_pct;
-        return typeof pct === 'number' && isFinite(pct) && Math.abs(pct) > 40;
+        return typeof pct === 'number' && isFinite(pct) && Math.abs(pct) > 100;
     });
-    if (hasHighDeviation) {
-        blockers.push('High price deviation detected (>40%)');
+    if (hasExtremeDeviation) {
+        blockers.push('Extreme price deviation detected (>100%)');
     }
 
     // ---- HARD BLOCK: error severity uyarısı ----
@@ -213,6 +214,11 @@ function validateApplySafety(rows: MatchResultDbRow[]): SafetyCheckResult {
         warnings.push('High unknown KDV ratio (>30%)');
     }
 
+    const reviewRowCount = rows.filter(r => r.requires_review).length;
+    if (reviewRowCount > 0) {
+        warnings.push(`Manual review rows present (${reviewRowCount})`);
+    }
+
     return { safe: blockers.length === 0, blockers, warnings };
 }
 
@@ -236,7 +242,6 @@ export function validateRowsForApply(rows: MatchResultDbRow[]): ValidateResult {
         if (row.match_status === 'unmatched')   reasons.push('status_unmatched');
         if (row.match_status === 'new_product') reasons.push('status_new_product');
 
-        if (row.requires_review)           reasons.push('requires_review');
         if (hasErrorWarning(row.warnings)) reasons.push('has_error_warning');
 
         if (row.match_status === 'matched') {
