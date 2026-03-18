@@ -229,30 +229,33 @@ function QuotesTab() {
 
     async function loadQuotes() {
         setLoading(true);
-        let query = supabase
-            .from("quotes")
-            .select("*")
-            .order("created_at", { ascending: false });
-
+        const search = new URLSearchParams();
         if (statusFilter !== "all") {
-            query = query.eq("status", statusFilter);
+            search.set("status", statusFilter);
         }
 
-        const { data, error } = await query;
+        const res = await fetch(`/api/admin/quotes?${search.toString()}`, {
+            cache: "no-store",
+        });
+        const payload = await res.json().catch(() => null);
 
-        if (!error && data) {
-            setQuotes(data);
+        if (res.ok && payload?.ok) {
+            setQuotes(payload.quotes ?? []);
+        } else {
+            setQuotes([]);
         }
         setLoading(false);
     }
 
     async function updateQuoteStatus(quoteId: number, newStatus: string) {
-        const { error } = await supabase
-            .from("quotes")
-            .update({ status: newStatus, updated_at: new Date().toISOString() })
-            .eq("id", quoteId);
+        const res = await fetch(`/api/admin/quotes/${quoteId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: newStatus }),
+        });
+        const payload = await res.json().catch(() => null);
 
-        if (!error) {
+        if (res.ok && payload?.ok) {
             loadQuotes();
             if (selectedQuote?.id === quoteId) {
                 setSelectedQuote({ ...selectedQuote, status: newStatus });
@@ -261,12 +264,14 @@ function QuotesTab() {
     }
 
     async function updateQuotePriority(quoteId: number, newPriority: string) {
-        const { error } = await supabase
-            .from("quotes")
-            .update({ priority: newPriority, updated_at: new Date().toISOString() })
-            .eq("id", quoteId);
+        const res = await fetch(`/api/admin/quotes/${quoteId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ priority: newPriority }),
+        });
+        const payload = await res.json().catch(() => null);
 
-        if (!error) {
+        if (res.ok && payload?.ok) {
             loadQuotes();
             if (selectedQuote?.id === quoteId) {
                 setSelectedQuote({ ...selectedQuote, priority: newPriority });
