@@ -1,0 +1,109 @@
+import { z } from 'zod';
+
+// ==========================================
+// QUOTE FORM SCHEMA (Frontend)
+// ==========================================
+
+export const quoteSchema = z.object({
+  // Müşteri Bilgileri
+  customerName: z
+    .string()
+    .min(2, 'En az 2 karakter girin')
+    .max(100, 'En fazla 100 karakter')
+    .regex(/^[a-zA-ZğüşıöçĞÜŞİÖÇ\s]+$/, 'Sadece harf girişi yapın'),
+
+  customerEmail: z
+    .string()
+    .email('Geçerli bir e-posta adresi girin')
+    .toLowerCase()
+    .trim(),
+
+  customerPhone: z
+    .string()
+    .regex(/^05\d{9}$/, '05XX formatında 11 haneli telefon girin (örn: 05321234567)')
+    .length(11, 'Telefon numarası 11 haneli olmalı'),
+
+  customerCompany: z.string().max(255, 'En fazla 255 karakter').optional().or(z.literal('')),
+
+  customerAddress: z.string().max(500, 'En fazla 500 karakter').optional().or(z.literal('')),
+});
+
+export type QuoteFormData = z.infer<typeof quoteSchema>;
+
+// ==========================================
+// API QUOTE SCHEMA (Backend - Tam veri)
+// ==========================================
+
+export const apiQuoteSchema = quoteSchema.extend({
+  // Sipariş Detayları
+  materialType: z.enum(['tasyunu', 'eps'], {
+    message: 'Geçerli bir levha tipi seçin',
+  }),
+
+  brandId: z.number().positive('Marka seçin'),
+  brandName: z.string().min(1, 'Marka adı gerekli'),
+
+  modelId: z.number().positive('Model seçin').optional().nullable(),
+  modelName: z.string().optional().nullable(),
+
+  thicknessCm: z.number().min(3, 'En az 3 cm').max(10, 'En fazla 10 cm'),
+
+  areaM2: z.number().min(1, 'En az 1 m²').max(10000, 'En fazla 10.000 m²'),
+
+  cityCode: z.string().min(1, 'Şehir seçin'),
+  cityName: z.string().min(1, 'Şehir adı gerekli'),
+
+  districtCode: z.string().optional().nullable(),
+  districtName: z.string().optional().nullable(),
+
+  // Paket Bilgileri
+  packageName: z.string().min(1, 'Paket adı gerekli'),
+  packageDescription: z.string().optional().nullable(),
+  plateBrandName: z.string().min(1, 'Levha markası gerekli'),
+  accessoryBrandName: z.string().min(1, 'Aksesuar markası gerekli'),
+
+  // Fiyat Bilgileri
+  totalPrice: z.number().positive('Geçerli fiyat girin'),
+  pricePerM2: z.number().positive('Geçerli m² fiyatı girin'),
+  shippingCost: z.number().min(0, 'Nakliye ücreti negatif olamaz').default(0),
+  discountPercentage: z.number().min(0).max(100).default(0),
+  priceWithoutVat: z.number().positive('KDV hariç fiyat gerekli'),
+  vatAmount: z.number().min(0, 'KDV tutarı negatif olamaz'),
+
+  // Lojistik Bilgileri
+  packageCount: z.number().positive('Paket sayısı gerekli'),
+  packageSizeM2: z.number().positive('Paket boyutu gerekli'),
+  itemsPerPackage: z.number().positive('Paket başına ürün sayısı gerekli'),
+  vehicleType: z.enum(['none', 'lorry', 'truck', 'multiple']).optional().nullable(),
+  lorryCapacityPackages: z.number().optional().nullable(),
+  truckCapacityPackages: z.number().optional().nullable(),
+  lorryFillPercentage: z.number().min(0).max(100).optional().nullable(),
+  truckFillPercentage: z.number().min(0).max(100).optional().nullable(),
+
+  // Paket İçeriği (JSON)
+  packageItems: z.record(z.string(), z.any()),
+});
+
+export type ApiQuoteData = z.infer<typeof apiQuoteSchema>;
+
+// ==========================================
+// WIZARD VALIDATION SCHEMAS
+// ==========================================
+
+export const wizardStep1Schema = z.object({
+  levhaTipi: z.enum(['tasyunu', 'eps'], {
+    message: 'Levha tipi seçin',
+  }),
+  markaId: z.number().positive('Marka seçin'),
+  modelId: z.number().positive().optional().nullable(),
+  kalinlik: z.number().min(3, 'En az 3 cm').max(10, 'En fazla 10 cm'),
+  metraj: z.number().min(1, 'En az 1 m²').max(10000, 'En fazla 10.000 m²'),
+});
+
+export const wizardStep2Schema = z.object({
+  sehirKodu: z.number().positive('Şehir seçin'),
+  ilceId: z.number().positive().optional().nullable(),
+});
+
+export type WizardStep1Data = z.infer<typeof wizardStep1Schema>;
+export type WizardStep2Data = z.infer<typeof wizardStep2Schema>;

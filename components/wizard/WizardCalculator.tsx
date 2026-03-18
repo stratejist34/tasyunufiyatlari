@@ -1,0 +1,874 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { supabase } from "@/lib/supabase";
+import { motion, AnimatePresence } from "framer-motion";
+import { generateQuotePDF } from "@/lib/pdfGenerator";
+import { PackageCard } from "@/components/package/PackageCard";
+import { PdfOfferModal } from "@/components/modal/PdfOfferModal";
+import { Step1ProductSelection } from "@/components/wizard/Step1ProductSelection";
+import {
+    getOfferValidityDate,
+    getTruckMeterColor,
+    getSmartAdvice,
+    generateWhatsAppMessage,
+    generateWhatsAppURL
+} from "@/lib/utils/packageHelpers";
+import type { PdfOfferFormData } from "@/lib/schemas/pdfOffer.schema";
+import type {
+    ShippingZone,
+    Brand,
+    Plate,
+    Accessory,
+    AccessoryType,
+    PackageDefinition,
+    MaterialType,
+    PlatePrice,
+    LogisticsCapacity,
+    CalculatedPackage,
+    CalculatedPackageItem
+} from "@/lib/types";
+
+// Kuruş hassasiyetinde yuvarlama (floating-point hataları önlemek için)
+const roundToKurus = (value: number): number => Math.round(value * 100) / 100;
+
+// Kalınlık seçenekleri
+export const KALINLIKLAR = [
+    { value: "3", label: "3cm" },
+    { value: "4", label: "4cm" },
+    { value: "5", label: "5cm" },
+    { value: "6", label: "6cm" },
+    { value: "8", label: "8cm" },
+    { value: "10", label: "10cm", popular: true },
+];
+
+interface WizardCalculatorProps {
+    preSelectedCityName?: string;
+}
+
+export default function WizardCalculator({ preSelectedCityName }: WizardCalculatorProps) {
+    // Veritabanından gelen veriler
+    const [shippingZones, setShippingZones] = useState<ShippingZone[]>([]);
+    const [brands, setBrands] = useState<Brand[]>([]);
+    const [plates, setPlates] = useState<Plate[]>([]);
+    const [accessories, setAccessories] = useState<Accessory[]>([]);
+    const [accessoryTypes, setAccessoryTypes] = useState<AccessoryType[]>([]);
+    const [packageDefinitions, setPackageDefinitions] = useState<PackageDefinition[]>([]);
+    const [materialTypes, setMaterialTypes] = useState<MaterialType[]>([]);
+    const [platePrices, setPlatePrices] = useState<PlatePrice[]>([]);
+    const [logisticsCapacity, setLogisticsCapacity] = useState<LogisticsCapacity[]>([]);
+
+    // Kullanıcı seçimleri
+    const [selectedCityCode, setSelectedCityCode] = useState<number | null>(null);
+    const [selectedBrandId, setSelectedBrandId] = useState<number | null>(null);
+    const [selectedModel, setSelectedModel] = useState<string | null>(null);
+    const [selectedMalzeme, setSelectedMalzeme] = useState<"tasyunu" | "eps">("tasyunu");
+    const [selectedKalinlik, setSelectedKalinlik] = useState("5");
+    const [metraj, setMetraj] = useState("");
+
+    // Dynamic Slider State
+    const [currentLogistics, setCurrentLogistics] = useState<LogisticsCapacity | null>(null);
+    const [isLoadingLogistics, setIsLoadingLogistics] = useState(false);
+
+    // Sonuçlar
+    const [calculatedPackages, setCalculatedPackages] = useState<CalculatedPackage[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [showResults, setShowResults] = useState(false);
+
+    // Wizard (tek adım)
+
+    // Teklif Formu
+    const [showQuoteModal, setShowQuoteModal] = useState(false);
+    const [selectedPackageForQuote, setSelectedPackageForQuote] = useState<CalculatedPackage | null>(null);
+    const [quoteForm, setQuoteForm] = useState({
+        customerName: "",
+        customerEmail: "",
+        customerPhone: "",
+        customerCompany: "",
+        customerAddress: ""
+    });
+    const [isSubmittingQuote, setIsSubmittingQuote] = useState(false);
+    const [expandedCards, setExpandedCards] = useState<number[]>([]);
+
+    // PDF Teklif Modal
+    const [showPdfOfferModal, setShowPdfOfferModal] = useState(false);
+    const [selectedPackageForPdf, setSelectedPackageForPdf] = useState<CalculatedPackage | null>(null);
+    const [isSubmittingPdf, setIsSubmittingPdf] = useState(false);
+
+    // Scroll ref
+    const resultsRef = useRef<HTMLDivElement>(null);
+
+    const PRIORITY_CITIES = ["İstanbul", "Kocaeli", "Bolu", "Sakarya", "Düzce", "Tekirdağ", "Yalova", "Bursa", "Balıkesir"];
+    const sortShippingZones = (zones: ShippingZone[]) => {
+        const priorityMap = new Map(
+            PRIORITY_CITIES.map((name, idx) => [name.toLocaleLowerCase("tr-TR"), idx])
+        );
+        return [...zones].sort((a, b) => {
+            const aKey = a.city_name.toLocaleLowerCase("tr-TR");
+            const bKey = b.city_name.toLocaleLowerCase("tr-TR");
+            const ai = priorityMap.get(aKey);
+            const bi = priorityMap.get(bKey);
+            if (ai != null && bi != null) return ai - bi;
+            if (ai != null) return -1;
+            if (bi != null) return 1;
+            return a.city_name.localeCompare(b.city_name, "tr-TR");
+        });
+    };
+
+    // Seçilen marka ve malzeme tipine göre mevcut modeller
+    const availableModels = selectedBrandId
+        ? Array.from(new Set(
+            plates
+                .filter(p => {
+                    const materialType = materialTypes.find(m => m.id === p.material_type_id);
+                    return p.brand_id === selectedBrandId &&
+                        materialType?.slug === selectedMalzeme;
+                })
+                .map(p => p.short_name)
+        ))
+        : [];
+
+    // Sayfa yüklendiğinde verileri çek
+    useEffect(() => {
+        async function fetchData() {
+            const [
+                zonesRes,
+                brandsRes,
+                platesRes,
+                accessoriesRes,
+                accessoryTypesRes,
+                packagesRes,
+                materialTypesRes,
+                platePricesRes,
+                logisticsRes
+            ] = await Promise.all([
+                supabase.from("shipping_zones").select("*").order("city_name"),
+                supabase.from("brands").select("*"),
+                supabase.from("plates").select("*").eq("is_active", true),
+                supabase.from("accessories").select("*").eq("is_active", true),
+                supabase.from("accessory_types").select("*").order("sort_order"),
+                supabase.from("package_definitions").select("*").eq("is_active", true).order("sort_order"),
+                supabase.from("material_types").select("*"),
+                supabase.from("plate_prices").select("*"),
+                supabase.from("logistics_capacity").select("*").order("thickness"),
+            ]);
+
+            if (zonesRes.data) setShippingZones(sortShippingZones(zonesRes.data));
+            if (brandsRes.data) setBrands(brandsRes.data);
+            if (platesRes.data) setPlates(platesRes.data);
+            if (accessoriesRes.data) setAccessories(accessoriesRes.data);
+            if (accessoryTypesRes.data) setAccessoryTypes(accessoryTypesRes.data);
+            if (packagesRes.data) setPackageDefinitions(packagesRes.data);
+            if (materialTypesRes.data) setMaterialTypes(materialTypesRes.data);
+            if (platePricesRes.data) setPlatePrices(platePricesRes.data);
+            if (logisticsRes.data) setLogisticsCapacity(logisticsRes.data);
+
+            if (brandsRes.data) {
+                const dalmacyali = brandsRes.data.find((b: Brand) => b.name === 'Dalmaçyalı');
+                if (dalmacyali) setSelectedBrandId(dalmacyali.id);
+            }
+        }
+        fetchData();
+    }, []);
+
+    // Otomatik şehir seçimi
+    useEffect(() => {
+        if (preSelectedCityName && shippingZones.length > 0) {
+            const matchedZone = shippingZones.find(
+                z => z.city_name.toLowerCase() === preSelectedCityName.toLowerCase()
+            );
+            if (matchedZone) {
+                setSelectedCityCode(matchedZone.city_code);
+            }
+        }
+    }, [preSelectedCityName, shippingZones]);
+
+    // Marka veya Malzeme tipi değiştiğinde model seçimini sıfırla
+    useEffect(() => {
+        setSelectedModel(null);
+    }, [selectedBrandId, selectedMalzeme]);
+
+    // Kalınlık değiştiğinde lojistik verisini yükle
+    useEffect(() => {
+        if (!selectedKalinlik) {
+            setCurrentLogistics(null);
+            return;
+        }
+
+        setIsLoadingLogistics(true);
+        const thicknessMm = parseInt(selectedKalinlik) * 10;
+        const logistics = logisticsCapacity.find(lc => lc.thickness === thicknessMm);
+
+        if (logistics) {
+            setCurrentLogistics(logistics);
+        } else {
+            setCurrentLogistics(null);
+        }
+
+        setIsLoadingLogistics(false);
+    }, [selectedKalinlik, logisticsCapacity]);
+
+    const getSliderMetrics = () => {
+        if (!currentLogistics || !metraj) return null;
+        const currentM2 = parseFloat(metraj);
+        const packageCount = Math.round(currentM2 / currentLogistics.package_size_m2);
+        return {
+            packageCount,
+            lorryFillPercentage: (currentM2 / currentLogistics.lorry_capacity_m2) * 100,
+            truckFillPercentage: (currentM2 / currentLogistics.truck_capacity_m2) * 100,
+            isOverLorry: currentM2 > currentLogistics.lorry_capacity_m2,
+            isOverTruck: currentM2 > currentLogistics.truck_capacity_m2
+        };
+    };
+
+    const handleCityChange = (cityCode: number) => {
+        setSelectedCityCode(cityCode);
+    };
+
+    const isStepValid = (): boolean => {
+        return !!(
+            selectedBrandId &&
+            selectedKalinlik &&
+            metraj &&
+            Number(metraj) > 0 &&
+            selectedCityCode
+        );
+    };
+
+    const getSelectedCity = (): ShippingZone | undefined => {
+        return shippingZones.find((z) => z.city_code === selectedCityCode);
+    };
+
+    const buildPdfData = (pkg: CalculatedPackage, customer: PdfOfferFormData) => {
+        const cityName =
+            (selectedCityCode
+                ? shippingZones.find(z => z.city_code === selectedCityCode)?.city_name
+                : undefined) || "";
+
+        // Mevcut hesaplar KDV hariç ilerliyor; PDF'de KDV dahil toplamı göstermek için burada hesaplıyoruz.
+        const priceWithoutVat = (pkg.totalProductCost || 0) + (pkg.shippingCost || 0);
+        const vatAmount = priceWithoutVat * 0.20;
+        const grandTotal = priceWithoutVat + vatAmount;
+
+        const refCode = `TY${Date.now().toString().slice(-7)}`;
+        const validityDate = getOfferValidityDate();
+
+        const metrajNumber = Number(metraj) || 0;
+        const waMessage = `Merhaba ${refCode} no lu teklif formunu sipariş etmek istiyorum`;
+        const whatsappOrderLink = generateWhatsAppURL("905426084887", waMessage);
+
+        const totalM2 =
+            pkg.logistics?.packageCount && pkg.logistics?.packageSizeM2
+                ? pkg.logistics.packageCount * pkg.logistics.packageSizeM2
+                : (metrajNumber || 1);
+
+        const materialLabel = selectedMalzeme === "tasyunu" ? "Taşyünü" : "EPS";
+        const materialLongName = materialTypes.find(m => m.slug === selectedMalzeme)?.name || materialLabel;
+
+        const itemsForPdf = (pkg.items || []).map((it) => {
+            const baseName = `${it.brandName} ${it.shortName}`.trim();
+            const description = it.isPlate
+                ? `${baseName} ${materialLabel} ${selectedKalinlik} cm`
+                : baseName;
+            const consumptionRate = metrajNumber > 0 ? it.quantity / metrajNumber : 0;
+
+            return {
+                description: it.name, // Orijinal uzun ismi kullan
+                quantity: it.quantity,
+                unit: it.unit,
+                consumptionRate,
+                unitPrice: it.unitPrice,
+                totalPrice: it.totalPrice,
+                isPlate: it.isPlate,
+                packageCount: it.packageCount,
+            };
+        });
+
+        return {
+            packageName: pkg.definition.name,
+            packageDescription: pkg.definition.description,
+            plateBrandName: pkg.plateBrandName,
+            accessoryBrandName: pkg.accessoryBrandName,
+            metraj: metraj, // Kullanıcının girdiği orijinal değeri koru (örn: "1497.6")
+            // PDF tarafında birim ekleyip doğru isimlendireceğiz
+            thickness: `${selectedKalinlik}`,
+            materialType: selectedMalzeme,
+            systemDescription: `${pkg.plateBrandName} ${selectedModel || ''} ${materialLabel} ${selectedKalinlik}cm + ${pkg.accessoryBrandName} Toz Grubu`,
+            cityName,
+            city: customer.city || cityName,
+            district: customer.district || "",
+            materialLongName,
+            grandTotal,
+            pricePerM2: totalM2 > 0 ? grandTotal / totalM2 : 0,
+            totalProductCost: pkg.totalProductCost || 0,
+            shippingCost: pkg.shippingCost || 0,
+            priceWithoutVat,
+            vatAmount,
+            packageCount: pkg.logistics?.packageCount,
+            vehicleType: pkg.logistics?.vehicleType,
+            fillPercentage: pkg.logistics?.truckFillPercentage ?? pkg.logistics?.lorryFillPercentage,
+            refCode,
+            validityDate,
+            whatsappOrderLink,
+            customerCompany: customer.customerCompany || "",
+            relatedPerson: customer.relatedPerson,
+            deliveryAddress: `${customer.deliveryAddress} ${customer.district ? `/ ${customer.district}` : ''} ${customer.city ? `/ ${customer.city}` : ''}`,
+            phone: customer.phone,
+            email: customer.email || "",
+            items: itemsForPdf,
+            isShippingIncluded: pkg.logistics?.isShippingIncluded,
+            shippingWarning: pkg.logistics?.shippingWarning,
+        };
+    };
+
+    const handleOpenPdfOffer = (pkg: CalculatedPackage) => {
+        setSelectedPackageForPdf(pkg);
+        setShowPdfOfferModal(true);
+    };
+
+    const getSelectedCityName = () => {
+        return selectedCityCode
+            ? shippingZones.find(z => z.city_code === selectedCityCode)?.city_name
+            : "";
+    };
+
+    const handleSubmitPdfOffer = async (data: PdfOfferFormData) => {
+        if (!selectedPackageForPdf) return;
+        setIsSubmittingPdf(true);
+        try {
+            await generateQuotePDF(buildPdfData(selectedPackageForPdf, data));
+            setShowPdfOfferModal(false);
+            setSelectedPackageForPdf(null);
+        } catch (error) {
+            console.error("PDF oluşturma hatası:", error);
+            alert("PDF oluşturulurken bir hata oluştu. Lütfen tekrar deneyiniz.");
+        } finally {
+            setIsSubmittingPdf(false);
+        }
+    };
+
+    // Optimix için bölge bazlı iskonto
+    const getOptimixDiscount = (isLevha: boolean): number => {
+        const selectedCity = getSelectedCity();
+        if (isLevha) {
+            return selectedCity?.optimix_levha_discount || 16;
+        }
+        return selectedCity?.optimix_toz_discount || 9;
+    };
+
+    // Satış fiyatı hesapla
+    const calculateSalePrice = (
+        basePrice: number,
+        discount1: number,
+        discount2: number,
+        brandName: string,
+        isLevha: boolean = false,
+        isKdvIncluded: boolean = true
+    ): number => {
+        const profitMargin = 10;
+        let isk2 = discount2;
+
+        if (brandName === 'Optimix') {
+            if (isLevha && discount2 >= 10) {
+                isk2 = getOptimixDiscount(true);
+            }
+        }
+
+        const kdvHaricListe = isKdvIncluded ? basePrice / 1.20 : basePrice;
+        const iskontoluFiyat = kdvHaricListe * (1 - discount1 / 100) * (1 - isk2 / 100);
+        const karliKdvHaric = iskontoluFiyat * (1 + profitMargin / 100);
+
+        return roundToKurus(karliKdvHaric);
+    };
+
+    // Fiyatları Göster
+    const handleShowPrices = async () => {
+        setIsLoading(true);
+        setShowResults(false);
+        await new Promise(resolve => setTimeout(resolve, 600));
+
+        if (!selectedBrandId || !selectedCityCode) return;
+
+        const selectedBrand = brands.find(b => b.id === selectedBrandId);
+        const selectedCity = shippingZones.find(z => z.city_code === selectedCityCode);
+        const logistics = currentLogistics;
+
+        if (!selectedBrand || !selectedCity || !logistics) return;
+
+        const m2UserInput = parseFloat(metraj) || 1;
+        const activeMaterialTypeId = materialTypes.find(m => m.slug === selectedMalzeme)?.id;
+
+        // Adım 1: Önce levhayı (plate) bul ki gerçek paket metrajını (package_m2) bilelim
+        let mainPlate = plates.find(p =>
+            p.brand_id === selectedBrandId &&
+            p.thickness_options.includes(parseInt(selectedKalinlik)) &&
+            p.short_name === selectedModel &&
+            p.material_type_id === activeMaterialTypeId
+        );
+
+        // Fallback plate finding
+        if (!mainPlate) {
+            mainPlate = plates.find(p =>
+                p.brand_id === selectedBrandId &&
+                p.thickness_options.includes(parseInt(selectedKalinlik)) &&
+                p.material_type_id === activeMaterialTypeId
+            );
+        }
+
+        if (!mainPlate) {
+            setIsLoading(false);
+            alert("Seçilen kriterlere uygun ürün bulunamadı.");
+            return;
+        }
+
+        // Adım 2: Bu ürüne ait fiyat kaydını ve kalınlığa özel paket metrajını bul
+        const mainPlatePrice = platePrices.find(pp =>
+            pp.plate_id === mainPlate!.id &&
+            pp.thickness === parseInt(selectedKalinlik)
+        );
+
+        // Gerçek paket metrajı (Öncelik: kalınlığa özel > ürüne özel > lojistik varsayılanı)
+        const realPackageM2 = mainPlatePrice?.package_m2 || mainPlate.package_m2 || logistics.package_size_m2 || 1;
+
+        // Adım 3: Gerçek paket metrajına göre adet ve metraj hesapla
+        const packageCount = Math.ceil(m2UserInput / realPackageM2);
+        const totalM2 = packageCount * realPackageM2;
+
+        const calculated: CalculatedPackage[] = [];
+
+        for (const pkgDef of packageDefinitions) {
+            if (pkgDef.plate_brand_id !== selectedBrandId) continue;
+
+            const items: CalculatedPackageItem[] = [];
+            let totalProductCost = 0;
+
+            // Bu paket içindeki levhayı belirle (Genelde seçilen ana levha ile aynı marka olur)
+            // Not: Farklı levha markaları için pkgDef içindeki logic genişletilebilir
+            const plate = mainPlate;
+
+            if (plate) {
+                const platePrice = mainPlatePrice;
+                let plateBasePrice = platePrice ? platePrice.base_price : plate.base_price;
+
+                // Fallback: Eğer base_price 0 veya yoksa ve base_price_per_cm varsa, kalınlık ile çarp
+                if ((!plateBasePrice || plateBasePrice <= 0) && plate.base_price_per_cm) {
+                    plateBasePrice = plate.base_price_per_cm * parseInt(selectedKalinlik);
+                }
+                let plateIsKdvIncluded = platePrice ? platePrice.is_kdv_included : plate.is_kdv_included;
+
+                const plateBrand = brands.find(b => b.id === plate?.brand_id);
+                // EPS için bayi iskontosu (İSK2) %8 fallback (Admin ile aynı)
+                let plateDiscount2 = (platePrice?.discount_2 ?? plate.discount_2 ?? (selectedMalzeme === "eps" ? 8 : 0)) as number;
+
+                const plateDiscount1 = (() => {
+                    if (!selectedCity) return 0;
+                    // Taşyünü kuralı: Kamyon/Tır dolmasa bile Tır fiyatı (İskontosu) verilsin ancak nakliye hariç olsun.
+                    if (selectedMalzeme === 'tasyunu' && logistics && packageCount < logistics.lorry_capacity_packages) {
+                        return selectedCity.discount_tir || 0;
+                    }
+                    if (logistics && packageCount >= logistics.truck_capacity_packages) return selectedCity.discount_tir || 0;
+                    return selectedCity.discount_kamyon || 0;
+                })();
+
+                let effectivePlateDiscount1 = plateDiscount1;
+                if (selectedMalzeme === "eps" && selectedCity) {
+                    // Admin panelindeki logic ile sync: null ise %9 varsay
+                    const cityIsk1 = selectedCity.eps_toz_region_discount ?? 9;
+                    if (cityIsk1 > 0 && (plateBrand?.name === "Dalmaçyalı" || plateBrand?.name === "Expert" || plateBrand?.name === "Optimix")) {
+                        effectivePlateDiscount1 = cityIsk1;
+                    }
+                }
+
+                const platePackagePrice = calculateSalePrice(
+                    plateBasePrice,
+                    effectivePlateDiscount1,
+                    plateDiscount2,
+                    plateBrand?.name || '',
+                    true,
+                    plateIsKdvIncluded
+                );
+
+                // Paket fiyatını m² fiyatına çevir (Hata payı bırakmamak için tekrar realPackageM2 kullanıyoruz)
+                const plateM2Price = roundToKurus(platePackagePrice / realPackageM2);
+
+                const plateTotal = roundToKurus(plateM2Price * totalM2);
+                totalProductCost += plateTotal;
+
+                const materialSuffix = selectedMalzeme === "tasyunu" ? "Taşyünü Isı Yalıtım Levhası" : "EPS Isı Yalıtım Levhası";
+
+                // Debug için fiyat detaylarını konsola yaz
+                console.log(`Fiyat Hesaplama Detayı (${plate.name}):`, {
+                    'Liste Fiyatı': plateBasePrice,
+                    'KDV Dahil mi?': plateIsKdvIncluded,
+                    'Bölge İskontosu (İsk1)': effectivePlateDiscount1,
+                    'Bayi İskontosu (İsk2)': plateDiscount2,
+                    'Kar Marjı': 10,
+                    'Sonuç (KDV Hariç Net Paket)': platePackagePrice,
+                    'm² Fiyatı': plateM2Price,
+                    'Paket Metrajı': realPackageM2
+                });
+
+                items.push({
+                    name: `${plate.name} ${materialSuffix} ${selectedKalinlik} cm`,
+                    shortName: plate.short_name,
+                    brandName: plateBrand?.name || '',
+                    quantity: totalM2,
+                    unit: 'm²',
+                    unitPrice: plateM2Price,
+                    totalPrice: plateTotal,
+                    isPlate: true,
+                    packageCount: packageCount
+                });
+            }
+
+            const accBrandName = brands.find(b => b.id === pkgDef.accessory_brand_id)?.name ?? '';
+            const pkgAccessories = accessories.filter(acc => acc.brand_id === pkgDef.accessory_brand_id);
+
+            for (const accType of accessoryTypes) {
+                const acc = pkgAccessories.find(a =>
+                    a.accessory_type_id === accType.id &&
+                    (selectedMalzeme === 'eps' ? a.is_for_eps : a.is_for_tasyunu)
+                );
+                if (acc) {
+                    const consumption = selectedMalzeme === 'eps'
+                        ? accType.consumption_rate_eps
+                        : accType.consumption_rate_tasyunu;
+
+                    if (consumption > 0) {
+                        const totalNeed = totalM2 * consumption;
+                        const itemQuantity = Math.ceil(totalNeed / acc.unit_content);
+
+                        let accIsk1 = acc.discount_1;
+                        let accIsk2 = acc.discount_2;
+
+                        // EPS için özel iskonto: levha markasından bağımsız, aksesuar markasına göre kontrol
+                        if (selectedMalzeme === "eps" && selectedCity && (accBrandName === "Dalmaçyalı" || accBrandName === "Expert" || accBrandName === "Optimix")) {
+                            const cityIsk1 = selectedCity.eps_toz_region_discount ?? 0;
+                            if (cityIsk1 > 0) accIsk1 = cityIsk1;
+
+                            if (accBrandName === "Optimix" && acc.discount_2 >= 10) {
+                                accIsk2 = selectedCity.optimix_toz_discount ?? accIsk2;
+                            }
+                        }
+
+                        const accUnitPrice = calculateSalePrice(
+                            acc.base_price,
+                            accIsk1,
+                            accIsk2,
+                            selectedBrand.name,
+                            false,
+                            acc.is_kdv_included
+                        );
+
+                        const accTotal = roundToKurus(accUnitPrice * itemQuantity);
+                        totalProductCost += accTotal;
+
+                        items.push({
+                            name: acc.name,
+                            shortName: acc.short_name,
+                            brandName: brands.find(b => b.id === pkgDef.accessory_brand_id)?.name || '',
+                            quantity: itemQuantity,
+                            unit: acc.unit,
+                            unitPrice: accUnitPrice,
+                            totalPrice: accTotal,
+                            isPlate: false
+                        });
+                    }
+                }
+            }
+
+            const isLowMetrageTasyunu = selectedMalzeme === 'tasyunu' && logistics && packageCount < logistics.lorry_capacity_packages;
+
+            calculated.push({
+                definition: pkgDef,
+                plateBrandName: selectedBrand.name,
+                accessoryBrandName: brands.find(b => b.id === pkgDef.accessory_brand_id)?.name || '',
+                items,
+                totalProductCost,
+                // TODO: shipping_zones.base_shipping_cost henüz hesaplamaya dahil edilmiyor.
+                // isShippingIncluded=true  → fabrika nakliyesi ücretsiz → shippingCost=0 DOĞRU
+                // isShippingIncluded=false → nakliye alıcıya ait (düşük metrajlı Taşyünü);
+                //   grandTotal yalnızca ürün maliyetini yansıtıyor, gerçek nakliye bedeli bilinmiyor.
+                //   PackageCard ve PDF'deki shippingWarning bu durumu kullanıcıya açıklamaktadır.
+                shippingCost: 0,
+                grandTotal: totalProductCost,
+                pricePerM2: totalProductCost / totalM2,
+                logistics: {
+                    packageCount,
+                    packageSizeM2: realPackageM2,
+                    itemsPerPackage: logistics.items_per_package,
+                    truckCapacityPackages: logistics.truck_capacity_packages,
+                    lorryCapacityPackages: logistics.lorry_capacity_packages,
+                    truckFillPercentage: (packageCount / logistics.truck_capacity_packages) * 100,
+                    lorryFillPercentage: (packageCount / logistics.lorry_capacity_packages) * 100,
+                    vehicleType: packageCount > logistics.lorry_capacity_packages ? 'truck' : 'lorry',
+                    isShippingIncluded: !isLowMetrageTasyunu,
+                    shippingWarning: isLowMetrageTasyunu ? "Metraj kamyon kapasitesinin altında olduğu için nakliye alıcıya aittir. Ancak fabrikadan en iyi 'Tır İskontosu' fiyatları uygulanmıştır." : undefined
+                }
+            });
+        }
+
+        setCalculatedPackages(calculated);
+        setIsLoading(false);
+        setShowResults(true);
+        setTimeout(() => {
+            resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    };
+
+    const handleGetQuote = (pkg: CalculatedPackage) => {
+        setSelectedPackageForQuote(pkg);
+        setShowQuoteModal(true);
+    };
+
+    const handleSubmitQuote = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedPackageForQuote) return;
+
+        setIsSubmittingQuote(true);
+
+        try {
+            const message = generateWhatsAppMessage(
+                selectedPackageForQuote,
+                Number(metraj) || 0,
+                selectedCityCode ? shippingZones.find(z => z.city_code === selectedCityCode)?.city_name || "" : ""
+            );
+
+            const whatsappUrl = `https://wa.me/905426084887?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+
+            setShowQuoteModal(false);
+            setQuoteForm({
+                customerName: "",
+                customerEmail: "",
+                customerPhone: "",
+                customerCompany: "",
+                customerAddress: ""
+            });
+            setSelectedPackageForQuote(null);
+
+        } catch (error) {
+            console.error("Teklif gönderme hatası:", error);
+            alert("Beklenmeyen bir hata oluştu. Lütfen tekrar deneyiniz.");
+        } finally {
+            setIsSubmittingQuote(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen flex flex-col bg-slate-950">
+            {/* HERO + WIZARD */}
+            <section
+                className="relative bg-cover bg-center py-12 lg:py-16"
+                style={{
+                    backgroundImage: `linear-gradient(to right, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.8)), url('/images/markalogolar/bina-dis-cephe-kaplama-4000x4000.png')`,
+                }}
+            >
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+                        {/* Sol Taraf */}
+                        <div className="text-white">
+                            <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-6 tracking-tight">
+                                Mantolama Maliyetini
+                                <br />
+                                <span className="text-[#f97316]">Lojistik Dahil</span> Hesaplayın
+                            </h1>
+                            <p className="text-gray-300 text-lg mb-6 max-w-lg">
+                                Marka seçin, m² girin, 3 farklı paket seçeneği ile karşılaştırın.
+                                Bölgenize özel iskonto oranları otomatik uygulanır.
+                            </p>
+
+                            <div className="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/20">
+                                <h3 className="font-heading text-sm font-semibold mb-3 text-[#f97316]">📦 Paketlere Dahil:</h3>
+                                <div className="grid grid-cols-2 gap-2 text-sm text-gray-300">
+                                    <span>✓ Yalıtım Levhası</span>
+                                    <span>✓ Yapıştırıcı</span>
+                                    <span>✓ Isı Yalıtım Sıvası</span>
+                                    <span>✓ Donatı Filesi</span>
+                                    <span>✓ Dübel (kalınlığa uygun)</span>
+                                    <span>✓ Kaplama Astarı</span>
+                                    <span>✓ Mineral Kaplama</span>
+                                    <span>✓ Fileli Köşe</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Sağ Taraf - Wizard */}
+                        <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-2xl p-6 sm:p-8">
+                            {/* Wizard Content (tek ekran) */}
+                            <AnimatePresence mode="wait">
+                                <Step1ProductSelection
+                                    selectedMalzeme={selectedMalzeme}
+                                    setSelectedMalzeme={setSelectedMalzeme}
+                                    selectedBrandId={selectedBrandId}
+                                    setSelectedBrandId={setSelectedBrandId}
+                                    brands={brands}
+                                    selectedModel={selectedModel}
+                                    setSelectedModel={setSelectedModel}
+                                    availableModels={availableModels}
+                                    selectedKalinlik={selectedKalinlik}
+                                    setSelectedKalinlik={setSelectedKalinlik}
+                                    metraj={metraj}
+                                    setMetraj={setMetraj}
+                                    shippingZones={shippingZones}
+                                    selectedCityCode={selectedCityCode}
+                                    onCityChange={handleCityChange}
+                                    isLoadingLogistics={isLoadingLogistics}
+                                    currentLogistics={currentLogistics}
+                                    getSliderMetrics={getSliderMetrics}
+                                    getDowelLength={null}
+                                />
+                            </AnimatePresence>
+
+                            {/* Bottom Navigation */}
+                            <div className="mt-6">
+                                <button
+                                    onClick={handleShowPrices}
+                                    disabled={isLoading || !isStepValid()}
+                                    className="w-full py-5 px-4 rounded-xl font-bold text-xl text-white bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-600 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed transition-all shadow-xl shadow-orange-600/40 hover:shadow-orange-600/60 hover:scale-[1.02] transform"
+                                >
+                                    {isLoading ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                            </svg>
+                                            Hesaplanıyor...
+                                        </span>
+                                    ) : (
+                                        "💰 FİYATLARI HEMEN GÖSTER"
+                                    )}
+                                </button>
+                            </div>
+
+                            {!isStepValid() && (
+                                <div className="mt-3 p-3 bg-yellow-900/30 border border-yellow-700/50 rounded-lg">
+                                    <p className="text-xs text-yellow-400 text-center">
+                                        💡 Lütfen marka, kalınlık, metraj ve il seçiniz
+                                    </p>
+                                </div>
+                            )}
+
+                            <p className="text-center text-gray-400 text-xs mt-4">
+                                Fiyatlar KDV hariç, nakliye dahildir. Bölge iskontosu uygulanmıştır.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* RESULTS - PACKAGE CARDS */}
+            {showResults && calculatedPackages.length > 0 && (
+                <section ref={resultsRef} className="py-12 bg-slate-950 scroll-mt-20">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <h3 className="font-heading text-2xl font-bold text-white mb-2 text-center tracking-tight">
+                            <span className="font-heading tabular-nums text-orange-500">{metraj} m²</span> için Paket Seçenekleri
+                        </h3>
+                        <p className="text-slate-400 text-center mb-10 max-w-2xl mx-auto">
+                            {shippingZones.find(z => z.city_code === selectedCityCode)?.city_name} bölgesine özel lojistik ve iskonto hesaplanmış anahtar teslim paket fiyatlarıdır.
+                        </p>
+
+                        <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+                            {calculatedPackages.map((pkg, index) => (
+                                <PackageCard
+                                    key={pkg.definition.id}
+                                    pkg={pkg}
+                                    index={index}
+                                    expandedCards={expandedCards}
+                                    onToggleExpand={(id) => {
+                                        setExpandedCards(prev =>
+                                            prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
+                                        );
+                                    }}
+                                    onWhatsAppOrder={handleGetQuote}
+                                    onDownloadPDF={handleOpenPdfOffer}
+                                    getOfferValidityDate={getOfferValidityDate}
+                                    getTruckMeterColor={getTruckMeterColor}
+                                    getSmartAdvice={getSmartAdvice}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* QUOTE MODAL */}
+            <AnimatePresence>
+                {showQuoteModal && selectedPackageForQuote && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+                        onClick={() => setShowQuoteModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl relative"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <button
+                                onClick={() => setShowQuoteModal(false)}
+                                className="absolute top-4 right-4 text-slate-400 hover:text-white"
+                            >
+                                ✕
+                            </button>
+
+                            <h3 className="text-xl font-bold text-white mb-1">Teklif İste</h3>
+                            <p className="text-sm text-slate-400 mb-6">
+                                {selectedPackageForQuote.definition.name} Paketi için WhatsApp üzerinden hızlı teklif alın.
+                            </p>
+
+                            <form onSubmit={handleSubmitQuote} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-300 mb-1">Ad Soyad</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        value={quoteForm.customerName}
+                                        onChange={e => setQuoteForm({ ...quoteForm, customerName: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-orange-500 outline-none"
+                                        placeholder="Adınız Soyadınız"
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmittingQuote}
+                                    className="w-full py-4 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+                                >
+                                    {isSubmittingQuote ? "Yönlendiriliyor..." : (
+                                        <>
+                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                                            </svg>
+                                            WhatsApp ile Teklif İste
+                                        </>
+                                    )}
+                                </button>
+
+                                <p className="text-center text-xs text-slate-500 mt-4">
+                                    "Teklif İste" butonuna tıklayarak Aydınlatma Metni'ni okuduğunuzu ve kabul ettiğinizi beyan edersiniz.
+                                </p>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* PDF OFFER MODAL */}
+            <PdfOfferModal
+                isOpen={showPdfOfferModal}
+                onClose={() => {
+                    if (isSubmittingPdf) return;
+                    setShowPdfOfferModal(false);
+                    setSelectedPackageForPdf(null);
+                }}
+                onSubmit={handleSubmitPdfOffer}
+                isSubmitting={isSubmittingPdf}
+                defaultCity={getSelectedCityName()}
+            />
+        </div>
+    );
+}

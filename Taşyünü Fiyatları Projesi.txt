@@ -1,0 +1,1105 @@
+═══════════════════════════════════════════════════════════════
+   TAŞYÜNÜ PROJESİ ANAYASASI (v2.0)
+   tasyunufiyatlari.com - Yeni Nesil Lojistik Tabanlı Konfigüratör
+   
+   Versiyon: 2.0 | Tarih: 9 Aralık 2025
+   18 Yıl Tecrübeli Web Developer | İstanbul/Tuzla
+═══════════════════════════════════════════════════════════════
+
+İÇİNDEKİLER
+───────────────────────────────────────────────────────────────
+1. Proje Vizyonu & Hedefler
+2. Kritik İş Kuralları (Business Logic)
+3. Üç Paket Sistemi: En Ucuz / Dengeli / 1. Kalite
+4. Yeni Özellikler (Finans, Rakip İstihbaratı, Gamification)
+5. Veritabanı Mimarisi (Supabase)
+6. UI/UX Tasarım Konsepti
+7. Teknik Stack & Araçlar
+8. Sonraki Adımlar & Yol Haritası
+9. Hızlı Referans Tablosu
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 1: PROJE VİZYONU & HEDEFLER
+═══════════════════════════════════════════════════════════════
+
+NE YAPIYORUZ?
+─────────────
+Klasik e-ticaret sitesi DEĞİL, bir "Lojistik Tabanlı Paket 
+Konfigüratörü" inşa ediyoruz.
+
+TEMEL FARK: Müşteri sadece "ürün" seçmiyor, bir "lojistik 
+operasyon" satın alıyor. Sistem, arka planda tır/kamyon 
+kapasiteleri, coğrafi iskontolar, stok durumu gibi onlarca 
+parametreyi işleyerek müşteriye "3 akıllı paket seçeneği" sunuyor.
+
+NEDEN YAPIYORUZ?
+────────────────
+- Mevcut Site Sorunu: tasyunufiyatlari.com basit ürün listeleme 
+  - müşteri kafası karışıyor
+- Analytics Gerçeği: 15 aylık veri "10cm taşyünü + paket hesaplama" 
+  aramalarını gösteriyor
+- Operasyonel Zorluk: Filli Boya "yarım tır çıkarmam" diyor, 
+  müşteri "1 paket kaç m²?" soruyor
+- Rekabet Avantajı: Tesla gibi "Arabanı Tasarla" yaklaşımı - 
+  self-servis ama akıllı
+
+BAŞARI KRİTERLERİ
+─────────────────
+1. Müşteri 30 saniyede net fiyat görebilmeli
+2. %80+ tır doluluk oranına ulaşmalı (lojistik optimizasyonu)
+3. Bounce rate %40'dan %15'e düşmeli (mevcut siteden)
+4. Manuel teklif hazırlama süresi 45 dakikadan 5 dakikaya inmeli
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 2: KRİTİK İŞ KURALLARI (BUSINESS LOGIC)
+═══════════════════════════════════════════════════════════════
+
+⚠️ UYARI: Bu kurallar projenin kaderini belirliyor. Hiçbiri 
+atlanamaz veya "sonra hallederiz" denilmez!
+
+KURAL #1: "TIR DOLMADAN ÇIKMAZ" PRENSİBİ
+──────────────────────────────────────────
+Kaynak: Filli Boya (Taşyünü Üreticisi)
+Kural: Fabrika, kamyon veya tır tam dolmadan taşyünü sevk etmiyor
+Sistem Etkisi: Minimum sipariş miktarları dinamik hesaplanmalı
+
+Kalınlık Bazlı Minimum Miktarlar:
+(Kaynak: tasyunu_maliyet.csv - Levha: 600×1000mm = 0.6 m²)
+
+┌──────────┬──────────┬──────────┬─────────────┬──────────┬──────────────┬───────────┐
+│ Kalınlık │ Paket İçi│ 1 Paket  │ Kamyon (m²) │ Tır (m²) │ Paket/Kamyon │ Paket/Tır │
+│          │ Adet     │ (m²)     │             │          │              │           │
+├──────────┼──────────┼──────────┼─────────────┼──────────┼──────────────┼───────────┤
+│ 3 cm     │ 10       │ 6.0      │ 1.344,00    │ 2.496,00 │ 224          │ 416       │
+│ 4 cm     │ 6        │ 3.6      │ 1.008,00    │ 1.872,00 │ 280          │ 520       │
+│ 5 cm     │ 6        │ 3.6      │ 806,40      │ 1.497,60 │ 224          │ 416       │
+│ 6 cm     │ 5        │ 3.0      │ 672,00      │ 1.248,00 │ 224          │ 416       │
+│ 7 cm     │ 4        │ 2.4      │ 537,60      │ 998,40   │ 224          │ 416       │
+│ 8 cm     │ 3        │ 1.8      │ 504,00      │ 936,00   │ 280          │ 520       │
+│ 9 cm     │ 3        │ 1.8      │ 453,60      │ 842,40   │ 252          │ 468       │
+│ 10 cm ⭐ │ 3        │ 1.8      │ 403,20      │ 748,80   │ 224          │ 416       │
+└──────────┴──────────┴──────────┴─────────────┴──────────┴──────────────┴───────────┘
+
+NOT: 10 cm en popüler kalınlıktır (Analytics verisi - 15 ay)
+
+KURAL #2: COĞRAFİ İSKONTO SİSTEMİ
+──────────────────────────────────
+Merkez: Tuzla/İstanbul (Depo) + Balıkesir (Fabrika)
+Mantık: Mesafe + Hacim = Fiyat
+
+Üç Bölge Stratejisi:
+
+🟢 YEŞİL BÖLGE (Nakliye Dahil - En İyi Fiyat)
+   İller: İstanbul, Kocaeli, Sakarya, Düzce, Bolu, Balıkesir, Bursa
+   Şart: Full kamyon/tır
+   Kaynak: Direkt Balıkesir Fabrika
+   
+🟡 SARI BÖLGE (Depo Parsiyel)
+   İlçeler: Tuzla, Pendik, Kartal, Maltepe, Sultanbeyli, 
+            Sancaktepe, Gebze
+   Şart: Stokta olmalı
+   Kaynak: Tuzla Depo
+   Fiyat: Fabrika + İç Nakliye + Kar Marjı
+   
+🔴 KIRMIZI BÖLGE (Nakliye Hariç)
+   Durum: Uzak il + Az miktar (örn: Sivas'tan 100 m²)
+   Çözüm: "Nakliye Alıcıya Aittir" (EX-WORKS fiyat)
+   Alternatif: "Tuzla depomuzdan aldırabilirsiniz" teklifi
+
+KURAL #3: EPS ÖZEL ŞARTLARI
+────────────────────────────
+Minimum: 250 m² (Taşyünü'nden farklı)
+ZORUNLU: Toz grubu ile birlikte satılır
+Neden: Fabrika kuralı - tekil satış yok
+
+UI Kuralı: Müşteri EPS seçerse, sepete otomatik yapıştırıcı/sıva 
+eklenir ve silinmesine izin verilmez. "Bu ürün sistem kuralı 
+gereği takım olarak satılmaktadır" uyarısı çıkar.
+
+KURAL #4: HİBRİT PAKET STOK KONTROLÜ
+─────────────────────────────────────
+Senaryo: En Ucuz Kombinasyon (Dalmaçyalı Levha + All Alçı Sıva)
+Şart: İkisi de Tuzla deposunda olmalı
+Yoksa: Paket "Tükendi" veya "Sadece Fabrika Teslim (Full Set)" 
+       gösterilir
+
+KURAL #5: "10CM KRALDIR" STRATEJİSİ
+────────────────────────────────────
+Analytics Kanıtı: 15 aylık veri 10cm'nin 5cm ve 8cm'den çok daha 
+                  fazla arandığını gösteriyor
+Aksiyon: Sihirbaz ve paketlerin varsayılan değeri 10cm + Taşyünü 
+         olmalı
+SEO: /10-cm-tasyunu-fiyatlari sayfası ana Landing Page
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 3: ÜÇ PAKET SİSTEMİ
+═══════════════════════════════════════════════════════════════
+
+PSİKOLOJİ: "Decoy Effect" kullanıyoruz. Müşteri tek fiyat görse 
+"pahalı" deyip gider. Ama 3 seçenek sunarsak ortadakini alır 
+(Dengeli Sistem = %60 satış).
+
+🥉 EN UCUZ KOMBİNASYON
+──────────────────────
+Hedef Kitle: Bütçesi kısıtlı, "ucuza halledeyim" diyen
+Strateji: Levha markaysa da, toz grubu yan sanayi
+
+Örnek Kombinasyon:
+- Levha: Dalmaçyalı 5cm (Marka)
+- Yapıştırıcı & Sıva: All Alçı / TEKNO / ONAT (Yerel)
+- Dübel: Standart kalite
+- File: 145gr
+- Garanti: 2 yıl malzeme
+
+Fiyat Örneği: 196 TL/m² (500 m² için 98.450 TL)
+
+🥈 DENGELİ SİSTEM - "EN ÇOK TERCİH EDİLEN"
+──────────────────────────────────────────
+Hedef Kitle: Marka isteyenler ama full orijinal istemeyenler
+Strateji: Levha + toz grubu farklı markalar (akıllı kombine)
+Badge: "EN ÇOK TERCİH EDİLEN" (kartı %5 büyük göster)
+
+Örnek Kombinasyon:
+- Levha: Dalmaçyalı 5cm
+- Yapıştırıcı & Sıva: Fawori / Optimix (Marka ama farklı)
+- Dübel: Fawori standart
+- File: 160gr
+- Garanti: 5 yıl sistem
+
+Fiyat Örneği: 220 TL/m² (500 m² için 110.000 TL)
+
+⭐ 1. KALİTE PAKETİ
+───────────────────
+Hedef Kitle: "En iyisini istiyorum" diyen
+Strateji: Tam takım orijinal sistem (Dalmaçyalı + Dalmaçyalı)
+
+Örnek Kombinasyon:
+- Levha: Dalmaçyalı 5cm
+- Yapıştırıcı & Sıva: Dalmaçyalı Orijinal
+- Dübel: Dalmaçyalı Avrupa kalite
+- File: 160gr Dalmaçyalı
+- Garanti: 10 yıl tam kapsam
+
+Fiyat Örneği: 250 TL/m² (500 m² için 125.000 TL)
+
+PAKET KARŞILAŞTIRMA:
+┌─────────────┬────────────────┬───────────────┬──────────────┐
+│ Özellik     │ En Ucuz        │ Dengeli (★)   │ 1. Kalite    │
+├─────────────┼────────────────┼───────────────┼──────────────┤
+│ Levha       │ Dalmaçyalı     │ Dalmaçyalı    │ Dalmaçyalı   │
+│ Toz Grubu   │ All Alçı/TEKNO │ Fawori        │ Dalmaçyalı   │
+│ Garanti     │ 2 yıl          │ 5 yıl         │ 10 yıl       │
+│ Fiyat/500m² │ 98.450 TL      │ 110.000 TL    │ 125.000 TL   │
+│ Satış %     │ 25%            │ 60%           │ 15%          │
+└─────────────┴────────────────┴───────────────┴──────────────┘
+
+⚠️ ÖNEMLİ: TOZ GRUBU MARKALARI
+──────────────────────────────
+YAN SANAYİ ALTERNATİFLERİ:
+- All Alçı (Eskişehir)
+- TEKNO
+- ONAT
+- ENTEGRE
+
+NOT: Kaspor = Sadece EPS levha üreticisi (toz grubu YOK)
+
+KULLANICI ÖZELLEŞTİRMESİ
+─────────────────────────
+İlk Ekran: 3 HAZIR PAKET kartı gösterilir
+
+Her kartın altında:
+[🎨 KENDİN ÖZELLEŞTIR] butonu
+
+Tıklayınca:
+→ Levha markası dropdown açılır
+→ Toz grubu dropdown açılır  
+→ ANLIK fiyat güncellenir (real-time)
+
+Mantık: Önce basit (3 hazır paket), sonra detaylı (özelleştirme)
+→ Kullanıcıyı boğmuyoruz ama özgürlük veriyoruz
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 4: YENİ ÖZELLİKLER (GAME CHANGERS)
+═══════════════════════════════════════════════════════════════
+
+1. 💰 FİNANS MODÜLÜ: "VADE FARKI SİHİRBAZI"
+───────────────────────────────────────────
+Sorun: İnşaat sektöründe nakit ≠ vadeli fiyat. Excel'de manuel 
+       hesaplama hata riski yüksek.
+
+Çözüm: Admin panelinde "Aylık Vade Farkı Oranı" ayarı (örn: %4)
+
+Müşteri Teklif Alırken Göreceği:
+┌─────────────────────────────────────────┐
+│ ÖDEME SEÇENEKLERİ                       │
+├─────────────────────────────────────────┤
+│ 💵 Nakit          : 100.000 TL          │
+│ 📅 30 Gün Vadeli  : 104.000 TL (+%4)    │
+│ 📅 60 Gün Vadeli  : 108.160 TL (+%8.16) │
+│ 📅 90 Gün Vadeli  : 112.486 TL (+%12.49)│
+└─────────────────────────────────────────┘
+
+Avantaj: Müşteri seçimini kendisi yapar, sen vade pazarlığı 
+         yapmazsın. PDF teklifinde bu tablo otomatik çıkar.
+
+Formül: Yeni_Fiyat = Baz_Fiyat × (1 + Oran)^Ay_Sayısı
+
+2. 🕵️ RAKİP İSTİHBARAT: "HAYALET BOT"
+───────────────────────────────────────
+Ne Yapar: Her sabah saat 09:00'da rakip sitelere gidip fiyat toplar
+
+Teknoloji: Puppeteer/Cheerio (web scraping)
+
+Admin Panelinde Göreceğin:
+┌─────────────────────────────────────────┐
+│ 🚨 PİYASA UYARISI (09:12)              │
+├─────────────────────────────────────────┤
+│ 5cm Taşyünü Fiyatları:                 │
+│                                         │
+│ Senin Fiyatın  : 150 TL/m²             │
+│ Rakip A        : 145 TL ⚠️ (dün 155)   │
+│ Rakip B        : 148 TL                │
+│                                         │
+│ Öneri: Piyasanın %3 üzerindesin        │
+│                                         │
+│ [FIYATI GÜNCELLE] [OLDUĞU GİBİ KALSIN]│
+└─────────────────────────────────────────┘
+
+Avantaj: Rakiplerin indirim yaptığını müşteriden ÖNCE sen öğrenirsin.
+
+Yasal mı?: Evet - public veri okuyorsun (Google nasıl indeksliyorsa)
+
+Cron Job: Her gün 09:00 (ayarlanabilir)
+
+3. 🚚 LOJİSTİK GAMİFİCATION: "İLERLEME ÇUBUĞU"
+──────────────────────────────────────────────
+Müşteri 300 m² girdi, kamyon %85 dolu:
+
+┌─────────────────────────────────────────┐
+│ 🚚 LOJİSTİK DURUMU: KAMYON %85         │
+│ [████████████░░░]                      │
+│                                         │
+│ 💡 50 m² daha eklerseniz:              │
+│    • Araç tam dolacak                  │
+│    • İskonto %14 → %18'e yükselir!     │
+│                                         │
+│ [OTOMATİK TAMAMLA VE İNDİRİMİ KAP]    │
+└─────────────────────────────────────────┘
+
+Neden Çalışır: "Zorunluluk" değil "fırsat" mesajı - müşteri 
+                mutlu olur.
+
+Bar Renkleri:
+- %0-50  : Kırmızı (Nakliye verimsiz)
+- %50-80 : Sarı (İyi gidiyorsunuz)
+- %80-100: Yeşil (Harika! Az kaldı)
+- %100   : 🎉 Tam Tır Bonusu - %15 İlave İskonto!
+
+4. 🌍 COĞRAFİ GÜVEN GÖSTERGESİ
+──────────────────────────────
+Müşteri Kocaeli seçti (fabrikaya yakın):
+┌─────────────────────────────────────────┐
+│ ✅ LOJİSTİK AVANTAJLI BÖLGE            │
+│    Nakliye Ücretsiz                    │
+└─────────────────────────────────────────┘
+
+Müşteri Ankara seçti (uzak):
+┌─────────────────────────────────────────┐
+│ ℹ️ BÖLGESEL FİYAT                      │
+│    Fabrika mesafesi nedeniyle nakliye  │
+│    farkı eklendi                       │
+└─────────────────────────────────────────┘
+
+Sonuç: Müşteri "Niye fiyat değişti?" demez, sebep açık.
+
+5. 🎯 SEO DİNAMİK LANDING PAGES
+───────────────────────────────
+Google'da "500 m² mantolama fiyatı" diye arama yapan için:
+
+URL'ler:
+/paketler/500-m2-dalmacyali-mantolama
+/paketler/1000-m2-fawori-paket-fiyati
+/paketler/250-m2-ekonomik-mantolama
+
+Özellik: Müşteri bu linkten geldiğinde 500 m² ZATEN GİRİLMİŞ, 
+         3 paket kartı HAZIR!
+
+Dönüşüm: Çok yüksek (müşteri tekrar form doldurmuyor)
+
+Nasıl Çalışır: Next.js Dynamic Routes
+→ /paketler/[metraj]-m2-[marka]-[tip]
+→ URL'den parametreleri al, sihirbazı doldur
+
+6. 📦 SİHİRBAZIN İLK SORUSU (ÖNEMLİ!)
+─────────────────────────────────────
+Kullanıcılar "1 paket kaç m²?" diye kafayı yiyor. Bu soruyla 
+karmaşayı bitiriyoruz:
+
+┌─────────────────────────────────────────┐
+│  Nasıl Hesaplamak İstersiniz?          │
+├─────────────────────────────────────────┤
+│                                         │
+│  🔘 Metrekare Biliyorum                 │
+│     (Örn: 500 m² yerim var)            │
+│     → Sistem pakete çevirir            │
+│                                         │
+│  🔘 Paket Sayısı Biliyorum              │
+│     (Örn: Usta 50 paket dedi)          │
+│     → Sistem m²'ye çevirir             │
+│                                         │
+└─────────────────────────────────────────┘
+
+Analytics'te çok aranmış: "1 paket taşyünü kaç m2"
+Bu özellik o sorunu bitirir.
+
+Hesaplama:
+- 50 paket × 1.8 m² = 90 m² (10cm için)
+- Veya tersi: 500 m² ÷ 1.8 = 278 paket
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 5: VERİTABANI MİMARİSİ (SUPABASE)
+═══════════════════════════════════════════════════════════════
+
+⚠️ ÖNEMLİ: Bu klasik e-ticaret veritabanı DEĞİL. "Reçete" 
+(Recipe) odaklı yapı kullanıyoruz.
+
+TEMEL TABLO YAPISI
+──────────────────
+
+1. PRODUCTS (Ana Ürünler)
+─────────────────────────
+create table products (
+  id bigint primary key generated always as identity,
+  name text not null, 
+  -- "Dalmaçyalı SW035 10cm"
+  
+  brand text not null, 
+  -- "Dalmaçyalı", "Fawori", "All Alçı", "TEKNO"
+  
+  category text not null, 
+  -- 'plate', 'plaster', 'dowel', 'mesh'
+  
+  -- Lojistik Verileri (Excel'den)
+  items_per_package int, -- Paket içi adet
+  m2_per_package decimal(10,4), -- 1 paket = ? m² (örn: 1.8)
+  packages_in_truck int, -- Tır kapasitesi (paket)
+  packages_in_lorry int, -- Kamyon kapasitesi
+  
+  base_price decimal(10,2), -- Liste fiyatı
+  stock_quantity int default 0, -- Tuzla depo stoku
+  is_active boolean default true,
+  
+  created_at timestamp default now(),
+  updated_at timestamp default now()
+);
+
+2. PACKAGE_DEFINITIONS (Paket Tanımları)
+────────────────────────────────────────
+create type tier_level as enum ('budget', 'balanced', 'premium');
+-- En Ucuz, Dengeli, 1. Kalite
+
+create table package_definitions (
+  id bigint primary key generated always as identity,
+  name text not null, 
+  -- "En Ucuz Kombinasyon", "Dengeli Sistem", "1. Kalite"
+  
+  tier tier_level not null,
+  description text, 
+  -- "Bütçe dostu hibrit sistem"
+  
+  is_default boolean default false, 
+  -- 10cm Dengeli paketi varsayılan mı?
+  
+  display_order int, -- Kartlarda sıralama (1,2,3)
+  badge_text text -- "EN ÇOK TERCİH EDİLEN" gibi
+);
+
+3. PACKAGE_ITEMS (Paket İçeriği / Reçete)
+──────────────────────────────────────────
+create table package_items (
+  id bigint primary key generated always as identity,
+  package_id bigint references package_definitions(id),
+  product_id bigint references products(id),
+  
+  -- Sarfiyat Oranları
+  quantity_per_m2 decimal(10,4), 
+  -- Levha: 1.0 | Yapıştırıcı: 4.5kg | Dübel: 6 adet
+  
+  is_display_item boolean default false, 
+  -- Kartta marka logosu olarak bu mu gösterilsin?
+  
+  is_customizable boolean default false
+  -- Kullanıcı bunu değiştirebilir mi?
+);
+
+4. SHIPPING_ZONES (Coğrafi Fiyatlandırma)
+──────────────────────────────────────────
+create table shipping_zones (
+  city_code int primary key, -- 34 (İstanbul), 38 (Kayseri)
+  city_name text,
+  district_name text, -- İlçe (opsiyonel)
+  zone_type text, -- 'green', 'yellow', 'red'
+  
+  shipping_cost_per_truck decimal(10,2),
+  shipping_cost_per_lorry decimal(10,2),
+  
+  min_order_for_free_shipping decimal(10,2), 
+  -- Bedava nakliye eşiği
+  
+  is_factory_direct boolean default false 
+  -- Balıkesir fabrikadan mı?
+);
+
+5. WAREHOUSE_INVENTORY (Depo Stok Takibi)
+──────────────────────────────────────────
+create table warehouse_inventory (
+  product_id bigint references products(id),
+  warehouse_location text default 'Tuzla',
+  
+  quantity_in_stock int,
+  reserved_quantity int default 0, -- Bekleyen siparişler
+  
+  last_updated timestamp default now(),
+  
+  primary key (product_id, warehouse_location)
+);
+
+6. PAYMENT_TERMS (Vade Farkı Ayarları)
+───────────────────────────────────────
+create table payment_terms (
+  id bigint primary key generated always as identity,
+  term_days int not null, -- 0, 30, 60, 90
+  monthly_rate decimal(5,4) not null, -- 0.04 = %4
+  
+  is_active boolean default true,
+  updated_at timestamp default now()
+);
+
+7. COMPETITOR_PRICES (Rakip İstihbarat)
+────────────────────────────────────────
+create table competitor_prices (
+  id bigint primary key generated always as identity,
+  competitor_name text not null,
+  competitor_url text,
+  
+  product_category text, -- 'tasyunu_5cm', 'eps_10cm'
+  price decimal(10,2),
+  
+  scraped_at timestamp default now(),
+  is_alert_sent boolean default false
+);
+
+KRİTİK SQL SORGULAR
+───────────────────
+
+1. Hesaplama Motoru (Müşteri 500 m² girdiğinde):
+────────────────────────────────────────────────
+-- Dengeli Sistem Paket Fiyat Hesabı
+WITH calculation AS (
+  SELECT 
+    pi.product_id,
+    p.name,
+    p.brand,
+    pi.quantity_per_m2 * 500 AS total_quantity, 
+    -- 500 m² için
+    
+    p.base_price,
+    (pi.quantity_per_m2 * 500 * p.base_price) AS item_total
+  FROM package_items pi
+  JOIN products p ON pi.product_id = p.id
+  WHERE pi.package_id = 2 -- Dengeli Sistem ID'si
+)
+SELECT 
+  SUM(item_total) AS package_total_price
+FROM calculation;
+
+2. Stok Kontrolü (Hibrit Paket İçin):
+─────────────────────────────────────
+-- En Ucuz Kombinasyon sunulabilir mi?
+SELECT 
+  CASE 
+    WHEN COUNT(*) = (
+      SELECT COUNT(*) 
+      FROM package_items 
+      WHERE package_id = 1 -- En Ucuz
+    ) THEN 'Stokta Mevcut'
+    ELSE 'Stokta Eksik - Sadece Fabrika Teslim'
+  END AS package_status
+FROM warehouse_inventory wi
+JOIN package_items pi ON wi.product_id = pi.product_id
+WHERE pi.package_id = 1
+  AND wi.quantity_in_stock > 0;
+
+3. Lojistik Bar Hesaplaması:
+────────────────────────────
+-- Müşterinin sepeti tırı ne kadar doldurdu?
+SELECT 
+  (SUM(cart_items.quantity) / products.packages_in_truck * 100) 
+    AS truck_fullness_percent
+FROM cart_items
+JOIN products ON cart_items.product_id = products.id
+WHERE cart_items.user_id = 'current_user'
+  AND products.category = 'plate';
+
+4. Vade Farkı Hesaplama:
+────────────────────────
+-- 90 gün vadeli fiyat
+SELECT 
+  base_price * POWER(1 + monthly_rate, 3) AS price_with_terms
+FROM products p
+CROSS JOIN payment_terms pt
+WHERE p.id = 123
+  AND pt.term_days = 90
+  AND pt.is_active = true;
+
+5. Rakip Fiyat Karşılaştırma:
+─────────────────────────────
+-- Bugünkü fiyatlar vs rakipler
+SELECT 
+  p.name,
+  p.base_price AS our_price,
+  cp.competitor_name,
+  cp.price AS competitor_price,
+  ROUND((p.base_price - cp.price) / cp.price * 100, 2) 
+    AS price_diff_percent
+FROM products p
+JOIN competitor_prices cp 
+  ON p.category = cp.product_category
+WHERE cp.scraped_at >= CURRENT_DATE
+ORDER BY price_diff_percent DESC;
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 6: UI/UX TASARIM KONSEPTİ
+═══════════════════════════════════════════════════════════════
+
+KULLANICI AKIŞI (USER FLOW)
+────────────────────────────
+
+ADIM 1: GİRİŞ & LOKASYON
+─────────────────────────
+Müşteri siteye girdiğinde ilk soru:
+
+┌─────────────────────────────────────────┐
+│ 📍 Teslimat Nereye Yapılacak?          │
+├─────────────────────────────────────────┤
+│ İl Seçin:   [İstanbul        ▼]        │
+│ İlçe Seçin: [Tuzla           ▼]        │
+│                                         │
+│ [DEVAM ET]                             │
+└─────────────────────────────────────────┘
+
+Neden İlk Soru Bu?: Çünkü lojistik her şeyi belirliyor 
+(fiyat, minimum sipariş, nakliye)
+
+ADIM 2: SİHİRBAZ (30 SANİYE ANKETİ)
+────────────────────────────────────
+
+SORU 0 (YENİ!): Hesaplama Tipi
+───────────────────────────────
+┌─────────────────────────────────────────┐
+│  Nasıl Hesaplamak İstersiniz?          │
+├─────────────────────────────────────────┤
+│  🔘 Metrekare Biliyorum                 │
+│     (Örn: 500 m² yerim var)            │
+│                                         │
+│  🔘 Paket Sayısı Biliyorum              │
+│     (Örn: Usta 50 paket dedi)          │
+└─────────────────────────────────────────┘
+
+SORU 1: Marka Tercihi
+─────────────────────
+[Dalmaçyalı]  [Fawori]  [Optimix]
+   (Logo)       (Logo)     (Logo)
+
+SORU 2: Yalıtım Tipi
+────────────────────
+[Taşyünü]     [EPS Karbonlu]  [EPS Beyaz]
+
+SORU 3: Metraj veya Paket
+─────────────────────────
+Kaç m²?: [_______]  veya  Kaç Paket?: [_______]
+(Seçime göre değişir)
+
+[HESAPLA VE PAKETLERİ GÖSTER]
+
+ADIM 3: "BÜYÜK KARŞILAŞMA" EKRANI
+──────────────────────────────────
+Sistem 2 saniyede hesaplar, müşterinin karşısına 3 kart çıkar:
+
+┌───────────────┐ ┌───────────────┐ ┌───────────────┐
+│  EN UCUZ      │ │  DENGELİ      │ │  1. KALİTE    │
+│  KOMBİNASYON  │ │  SİSTEM ★     │ │  PAKETİ       │
+├───────────────┤ ├───────────────┤ ├───────────────┤
+│               │ │ EN ÇOK TERCİH │ │               │
+│ 196 TL/m²     │ │ 220 TL/m²     │ │ 250 TL/m²     │
+│               │ │               │ │               │
+│ 98.450 TL     │ │ 110.000 TL    │ │ 125.000 TL    │
+│ (500 m² için) │ │ (500 m² için) │ │ (500 m² için) │
+│               │ │               │ │               │
+│ Dalmaçyalı    │ │ Dalmaçyalı    │ │ Dalmaçyalı    │
+│ + All Alçı    │ │ + Fawori      │ │ + Dalmaçyalı  │
+│               │ │               │ │               │
+│ 2 Yıl Garanti │ │ 5 Yıl Garanti │ │ 10 Yıl Garanti│
+│               │ │               │ │               │
+│ 🚚 %45 [████] │ │ 🚚 %45 [████] │ │ 🚚 %45 [████] │
+│               │ │               │ │               │
+│ [SEÇENEK GÖR] │ │ [TEKLİF AL]   │ │ [SEÇENEK GÖR] │
+│ [KENDİN ÖZ.]  │ │ [KENDİN ÖZ.]  │ │ [KENDİN ÖZ.]  │
+└───────────────┘ └───────────────┘ └───────────────┘
+
+Orta kart (Dengeli Sistem):
+- %5 daha büyük
+- "EN ÇOK TERCİH EDİLEN" badge'i
+- [TEKLİF AL] butonu daha belirgin
+
+ADIM 4: ÖZELLEŞTİRME (OPSİYONEL)
+─────────────────────────────────
+Kullanıcı [KENDİN ÖZELLEŞTİR] butonuna bastı:
+
+┌─────────────────────────────────────────┐
+│ DENGELİ SİSTEMİ ÖZELLEŞTİR             │
+├─────────────────────────────────────────┤
+│ Levha Markası:                          │
+│ [Dalmaçyalı ▼] [Fawori] [İzocam]      │
+│                                         │
+│ Toz Grubu:                              │
+│ [Fawori ▼] [All Alçı] [TEKNO] [ONAT]  │
+│                                         │
+│ ─────────────────────────────────       │
+│ YENİ FİYAT: 215 TL/m² (107.500 TL)    │
+│ ─────────────────────────────────       │
+│                                         │
+│ [KAYDET VE TEKLİF AL]                  │
+└─────────────────────────────────────────┘
+
+Her değişiklikte fiyat ANLIK güncellenir (real-time)
+
+LOJİSTİK BAR OYUNLAŞTIRMASI
+────────────────────────────
+Her kartta tır doluluk barı:
+
+%0-50 (Kırmızı):
+┌─────────────────────────────────────────┐
+│ 🚚 NAKLİYE VERİMSİZ (%45)              │
+│ [████░░░░░░░░░░]                       │
+│                                         │
+│ ⚠️ Kamyon doluluk oranı düşük          │
+│    Daha fazla ürün eklemenizi öneriyoruz│
+└─────────────────────────────────────────┘
+
+%50-80 (Sarı):
+┌─────────────────────────────────────────┐
+│ 🚚 İYİ GİDİYORSUNUZ (%75)              │
+│ [██████████░░░]                        │
+│                                         │
+│ 💡 80 m² daha eklerseniz iskonto artar │
+└─────────────────────────────────────────┘
+
+%80-100 (Yeşil):
+┌─────────────────────────────────────────┐
+│ 🚚 HAZİKA! (%95)                       │
+│ [█████████████░]                       │
+│                                         │
+│ 🎉 30 m² daha = Tam Tır Bonusu (%15)  │
+│    [OTOMATİK TAMAMLA]                  │
+└─────────────────────────────────────────┘
+
+%100 (Altın):
+┌─────────────────────────────────────────┐
+│ 🎉 TAM TIR BONUSU AKTIF!               │
+│ [███████████████]                      │
+│                                         │
+│ ✨ %15 İlave İskonto Kazandınız!       │
+│    Yeni Fiyat: 187 TL/m²               │
+└─────────────────────────────────────────┘
+
+KRİTİK UI KURALLARI
+───────────────────
+✅ Fiyatlar görünür olmalı ("Teklif İste" formuna gömme - 
+   bounce rate patlar)
+✅ Dengeli Sistem kartı %5 büyük ve "En Çok Tercih Edilen" badge'i
+✅ Dropdown'sız tasarım - paketler hazır gelsin, müşteri 
+   karıştırmasın
+✅ Responsive - mobilde kartlar dikey sıralansın
+⚠️ "Nakliye Dahil/Hariç" ibaresi - şeffaf iletişim
+
+TEKLİF ALMA FORMU
+─────────────────
+Müşteri [TEKLİF AL] butonuna bastığında:
+
+┌─────────────────────────────────────────┐
+│ Seçiminizi Kaydettik! 🎉               │
+├─────────────────────────────────────────┤
+│ Resmi PDF teklifinizi indirmek için:   │
+│                                         │
+│ Ad Soyad:      [___________________]   │
+│ WhatsApp:      [___________________]   │
+│ E-posta:       [___________________]   │
+│ Firma (opsiy): [___________________]   │
+│                                         │
+│ Ödeme Tercihi:                          │
+│ ○ Nakit (En İyi Fiyat)                 │
+│ ○ 30 Gün Vadeli (+%4)                  │
+│ ○ 60 Gün Vadeli (+%8.16)               │
+│ ○ 90 Gün Vadeli (+%12.49)              │
+│                                         │
+│ [PDF TEKLİFİMİ İNDİR]                  │
+└─────────────────────────────────────────┘
+
+Sonuç: Hem lead yakalarsın, hem müşteri PDF teklif indirir
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 7: TEKNİK STACK & ARAÇLAR
+═══════════════════════════════════════════════════════════════
+
+FRONTEND
+────────
+┌────────────────┬───────────────────────────┬────────────┐
+│ Teknoloji      │ Neden Seçildi?            │ Alternatif │
+├────────────────┼───────────────────────────┼────────────┤
+│ Next.js 14     │ • SSR + ISR (SEO)         │ Astro      │
+│                │ • API Routes (serverless) │            │
+│                │ • Cursor IDE uyumlu       │            │
+├────────────────┼───────────────────────────┼────────────┤
+│ React 18       │ • Dinamik UI              │ Vue.js     │
+│                │ • Component yapısı        │            │
+│                │ • Geniş ekosistem         │            │
+├────────────────┼───────────────────────────┼────────────┤
+│ Tailwind CSS   │ • Hızlı styling           │ Styled     │
+│                │ • Responsive kolay        │ Components │
+│                │ • Cursor otomatik         │            │
+├────────────────┼───────────────────────────┼────────────┤
+│ shadcn/ui      │ • Hazır komponentler      │ MUI        │
+│                │ • Özelleştirilebilir      │            │
+└────────────────┴───────────────────────────┴────────────┘
+
+BACKEND & DATABASE
+──────────────────
+┌────────────────┬───────────────────────────────────────┐
+│ Teknoloji      │ Neden Seçildi?                        │
+├────────────────┼───────────────────────────────────────┤
+│ Supabase       │ • PostgreSQL (güçlü SQL)              │
+│                │ • Real-time (stok güncellemeleri)     │
+│                │ • Auth built-in                       │
+│                │ • Edge functions                      │
+├────────────────┼───────────────────────────────────────┤
+│ PostgreSQL     │ • Complex queries (paket hesaplama)   │
+│                │ • JSONB (esnek veri)                  │
+│                │ • Performans                          │
+└────────────────┴───────────────────────────────────────┘
+
+AI ARAÇLARI (GELİŞTİRME)
+─────────────────────────
+- Cursor IDE: Ana geliştirme ortamı (AI-assisted coding)
+- Claude Sonnet 4.5: Mimari tasarım & karmaşık kod
+- R1T2 Chimera: Hızlı debug & basit tasklar
+- Vibe Coding: Tab completion ile 4x hız artışı
+
+HOSTİNG & DEPLOY
+─────────────────
+- Önerilen: Vercel (Next.js native support)
+- Alternatif: Netlify / Railway
+- CDN: Cloudflare (statik assetler)
+- Database: Supabase Cloud (PostgreSQL)
+
+ANALYTICS & MONİTORİNG
+──────────────────────
+- Google Analytics 4: User behavior
+- Hotjar: Heatmap & kayıtlar
+- Sentry: Error tracking
+- Supabase Dashboard: Database analytics
+
+WEB SCRAPING (Rakip İstihbarat)
+────────────────────────────────
+- Puppeteer: Headless browser
+- Cheerio: HTML parsing
+- Cron Job: Node-cron / Vercel Cron
+- Proxy: Bright Data (opsiyonel, ban önleme)
+
+PDF OLUŞTURMA
+─────────────
+- Puppeteer: HTML → PDF
+- Alternatif: jsPDF / PDFKit
+- Template: React component → Puppeteer render
+
+EMAİL SİSTEMİ
+─────────────
+- Resend: Modern email API
+- Alternatif: SendGrid / Mailgun
+- Template: React Email
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 8: SONRAKİ ADIMLAR & YOL HARİTASI
+═══════════════════════════════════════════════════════════════
+
+⏱️ GÜNCELLEME: Cursor + Vibe Coding ile süreler 4x hızlandı!
+
+FAZ 1: TEMEL ALTYAPI (2-3 GÜN)
+───────────────────────────────
+Gün 1:
+□ Supabase projesi oluştur
+□ Veritabanı şemasını uygula (SQL komutları)
+□ Excel verilerini products tablosuna aktar
+
+Gün 2:
+□ 3 paket tanımını package_definitions'a ekle
+□ Paket reçetelerini package_items'a yaz
+□ Shipping zones tablosunu doldur
+
+Gün 3:
+□ Payment terms (vade farkı) ayarlarını gir
+□ Test verileri ile sorguları kontrol et
+□ Supabase RLS (Row Level Security) ayarla
+
+FAZ 2: FRONTEND SİHİRBAZ (1-2 GÜN)
+──────────────────────────────────
+Gün 1:
+□ Next.js projesi kur (Cursor ile)
+□ Lokasyon seçim ekranı (İl/İlçe dropdown)
+□ Sihirbaz formu (6 soruluk)
+□ Supabase bağlantısı (API routes)
+
+Gün 2:
+□ Hesaplama motoru (quantity_per_m2 * m2)
+□ Real-time fiyat güncelleme
+□ Test senaryoları
+
+FAZ 3: PAKET KARTLARI UI (2 GÜN)
+────────────────────────────────
+Gün 1:
+□ 3 kart layout (Tailwind grid)
+□ Dinamik fiyat gösterimi
+□ "En Çok Tercih Edilen" badge
+□ Responsive tasarım
+
+Gün 2:
+□ Lojistik bar komponenti
+□ Özelleştirme modal'ı
+□ Animasyonlar (smooth transitions)
+
+FAZ 4: İŞ KURALLARI ENTEGRASYONU (2-3 GÜN)
+───────────────────────────────────────────
+Gün 1:
+□ Minimum sipariş kontrolü (kamyon/tır doluluk)
+□ Coğrafi iskonto hesaplaması
+□ "Nakliye Dahil/Hariç" mantığı
+
+Gün 2:
+□ Stok kontrolü (hibrit paketler)
+□ EPS zorunlu toz grubu mantığı
+□ Vade farkı hesaplayıcı
+
+Gün 3:
+□ Edge case'ler (stokta yok, minimum yetersiz)
+□ Hata mesajları (user-friendly)
+
+FAZ 5: YENİ ÖZELLİKLER (3-4 GÜN)
+────────────────────────────────
+Gün 1:
+□ Finans modülü (vade farkı)
+□ Admin panel (vade oranı ayarı)
+
+Gün 2:
+□ Rakip istihbarat bot (Puppeteer)
+□ Cron job kurulumu
+□ Admin dashboard uyarıları
+
+Gün 3:
+□ Lojistik gamification (ilerleme barı)
+□ Otomatik tamamla butonu
+□ Tam tır bonusu hesabı
+
+Gün 4:
+□ SEO dinamik landing pages
+□ URL parametrelerinden veri çekme
+□ Metadata optimizasyonu
+
+FAZ 6: TEKLİF SİSTEMİ (2 GÜN)
+─────────────────────────────
+Gün 1:
+□ Form popup (WhatsApp + Email)
+□ PDF oluşturma (Puppeteer)
+□ PDF template tasarımı
+
+Gün 2:
+□ Email gönderimi (Resend)
+□ WhatsApp entegrasyonu (opsiyonel)
+□ Lead kaydı (CRM)
+
+FAZ 7: TEST & OPTİMİZASYON (2-3 GÜN)
+─────────────────────────────────────
+Gün 1:
+□ Lighthouse skorları (100/100 hedef)
+□ Farklı il/ilçe senaryoları
+□ Mobil cihaz testleri
+
+Gün 2:
+□ Edge case'ler
+□ Load testing (yük testi)
+□ Security audit
+
+Gün 3:
+□ Bug fixes
+□ UI polish (son rötuşlar)
+
+FAZ 8: DEPLOYMENT & LAUNCH (1 GÜN)
+───────────────────────────────────
+□ Vercel deploy
+□ Domain bağlama (tasyunufiyatlari.com)
+□ Google Analytics kurulum
+□ Sitemap & robots.txt
+□ Soft launch (beta test)
+
+┌─────────────────────────────────────────┐
+│ ⏱️ TOPLAM SÜRE: 14-18 GÜN (2-3 HAFTA)  │
+│                                         │
+│ 🚀 İLK MVP: 5-7 GÜN (Faz 1-3)         │
+│                                         │
+│ Eski Tahmin: 6-7 hafta ❌              │
+│ Yeni Tahmin: 2-3 hafta ✅              │
+│                                         │
+│ Hız Artışı: 4x                          │
+└─────────────────────────────────────────┘
+
+NEDEN BU KADAR HIZLI?
+─────────────────────
+✅ Cursor'un AI tab completion → kod yazma 4x hızlı
+✅ Supabase setup → 1 saatte biter
+✅ Tailwind + shadcn/ui → kopyala-yapıştır-düzenle
+✅ 18 yıllık developer → mimari kafanda zaten hazır
+✅ Vibe Coding → boilerplate otomatik
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 9: HIZLI REFERANS TABLOSU
+═══════════════════════════════════════════════════════════════
+
+KRİTİK SAYILAR
+──────────────
+┌───────────────────────────────┬─────────────────┐
+│ Parametre                     │ Değer           │
+├───────────────────────────────┼─────────────────┤
+│ 1 Paket Taşyünü (3cm)         │ 6.0 m² (10 adet)│
+│ 1 Paket Taşyünü (5cm)         │ 3.6 m² (6 adet) │
+│ 1 Paket Taşyünü (8cm)         │ 1.8 m² (3 adet) │
+│ 1 Paket Taşyünü (10cm) ⭐     │ 1.8 m² (3 adet) │
+│ Tır Kapasitesi (10cm)         │ 748,80 m² (416) │
+│ Kamyon Kapasitesi (10cm)      │ 403,20 m² (224) │
+│ EPS Minimum Sipariş           │ 250 m² + Toz    │
+│ Yeşil Bölge İller             │ İst,Koc,Sak,    │
+│                               │ Düz,Bol,Bal,Bur │
+│ Sarı Bölge (Tuzla Çemberi)    │ Tuz,Pen,Kar,    │
+│                               │ Mal,Geb         │
+│ Dengeli Sistem Satış %        │ 60% (Decoy)     │
+│ Aylık Vade Farkı Oranı        │ %4 (ayarlanır)  │
+└───────────────────────────────┴─────────────────┘
+
+PAKET FİYAT ÖRNEKLERİ (500 m²)
+──────────────────────────────
+- En Ucuz Kombinasyon: 98.450 TL (196 TL/m²)
+- Dengeli Sistem: 110.000 TL (220 TL/m²)
+- 1. Kalite: 125.000 TL (250 TL/m²)
+
+TOZ GRUBU MARKALARI
+───────────────────
+Yan Sanayi:
+- All Alçı (Eskişehir)
+- TEKNO
+- ONAT
+- ENTEGRE
+
+Marka:
+- Dalmaçyalı (Orijinal)
+- Fawori
+- Optimix
+
+NOT: Kaspor = Sadece EPS üreticisi (toz grubu YOK)
+
+SQL TABLO İSİMLERİ
+──────────────────
+- products → Ana ürünler (levha, sıva, dübel, file)
+- package_definitions → 3 paket tanımı
+- package_items → Paket reçeteleri
+- shipping_zones → Coğrafi fiyatlandırma
+- warehouse_inventory → Tuzla depo stok
+- payment_terms → Vade farkı oranları
+- competitor_prices → Rakip fiyat arşivi
+
+API ENDPOINT PLANLAMA
+──────────────────────
+Next.js API Routes:
+
+/api/calculate-packages
+  Input: { m2, city, district, plate_brand, insulation_type }
+  Output: [budget_package, balanced_package, premium_package]
+
+/api/check-stock
+  Input: { package_id }
+  Output: { available: true/false, message: "..." }
+
+/api/generate-quote
+  Input: { package_id, customer_info, payment_term }
+  Output: { pdf_url, email_sent: true }
+
+/api/competitor-scrape
+  Input: { competitor_url }
+  Output: { prices: [...], scraped_at: "..." }
+
+/api/calculate-shipping
+  Input: { city_code, total_m2 }
+  Output: { cost, zone_type, free_shipping: bool }
+
+EXCEL DOSYA REFERANSLARI
+─────────────────────────
+- Dalmaçyalı Expert Fawori.csv: Fiyat listesi (ana kaynak)
+- Tır/Kamyon Kapasiteleri: Lojistik hesaplama
+- Sarfiyat Oranları: quantity_per_m2 değerleri
+
+YENİ PAKET İSİMLERİ
+───────────────────
+❌ Eski: Gold / Silver / Eco
+✅ Yeni: 
+   • En Ucuz Kombinasyon
+   • Dengeli Sistem
+   • 1. Kalite
+
+SEO DİNAMİK URL YAPISI
+───────────────────────
+/paketler/[metraj]-m2-[marka]-[tip]
+
+Örnekler:
+- /paketler/500-m2-dalmacyali-mantolama
+- /paketler/1000-m2-fawori-paket-fiyati
+- /paketler/250-m2-ekonomik-mantolama
+
+Next.js Dynamic Route:
+pages/paketler/[...slug].js
+→ URL'den parse et: metraj, marka, tip
+→ Sihirbazı doldur
+→ 3 kartı göster
+
+═══════════════════════════════════════════════════════════════
+                           SONUÇ
+═══════════════════════════════════════════════════════════════
+
+Bu anayasa, projenin tüm kritik kararlarını ve teknik detaylarını 
+içeriyor. Yeni bir AI chat'inde bu dokümanı yükleyip "buradan 
+devam et" diyebilirsin.
+
+Proje özellikleri:
+✅ Lojistik tabanlı akıllı fiyatlandırma
+✅ 3 paket sistemi (Decoy Effect)
+✅ Kullanıcı özelleştirme seçeneği
+✅ Vade farkı otomasyonu
+✅ Rakip istihbarat botu
+✅ Gamification (lojistik bar)
+✅ SEO dinamik landing pages
+✅ Gerçek zamanlı fiyat güncelleme
+
+Tahmini süre: 2-3 hafta (Cursor + Sonnet 4.5 + Vibe Coding ile)
+İlk MVP: 5-7 gün
+
+─────────────────────────────────────────────────────────────
+Oluşturulma: 9 Aralık 2025
+Araçlar: Claude Sonnet 4.5 + Cursor IDE
+Geliştirici: 18 Yıl Tecrübeli Web Developer | İstanbul/Tuzla
+─────────────────────────────────────────────────────────────
