@@ -27,8 +27,8 @@ export const FAMILY_ALIAS_RULES: AliasRule[] = [
     // ── Plate families ──────────────────────────────────────────────────────
     { canonical: 'ideal_carbon',     patterns: ['ideal carbon'] },
     { canonical: 'double_carbon',    patterns: ['double carbon'] },
+    { canonical: 'eps_035',          patterns: ['035 eps', 'eps 035', 'eps 035 beyaz', '20-22kg/m3', '20 22kg/m3'] },
     { canonical: 'eps_beyaz',        patterns: ['eps beyaz', 'eps beyaz isi yalitim levhasi', 'beyaz eps'] },
-    { canonical: 'eps_035',          patterns: ['035 eps', 'eps 035', 'eps 035 beyaz'] },
     { canonical: 'eps_karbonlu',     patterns: ['eps karbonlu', 'karbonlu isi yalitim levhasi', 'karbonlu levha'] },
     // 'optimix isi yalitim levhasi karbonlu' → "Fawori Optimix Isı Yalıtım Levhası Karbonlu"
     // gibi uzun formatlarda 'optimix' ve 'karbonlu' arasına 'isi yalitim levhasi' girince

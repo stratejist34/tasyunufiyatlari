@@ -151,6 +151,9 @@ export function matchAccessoryRow(
     const bestAccessory = best?.accessoryId !== undefined
         ? accessories.find(accessory => accessory.id === best.accessoryId)
         : undefined;
+    const bestAccessoryText = bestAccessory
+        ? normalizeTextForMatch([bestAccessory.short_name, bestAccessory.name].filter(Boolean).join(' '))
+        : '';
     const sameBrandCandidates = hintBrandId !== undefined
         ? candidates.filter(candidate => {
             const accessory = candidate.accessoryId !== undefined
@@ -201,10 +204,19 @@ export function matchAccessoryRow(
     ) ? 'ambiguous' : baseStatus;
 
     const bestAccessoryIsOtherBrand = hintBrandId !== undefined && bestAccessory?.brand_id !== undefined && bestAccessory.brand_id !== hintBrandId;
+    const bestMissingSpecialOrder = rowHasSpecialOrder &&
+        !SPECIAL_ORDER_TERMS.some(term => bestAccessoryText.includes(term));
     const hasExplicitVariantAccessory = (
         row.productClass === 'coating' ||
         row.productClass === 'mesh'
     ) && row.variantCanonical !== undefined;
+    if (
+        status === 'matched' &&
+        row.productClass === 'coating' &&
+        bestMissingSpecialOrder
+    ) {
+        status = 'new_product';
+    }
     if (
         status === 'ambiguous' &&
         hasExplicitVariantAccessory &&
