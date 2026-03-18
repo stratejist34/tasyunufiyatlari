@@ -108,8 +108,12 @@ export async function POST(req: NextRequest) {
     console.error('Quote API error:', error)
 
     if (error instanceof ZodError) {
+      const details = error.issues.map((issue) => ({
+        path: issue.path.join('.'),
+        message: issue.message,
+      }))
       return NextResponse.json(
-        { ok: false, error: 'Teklif verisi doğrulanamadı.' },
+        { ok: false, error: 'Teklif verisi doğrulanamadı.', details },
         { status: 400 }
       )
     }

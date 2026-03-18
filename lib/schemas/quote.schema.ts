@@ -79,8 +79,10 @@ export const apiQuoteSchema = z.object({
   vehicleType: z.enum(['none', 'lorry', 'truck', 'multiple']).optional().nullable(),
   lorryCapacityPackages: z.number().optional().nullable(),
   truckCapacityPackages: z.number().optional().nullable(),
-  lorryFillPercentage: z.number().min(0).max(100).optional().nullable(),
-  truckFillPercentage: z.number().min(0).max(100).optional().nullable(),
+  // Large jobs can legitimately exceed 100% of a single vehicle capacity.
+  // We still want to record the quote instead of rejecting the request.
+  lorryFillPercentage: z.number().min(0).optional().nullable(),
+  truckFillPercentage: z.number().min(0).optional().nullable(),
 
   packageItems: z.record(z.string(), z.any()),
 })

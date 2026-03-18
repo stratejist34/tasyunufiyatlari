@@ -359,6 +359,11 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
 
             const quoteResult = await quoteRes.json();
             if (!quoteRes.ok || !quoteResult.ok) {
+                console.error('PDF quote save failed:', {
+                    status: quoteRes.status,
+                    result: quoteResult,
+                    payload: quotePayload,
+                });
                 throw new Error(quoteResult.error || "Teklif kaydı oluşturulamadı.");
             }
 
