@@ -7,20 +7,22 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 function mapQuotePayload(payload: ReturnType<typeof apiQuoteSchema.parse>) {
   return {
     customer_name: payload.customerName,
-    customer_email: payload.customerEmail || null,
+    // PDF teklif akışında e-posta opsiyonel. Boş alanları null yerine
+    // boş string olarak saklayıp eski şema/not-null kısıtlarıyla uyum koruyoruz.
+    customer_email: payload.customerEmail || '',
     customer_phone: payload.customerPhone,
-    customer_company: payload.customerCompany || null,
-    customer_address: payload.customerAddress || null,
+    customer_company: payload.customerCompany || '',
+    customer_address: payload.customerAddress || '',
     material_type: payload.materialType,
     brand_id: payload.brandId,
     brand_name: payload.brandName,
-    model_name: payload.modelName || null,
+    model_name: payload.modelName || '',
     thickness_cm: payload.thicknessCm,
     area_m2: payload.areaM2,
     city_code: payload.cityCode,
     city_name: payload.cityName,
     package_name: payload.packageName,
-    package_description: payload.packageDescription || null,
+    package_description: payload.packageDescription || '',
     plate_brand_name: payload.plateBrandName,
     accessory_brand_name: payload.accessoryBrandName,
     total_price: payload.totalPrice,
