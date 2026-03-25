@@ -74,9 +74,9 @@ export function PdfOfferModal({
           ✕
         </button>
 
-        <h3 className="text-xl font-bold text-white mb-1">Resmi Teklif Bilgileri</h3>
+        <h3 className="text-xl font-bold text-white mb-1">Teklif Bilgileri</h3>
         <p className="text-sm text-slate-400 mb-6">
-          Zorunlu alanları doldurun, teklif PDF’i bu bilgilerle oluşturulacaktır.
+          Teklifinizi kişiselleştirmek için birkaç bilgiye ihtiyacımız var.
         </p>
 
         <form
@@ -206,11 +206,11 @@ export function PdfOfferModal({
             disabled={isSubmitting}
             className="w-full py-3 rounded-xl font-bold text-base text-white bg-orange-600 hover:bg-orange-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           >
-            {isSubmitting ? 'PDF Hazırlanıyor...' : 'Teklifi Oluştur ve İndir'}
+            {isSubmitting ? 'Hazırlanıyor...' : 'Teklifimi Oluştur'}
           </button>
 
           <p className="text-center text-xs text-slate-500">
-            Bu bilgiler yalnızca oluşturulan PDF teklif formunda gösterilir.
+            Bilgileriniz yalnızca teklif belgesi oluşturmak için kullanılır.
           </p>
         </form>
       </div>

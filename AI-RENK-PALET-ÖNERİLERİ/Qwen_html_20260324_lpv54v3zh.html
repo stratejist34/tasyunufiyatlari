@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dalmacyalı SW035 — TaşYünü</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd',
+                            300: '#7dd3fc', 400: '#38bdf8', 500: '#0ea5e9',
+                            600: '#0284c7', 700: '#0369a1', 800: '#075985',
+                            900: '#0c4a6e', 950: '#082f49',
+                        },
+                        accent: {
+                            DEFAULT: '#FF6B35',
+                            hover: '#E85A2D',
+                            light: '#FF8C61',
+                        },
+                        surface: {
+                            900: '#0A2540', 800: '#133552',
+                            700: '#1C4564', 600: '#255576',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glow-orange { box-shadow: 0 0 20px rgba(255, 107, 53, 0.4); }
+        .tier-best { border: 2px solid #FF6B35; position: relative; }
+        .tier-best::before {
+            content: 'EN AVANTAJLI';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #FF6B35;
+            color: white;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="bg-surface-900 text-white">
+
+    <!-- Breadcrumb -->
+    <div class="border-b border-surface-700 bg-surface-900/50">
+        <div class="max-w-7xl mx-auto px-6 py-3">
+            <div class="flex items-center gap-2 text-sm text-primary-300">
+                <span>Ana Sayfa</span>
+                <span class="text-surface-600">/</span>
+                <span>Ürünler</span>
+                <span class="text-surface-600">/</span>
+                <span>Taşyünü Levha</span>
+                <span class="text-surface-600">/</span>
+                <span class="text-primary-400 font-medium">Dalmacyalı SW035</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="grid lg:grid-cols-[3fr_2fr] gap-8">
+            
+            <!-- Sol Kolon: Ürün Bilgisi -->
+            <div class="space-y-6">
+                <!-- Ürün Görseli -->
+                <div class="bg-surface-800 rounded-2xl p-8 border border-surface-700">
+                    <div class="aspect-square rounded-xl bg-gradient-to-br from-primary-900/50 to-surface-700 flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="w-48 h-48 mx-auto mb-4 rounded-lg bg-primary-800/50 flex items-center justify-center border border-primary-700">
+                                <svg class="w-24 h-24 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                            </div>
+                            <div class="text-primary-300 text-sm">Dalmacyalı SW035 Ürün Görseli</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ürün Başlık -->
+                <div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-3 py-1 rounded-full bg-primary-900/50 border border-primary-700 text-primary-300 text-xs font-semibold">DALMAÇYALI</span>
+                        <span class="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold">Taşyünü</span>
+                        <span class="px-3 py-1 rounded-full bg-accent/10 border border-accent/30 text-accent text-xs font-semibold">Teklif</span>
+                    </div>
+                    <h1 class="text-4xl font-bold mb-2">Dalmacyalı SW035</h1>
+                    <p class="text-primary-300">SW035 • 5 cm kalınlığında taşyünü izolasyon levhası</p>
+                </div>
+
+                <!-- Kalınlık Seçimi -->
+                <div class="bg-surface-800 rounded-xl p-6 border border-surface-700">
+                    <h3 class="text-sm font-semibold text-primary-300 mb-4 uppercase tracking-wide">Kalınlık Seçimi</h3>
+                    <div class="grid grid-cols-4 md:grid-cols-6 gap-3">
+                        <button class="px-4 py-3 rounded-lg border border-surface-600 hover:border-primary-500 hover:bg-primary-900/30 transition-all text-sm font-medium">3 cm</button>
+                        <button class="px-4 py-3 rounded-lg border border-surface-600 hover:border-primary-500 hover:bg-primary-900/30 transition-all text-sm font-medium">4 cm</button>
+                        <button class="px-4 py-3 rounded-lg border-2 border-accent bg-accent/10 text-accent font-semibold text-sm glow-orange">5 cm</button>
+                        <button class="px-4 py-3 rounded-lg border border-surface-600 hover:border-primary-500 hover:bg-primary-900/30 transition-all text-sm font-medium">6 cm</button>
+                        <button class="px-4 py-3 rounded-lg border border-surface-600 hover:border-primary-500 hover:bg-primary-900/30 transition-all text-sm font-medium">7 cm</button>
+                        <button class="px-4 py-3 rounded-lg border border-surface-600 hover:border-primary-500 hover:bg-primary-900/30 transition-all text-sm font-medium">8 cm</button>
+                    </div>
+                </div>
+
+                <!-- Açıklama -->
+                <div class="prose prose-invert prose-primary max-w-none">
+                    <h3 class="text-xl font-semibold mb-3 text-primary-200">Ürün Açıklaması</h3>
+                    <p class="text-primary-300 leading-relaxed">
+                        Dalmacyalı SW035, 5 cm kalınlığında yüksek yoğunluklu taşyünü izolasyon levhasıdır. 
+                        Yangın dayanımı A1 sınıfı olup, ısı ve ses izolasyonunda üstün performans sağlar.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Sağ Kolon: Fiyat Paneli (Sticky) -->
+            <div class="lg:sticky lg:top-6 h-fit">
+                <div class="bg-surface-800 rounded-2xl p-6 border border-surface-700 space-y-6">
+                    
+                    <!-- Fiyat Başlık -->
+                    <div>
+                        <div class="text-sm text-primary-300 mb-1">M² FİYATI</div>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-4xl font-bold text-cyan-400">₺342,34</span>
+                            <span class="text-primary-300">/ m²</span>
+                        </div>
+                        <div class="text-xs text-primary-400 mt-1">KDV hariç • 5 cm • Kamyon</div>
+                    </div>
+
+                    <!-- Şehir Seçimi -->
+                    <div>
+                        <label class="block text-sm font-medium text-primary-300 mb-2">TESLİMAT ŞEHRİ</label>
+                        <select class="w-full px-4 py-3 rounded-lg bg-surface-900 border border-surface-600 text-white focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all">
+                            <option>İstanbul</option>
+                            <option>Kocaeli</option>
+                            <option>Bursa</option>
+                        </select>
+                        <div class="flex items-center gap-1 mt-2 text-xs text-emerald-400">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Depoya en yakın — en hızlı teslim</span>
+                        </div>
+                    </div>
+
+                    <!-- Metraj Girişi -->
+                    <div>
+                        <label class="block text-sm font-medium text-primary-300 mb-2">PROJE METRAJI (M²)</label>
+                        <div class="relative">
+                            <input type="number" placeholder="örn. 1200" class="w-full px-4 py-3 rounded-lg bg-surface-900 border border-surface-600 text-white focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all pr-12">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-primary-400 text-sm">m²</span>
+                        </div>
+                    </div>
+
+                    <!-- Tier Kartları -->
+                    <div class="space-y-3">
+                        <div class="text-sm font-medium text-primary-300 uppercase tracking-wide">SİPARİŞ BÜYÜKLÜĞÜ • 5 CM</div>
+                        
+                        <!-- Kamyon -->
+                        <div class="p-4 rounded-xl bg-surface-900/50 border border-surface-600 hover:border-primary-500 transition-all cursor-pointer group">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xl">🚛</span>
+                                    <span class="font-semibold">Kamyon</span>
+                                </div>
+                                <span class="text-xs text-primary-400">806 m²</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="text-lg font-bold text-primary-300">₺342,34<span class="text-xs text-primary-400 font-normal">/m²</span></div>
+                                <div class="px-2 py-1 rounded bg-primary-900/50 text-primary-300 text-xs">%18 İSK</div>
+                            </div>
+                        </div>
+
+                        <!-- TIR -->
+                        <div class="p-4 rounded-xl bg-surface-900/50 border border-surface-600 hover:border-primary-500 transition-all cursor-pointer group">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xl">🚚</span>
+                                    <span class="font-semibold">TIR</span>
+                                </div>
+                                <span class="text-xs text-primary-400">1.498 m²</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="text-lg font-bold text-primary-300">₺326,42<span class="text-xs text-primary-400 font-normal">/m²</span></div>
+                                <div class="px-2 py-1 rounded bg-primary-900/50 text-primary-300 text-xs">%24 İSK</div>
+                            </div>
+                        </div>
+
+                        <!-- Hızlı Teslim (EN AVANTAJLI) -->
+                        <div class="tier-best p-4 rounded-xl bg-accent/5 cursor-pointer">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xl">⚡</span>
+                                    <span class="font-semibold text-accent">Hızlı Teslim</span>
+                                </div>
+                                <span class="text-xs text-accent-light">min 300 m²</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="text-lg font-bold text-accent">₺398,07<span class="text-xs text-accent-light font-normal">/m²</span></div>
+                                <div class="px-2 py-1 rounded bg-accent/20 text-accent text-xs">%15 İSK</div>
+                            </div>
+                            <div class="mt-2 text-xs text-accent-light">Tuzla Depo • Stok: 1200 m²</div>
+                        </div>
+                    </div>
+
+                    <!-- CTA Butonu -->
+                    <button class="w-full py-4 rounded-xl bg-accent hover:bg-accent-hover text-white font-bold text-lg glow-orange transition-all hover:scale-[1.02] flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        Anında Teklif Oluştur
+                    </button>
+
+                    <!-- Güven Notu -->
+                    <div class="flex items-start gap-3 p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
+                        <svg class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <div class="text-xs text-primary-300">
+                            <span class="text-emerald-400 font-medium">Güvenli teklif sistemi</span><br>
+                            Fiyat, şehir ve metraj bilginizle kişisel teklif oluşturulur. PDF olarak sunulur.
+                        </div>
+                    </div>
+
+                    <!-- WhatsApp Link -->
+                    <a href="#" class="flex items-center justify-center gap-2 text-sm text-primary-300 hover:text-emerald-400 transition-colors">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                        WhatsApp üzerinden soru sor
+                    </a>
+                </div>
+
+                <!-- Takım Fiyatı Upsell -->
+                <div class="mt-4 p-5 rounded-xl bg-gradient-to-br from-primary-900/50 to-surface-800 border border-primary-700">
+                    <div class="flex items-center gap-2 mb-2">
+                        <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                        <div class="font-semibold">Sistem halinde %10-15 daha uygun</div>
+                    </div>
+                    <p class="text-xs text-primary-300 mb-3">Dübel + Sıva + File eklendiğinde metrekare maliyeti düşer. Takım fiyatını hesapla.</p>
+                    <button class="w-full py-2.5 rounded-lg border border-primary-600 hover:border-primary-500 hover:bg-primary-900/30 text-primary-300 text-sm font-medium transition-all flex items-center justify-center gap-2">
+                        Takım Fiyatını Gör
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

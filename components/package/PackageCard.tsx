@@ -229,7 +229,7 @@ export function PackageCard({
                                 {/* Efficiency Label */}
                                 <div className="text-center text-xs font-semibold">
                                     {activeFill >= 86 && (
-                                        <span className="text-green-500">✅ Mükemmel - Tam Kapasite</span>
+                                        <span className="text-green-500">✅ Tam Kapasite</span>
                                     )}
                                     {activeFill >= 41 && activeFill < 86 && (
                                         <span className="text-yellow-500">⚡ Standart Sevkiyat</span>

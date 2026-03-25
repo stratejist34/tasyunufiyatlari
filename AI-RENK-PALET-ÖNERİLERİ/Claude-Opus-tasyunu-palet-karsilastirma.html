@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaşYünü Fiyatları — Palet Karşılaştırma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --grid-gap: 32px;
+  }
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    background: #0a0a0a;
+    color: #e0e0e0;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    line-height: 1.6;
+    padding: 40px 24px 80px;
+  }
+  
+  .page-header {
+    max-width: 1200px;
+    margin: 0 auto 48px;
+    text-align: center;
+  }
+  .page-header h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .page-header p {
+    font-size: 15px;
+    color: #888;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  
+  /* Palette Section */
+  .palette-section {
+    max-width: 1200px;
+    margin: 0 auto 64px;
+    border: 1px solid #1a1a1a;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #0e0e0e;
+  }
+  
+  .palette-header {
+    padding: 32px 40px;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    align-items: flex-start;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  
+  .palette-title-area {
+    flex: 1;
+    min-width: 280px;
+  }
+  
+  .palette-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+  }
+  
+  .palette-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+  }
+  
+  .palette-subtitle {
+    font-size: 14px;
+    color: #888;
+    line-height: 1.7;
+  }
+  
+  .palette-swatches {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .swatch {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .swatch-label {
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    color: #666;
+    white-space: nowrap;
+    font-family: monospace;
+  }
+  
+  .palette-rationale {
+    padding: 24px 40px;
+    border-bottom: 1px solid #1a1a1a;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  
+  .rationale-item {
+    font-size: 13px;
+  }
+  .rationale-item strong {
+    display: block;
+    font-size: 12px;
+    color: #999;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  
+  .palette-demos {
+    padding: 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  
+  @media (max-width: 768px) {
+    .palette-demos { grid-template-columns: 1fr; }
+    .palette-header { padding: 24px; }
+    .palette-demos { padding: 24px; }
+    .palette-rationale { padding: 20px 24px; }
+  }
+  
+  .demo-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #666;
+    margin-bottom: 12px;
+  }
+  
+  /* === PALETTE A: Mevcut (Dark + Orange) === */
+  .pa-bg { background: #111318; }
+  .pa-surface { background: #181b22; }
+  .pa-border { border-color: #252830; }
+  .pa-text { color: #e0e0e0; }
+  .pa-muted { color: #8a8d96; }
+  .pa-accent { color: #e8733a; }
+  .pa-cta { background: #e8733a; color: #fff; }
+  .pa-cta-outline { border: 1px solid #e8733a; color: #e8733a; background: transparent; }
+  
+  /* === PALETTE B: Antrasit + Altın === */
+  .pb-bg { background: #111111; }
+  .pb-surface { background: #1a1a1a; }
+  .pb-border { border-color: #2a2a2a; }
+  .pb-text { color: #e8e6e1; }
+  .pb-muted { color: #8c8880; }
+  .pb-accent { color: #c9a84c; }
+  .pb-cta { background: #c9a84c; color: #111; }
+  .pb-cta-outline { border: 1px solid #c9a84c; color: #c9a84c; background: transparent; }
+  
+  /* === PALETTE C: Derin Grafik + Bakır === */
+  .pc-bg { background: #0c1117; }
+  .pc-surface { background: #131a23; }
+  .pc-border { border-color: #1e2a38; }
+  .pc-text { color: #d4dce8; }
+  .pc-muted { color: #6b7a8d; }
+  .pc-accent { color: #d4845a; }
+  .pc-cta { background: linear-gradient(135deg, #d4845a 0%, #c46d3f 100%); color: #fff; }
+  .pc-cta-outline { border: 1px solid #d4845a; color: #d4845a; background: transparent; }
+  
+  /* === PALETTE D: Kireçtaşı + Zümrüt === */
+  .pd-bg { background: #f5f2ec; }
+  .pd-surface { background: #ffffff; }
+  .pd-border { border-color: #e0dbd2; }
+  .pd-text { color: #2a2520; }
+  .pd-muted { color: #7a746b; }
+  .pd-accent { color: #1a7a5a; }
+  .pd-cta { background: #1a7a5a; color: #fff; }
+  .pd-cta-outline { border: 1px solid #1a7a5a; color: #1a7a5a; background: transparent; }
+  
+  /* Demo Component Styles */
+  .demo-card {
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid;
+  }
+  
+  .demo-price {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -1px;
+  }
+  
+  .demo-price-unit {
+    font-size: 14px;
+    font-weight: 400;
+    opacity: 0.7;
+  }
+  
+  .demo-price-note {
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  
+  .demo-tier-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  
+  .demo-tier {
+    border-radius: 10px;
+    padding: 14px 12px;
+    border: 1px solid;
+    position: relative;
+    transition: all 0.2s;
+  }
+  
+  .demo-tier-recommended {
+    border-width: 2px;
+  }
+  
+  .demo-tier-name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  
+  .demo-tier-cap {
+    font-size: 11px;
+    opacity: 0.6;
+  }
+  
+  .demo-tier-price {
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 8px;
+    letter-spacing: -0.5px;
+  }
+  
+  .demo-tier-price-note {
+    font-size: 10px;
+    opacity: 0.6;
+  }
+  
+  .demo-tier-badge {
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 10px;
+    letter-spacing: 0.3px;
+  }
+  
+  .demo-tier-saving {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-top: 6px;
+  }
+  
+  .demo-cta-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    letter-spacing: 0.2px;
+    margin-top: 16px;
+    transition: all 0.2s;
+  }
+  .demo-cta-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  
+  .demo-trust {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid;
+  }
+  
+  .demo-trust-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    padding: 3px 0;
+  }
+  
+  .demo-trust-icon {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+  }
+  
+  .demo-suggestion {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .demo-progress-wrap {
+    height: 4px;
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  
+  .demo-progress-bar {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s;
+  }
+  
+  /* Header demo */
+  .demo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: 1px solid;
+  }
+  .demo-logo {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .demo-logo-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .demo-nav {
+    display: flex;
+    gap: 20px;
+    font-size: 13px;
+  }
+  .demo-nav a {
+    text-decoration: none;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+  .demo-nav a:hover { opacity: 1; }
+  .demo-nav-cta {
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  
+  /* Thickness pills */
+  .demo-thickness {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .demo-thick-pill {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  
+  .winner-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin-left: auto;
+  }
+  
+  /* Comparison table */
+  .comparison-table {
+    max-width: 1200px;
+    margin: 0 auto 48px;
+    border: 1px solid #1a1a1a;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #0e0e0e;
+  }
+  .comparison-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .comparison-table th {
+    text-align: left;
+    padding: 14px 20px;
+    font-weight: 500;
+    font-size: 12px;
+    color: #888;
+    border-bottom: 1px solid #1a1a1a;
+    letter-spacing: 0.3px;
+  }
+  .comparison-table td {
+    padding: 12px 20px;
+    border-bottom: 1px solid #111;
+    vertical-align: middle;
+  }
+  .comparison-table tr:last-child td { border-bottom: none; }
+  
+  .score-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .score-high { background: #34d399; }
+  .score-mid { background: #fbbf24; }
+  .score-low { background: #f87171; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>TaşYünü Fiyatları — Palet Karşılaştırma</h1>
+  <p>4 farklı palet önerisi, gerçek bileşenler üzerinde. Her paletin arkasındaki renk psikolojisi mantığı ve B2B dönüşüm etkisi.</p>
+</div>
+
+<!-- =========================================== -->
+<!-- PALETTE A: Mevcut (Dark Slate + Orange)     -->
+<!-- =========================================== -->
+<div class="palette-section">
+  <div class="palette-header">
+    <div class="palette-title-area">
+      <div class="palette-badge" style="background: #252830; color: #e8733a;">MEVCUT PALET</div>
+      <div class="palette-title" style="color: #e0e0e0;">Dark Slate + Turuncu</div>
+      <div class="palette-subtitle">Mevcut sistemin renk dili. Karanlık zemin üzerinde turuncu CTA güçlü kontrast sağlıyor. Ancak yüzey ayrımları zayıf, tier kartları monoton, güven hissi düşük.</div>
+    </div>
+    <div class="palette-swatches" style="padding-bottom: 24px;">
+      <div class="swatch" style="background: #111318;"><span class="swatch-label">#111318</span></div>
+      <div class="swatch" style="background: #181b22;"><span class="swatch-label">#181b22</span></div>
+      <div class="swatch" style="background: #252830;"><span class="swatch-label">#252830</span></div>
+      <div class="swatch" style="background: #e8733a;"><span class="swatch-label">#e8733a</span></div>
+      <div class="swatch" style="background: #4ade80;"><span class="swatch-label">#4ade80</span></div>
+      <div class="swatch" style="background: #8a8d96;"><span class="swatch-label">#8a8d96</span></div>
+    </div>
+  </div>
+  
+  <div class="palette-rationale">
+    <div class="rationale-item"><strong>Güçlü yanı</strong>Turuncu CTA isolation effect'i yüksek — koyu zeminde dikkat çekimi kanıtlanmış.</div>
+    <div class="rationale-item"><strong>Zayıf yanı</strong>Yüzeyler birbirine çok yakın (bg: #111 vs surface: #181), derinlik hissedilmiyor. Monoton.</div>
+    <div class="rationale-item"><strong>B2B güven</strong>Koyu temalar B2B'de "teknik" hissettirir ama inşaat sektöründe güven sinyali zayıf kalabilir.</div>
+    <div class="rationale-item"><strong>Dönüşüm riski</strong>Tier kartları arasında renk farkı yok — hangisinin "benim için en iyi" olduğu belirsiz.</div>
+  </div>
+  
+  <div class="palette-demos">
+    <!-- Price Panel -->
+    <div>
+      <div class="demo-label">Fiyat paneli</div>
+      <div class="demo-card pa-bg" style="border-color: #252830; font-family: 'DM Sans', sans-serif;">
+        <div class="pa-muted" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">M² fiyatı</div>
+        <div class="demo-price pa-text" style="margin-top: 4px;">₺342,34 <span class="demo-price-unit">/ m²</span></div>
+        <div class="demo-price-note pa-muted">KDV hariç · 5 cm · Kamyon</div>
+        
+        <div class="demo-tier-grid">
+          <div class="demo-tier pa-surface" style="border-color: #252830;">
+            <div class="demo-tier-name pa-text">🚛 Kamyon</div>
+            <div class="demo-tier-cap pa-muted">806 m²</div>
+            <div class="demo-tier-price pa-text">₺342,34</div>
+            <div class="demo-tier-price-note pa-muted">/m² KDV hariç</div>
+            <div class="demo-tier-saving" style="background: rgba(74,222,128,0.1); color: #4ade80;">₺55,73/m² avantaj</div>
+          </div>
+          <div class="demo-tier pa-surface" style="border-color: #252830;">
+            <div class="demo-tier-name pa-text">🚚 TIR</div>
+            <div class="demo-tier-cap pa-muted">1.498 m²</div>
+            <div class="demo-tier-price pa-text">₺326,42</div>
+            <div class="demo-tier-price-note pa-muted">/m² KDV hariç</div>
+            <div class="demo-tier-saving" style="background: rgba(74,222,128,0.1); color: #4ade80;">₺71,65/m² avantaj</div>
+          </div>
+          <div class="demo-tier pa-surface" style="border-color: #252830;">
+            <div class="demo-tier-name pa-text">⚡ Hızlı</div>
+            <div class="demo-tier-cap pa-muted">min. 300 m²</div>
+            <div class="demo-tier-price pa-text">₺398,07</div>
+            <div class="demo-tier-price-note pa-muted">/m² KDV hariç</div>
+          </div>
+        </div>
+        
+        <button class="demo-cta-btn pa-cta">Anında Teklif Oluştur</button>
+        <div class="demo-price-note pa-muted" style="text-align: center; margin-top: 8px;">Fiyat, şehir ve metraj bilginize kişisel teklif oluşturulur</div>
+      </div>
+    </div>
+    
+    <!-- Header + Thickness -->
+    <div>
+      <div class="demo-label">Header + kalınlık seçici</div>
+      <div class="demo-header pa-bg" style="border-color: #252830; margin-bottom: 16px; font-family: 'DM Sans', sans-serif;">
+        <div class="demo-logo pa-text">
+          <div class="demo-logo-mark" style="background: #e8733a;">TY</div>
+          TaşYünü Fiyatları
+        </div>
+        <div class="demo-nav">
+          <a href="#" class="pa-muted">Ürün Kataloğu</a>
+          <a href="#" class="demo-nav-cta pa-cta" style="border-radius: 8px;">Hesap Makinesi</a>
+        </div>
+      </div>
+      
+      <div class="demo-card pa-bg" style="border-color: #252830; font-family: 'DM Sans', sans-serif;">
+        <div class="pa-muted" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Kalınlık</div>
+        <div class="demo-thickness">
+          <span class="demo-thick-pill" style="border-color: #252830; color: #8a8d96;">3 cm</span>
+          <span class="demo-thick-pill" style="border-color: #252830; color: #8a8d96;">4 cm</span>
+          <span class="demo-thick-pill" style="background: #e8733a; border-color: #e8733a; color: #fff;">5 cm</span>
+          <span class="demo-thick-pill" style="border-color: #252830; color: #8a8d96;">6 cm</span>
+          <span class="demo-thick-pill" style="border-color: #252830; color: #8a8d96;">7 cm</span>
+          <span class="demo-thick-pill" style="border-color: #252830; color: #8a8d96;">8 cm</span>
+        </div>
+        
+        <div class="demo-suggestion" style="background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.15); margin-top: 16px; color: #4ade80;">
+          <span>💡</span>
+          <span>692 m² daha ekle → TIR indiriminden faydalan</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================== -->
+<!-- PALETTE B: Antrasit + Altın (ÖNERILEN)      -->
+<!-- =========================================== -->
+<div class="palette-section" style="border-color: #2a2215;">
+  <div class="palette-header">
+    <div class="palette-title-area">
+      <div class="palette-badge" style="background: #2a2215; color: #c9a84c;">ÖNERİ A — ÖNERİLEN</div>
+      <div class="palette-title" style="color: #e8e6e1;">Antrasit + Eski Altın</div>
+      <div class="palette-subtitle">Premium inşaat malzemesi konumlandırması. Altın, güven ve kaliteyi çağrıştırıyor. Antrasit zemin turuncu'dan daha sıcak ve insan odaklı. Tier kartlarında kademe renkleri ile bilgi hiyerarşisi güçleniyor.</div>
+    </div>
+    <div class="palette-swatches" style="padding-bottom: 24px;">
+      <div class="swatch" style="background: #111111;"><span class="swatch-label">#111111</span></div>
+      <div class="swatch" style="background: #1a1a1a;"><span class="swatch-label">#1a1a1a</span></div>
+      <div class="swatch" style="background: #2a2a2a;"><span class="swatch-label">#2a2a2a</span></div>
+      <div class="swatch" style="background: #c9a84c;"><span class="swatch-label">#c9a84c</span></div>
+      <div class="swatch" style="background: #3d8b6e;"><span class="swatch-label">#3d8b6e</span></div>
+      <div class="swatch" style="background: #b87333;"><span class="swatch-label">#b87333</span></div>
+      <div class="swatch" style="background: #8c8880;"><span class="swatch-label">#8c8880</span></div>
+    </div>
+    <div class="winner-badge" style="background: rgba(201,168,76,0.12); color: #c9a84c;">★ En yüksek dönüşüm potansiyeli</div>
+  </div>
+  
+  <div class="palette-rationale">
+    <div class="rationale-item"><strong>Renk psikolojisi</strong>Altın tonu B2B'de "premium, kurumsal, güvenilir" algısı yaratır. İnşaat sektörü müteahhitleri kalite ile fiyatı denkleştirir — altın bu dengeyi temsil eder.</div>
+    <div class="rationale-item"><strong>Sıcak nötr zemin</strong>Antrasit (#111) saf siyahtan daha sıcak, daha insani. Slate (#111318)'den farkı: kırmızı-mavi bias yok, nötr sıcaklık. Müşteri "teknik site" değil "güvenilir firma" hisseder.</div>
+    <div class="rationale-item"><strong>Tier renk kodlaması</strong>Kamyon: bakır (#b87333), TIR: altın (#c9a84c), Hızlı: zümrüt (#3d8b6e) — her tier kendi kimliğine sahip, isolation effect güçlü.</div>
+    <div class="rationale-item"><strong>CTA stratejisi</strong>Altın CTA koyu zeminde turuncu kadar güçlü kontrast sağlıyor (WCAG AA: 7.2:1) ama "premium, özel teklif" hissi ekliyor.</div>
+  </div>
+  
+  <div class="palette-demos">
+    <div>
+      <div class="demo-label">Fiyat paneli</div>
+      <div class="demo-card pb-bg" style="border-color: #2a2a2a; font-family: 'Plus Jakarta Sans', sans-serif;">
+        <div class="pb-muted" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">M² fiyatı</div>
+        <div class="demo-price pb-text" style="margin-top: 4px;">₺342,34 <span class="demo-price-unit">/ m²</span></div>
+        <div class="demo-price-note pb-muted">KDV hariç · 5 cm · Kamyon</div>
+        
+        <div class="demo-tier-grid">
+          <!-- Kamyon: bakır tonu -->
+          <div class="demo-tier" style="background: #1a1a1a; border-color: rgba(184,115,51,0.25);">
+            <div class="demo-tier-name" style="color: #b87333;">🚛 Kamyon</div>
+            <div class="demo-tier-cap pb-muted">806 m²</div>
+            <div class="demo-tier-price pb-text">₺342,34</div>
+            <div class="demo-tier-price-note pb-muted">/m² KDV hariç</div>
+            <div class="demo-tier-saving" style="background: rgba(184,115,51,0.1); color: #b87333;">₺55,73/m² avantaj</div>
+          </div>
+          <!-- TIR: altın — önerilen -->
+          <div class="demo-tier demo-tier-recommended" style="background: rgba(201,168,76,0.05); border-color: #c9a84c;">
+            <div class="demo-tier-badge" style="background: #c9a84c; color: #111;">En Avantajlı</div>
+            <div class="demo-tier-name" style="color: #c9a84c;">🚚 TIR</div>
+            <div class="demo-tier-cap pb-muted">1.498 m²</div>
+            <div class="demo-tier-price pb-text">₺326,42</div>
+            <div class="demo-tier-price-note pb-muted">/m² KDV hariç</div>
+            <div class="demo-tier-saving" style="background: rgba(201,168,76,0.12); color: #c9a84c;">₺71,65/m² avantaj</div>
+          </div>
+          <!-- Hızlı: zümrüt -->
+          <div class="demo-tier" style="background: #1a1a1a; border-color: rgba(61,139,110,0.25);">
+            <div class="demo-tier-name" style="color: #3d8b6e;">⚡ Hızlı</div>
+            <div class="demo-tier-cap pb-muted">min. 300 m²</div>
+            <div class="demo-tier-price pb-text">₺398,07</div>
+            <div class="demo-tier-price-note pb-muted">/m² KDV hariç</div>
+          </div>
+        </div>
+        
+        <button class="demo-cta-btn pb-cta" style="font-family: inherit;">Anında Teklif Oluştur</button>
+        <div class="demo-price-note pb-muted" style="text-align: center; margin-top: 8px;">Fiyat, şehir ve metraj bilginize kişisel teklif oluşturulur</div>
+        
+        <div class="demo-trust" style="border-color: #2a2a2a; background: rgba(201,168,76,0.03); margin-top: 16px;">
+          <div class="demo-trust-row pb-muted"><div class="demo-trust-icon" style="color: #c9a84c;">✓</div><span style="color: #e8e6e1;">Nakliye dahil fiyat</span></div>
+          <div class="demo-trust-row pb-muted"><div class="demo-trust-icon" style="color: #c9a84c;">✓</div><span style="color: #e8e6e1;">24 saat geçerli teklif</span></div>
+          <div class="demo-trust-row pb-muted"><div class="demo-trust-icon" style="color: #c9a84c;">✓</div><span style="color: #e8e6e1;">Tuzla depo — İstanbul teslim</span></div>
+        </div>
+      </div>
+    </div>
+    
+    <div>
+      <div class="demo-label">Header + kalınlık + öneri</div>
+      <div class="demo-header pb-bg" style="border-color: #2a2a2a; margin-bottom: 16px; font-family: 'Plus Jakarta Sans', sans-serif;">
+        <div class="demo-logo pb-text">
+          <div class="demo-logo-mark" style="background: #c9a84c; color: #111;">TY</div>
+          TaşYünü Fiyatları
+        </div>
+        <div class="demo-nav">
+          <a href="#" class="pb-muted">Ürün Kataloğu</a>
+          <a href="#" class="demo-nav-cta pb-cta" style="border-radius: 8px;">Hesap Makinesi</a>
+        </div>
+      </div>
+      
+      <div class="demo-card pb-bg" style="border-color: #2a2a2a; font-family: 'Plus Jakarta Sans', sans-serif;">
+        <div class="pb-muted" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Kalınlık</div>
+        <div class="demo-thickness">
+          <span class="demo-thick-pill" style="border-color: #2a2a2a; color: #8c8880;">3 cm</span>
+          <span class="demo-thick-pill" style="border-color: #2a2a2a; color: #8c8880;">4 cm</span>
+          <span class="demo-thick-pill" style="background: #c9a84c; border-color: #c9a84c; color: #111; font-weight: 600;">5 cm</span>
+          <span class="demo-thick-pill" style="border-color: #2a2a2a; color: #8c8880;">6 cm</span>
+          <span class="demo-thick-pill" style="border-color: #2a2a2a; color: #8c8880;">7 cm</span>
+          <span class="demo-thick-pill" style="border-color: #2a2a2a; color: #8c8880;">8 cm</span>
+        </div>
+        
+        <div class="demo-suggestion" style="background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.15); margin-top: 16px; color: #c9a84c;">
+          <span>📦</span>
+          <div style="flex:1;">
+            <div style="font-weight: 500;">692 m² daha ekle → TIR indiriminden faydalan</div>
+            <div class="demo-progress-wrap" style="background: rgba(201,168,76,0.15); margin-top: 6px;">
+              <div class="demo-progress-bar" style="width: 54%; background: #c9a84c;"></div>
+            </div>
+            <div style="font-size: 10px; opacity: 0.7; margin-top: 4px;">806 / 1.498 m² TIR kapasitesi</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================== -->
+<!-- PALETTE C: Derin Grafik + Bakır             -->
+<!-- =========================================== -->
+<div class="palette-section">
+  <div class="palette-header">
+    <div class="palette-title-area">
+      <div class="palette-badge" style="background: #1e2a38; color: #d4845a;">ÖNERİ B</div>
+      <div class="palette-title" style="color: #d4dce8;">Derin Grafit + Bakır</div>
+      <div class="palette-subtitle">Endüstriyel karakter. Koyu mavi-gri tonlar "mühendislik" hissi, bakır aksanlar "usta işi, sağlamlık" çağrışımı yapar. İnşaat sektörüne doğal uyum. Mevcut palete en yakın geçiş.</div>
+    </div>
+    <div class="palette-swatches" style="padding-bottom: 24px;">
+      <div class="swatch" style="background: #0c1117;"><span class="swatch-label">#0c1117</span></div>
+      <div class="swatch" style="background: #131a23;"><span class="swatch-label">#131a23</span></div>
+      <div class="swatch" style="background: #1e2a38;"><span class="swatch-label">#1e2a38</span></div>
+      <div class="swatch" style="background: #d4845a;"><span class="swatch-label">#d4845a</span></div>
+      <div class="swatch" style="background: #4a9e82;"><span class="swatch-label">#4a9e82</span></div>
+      <div class="swatch" style="background: #6b7a8d;"><span class="swatch-label">#6b7a8d</span></div>
+    </div>
+  </div>
+  
+  <div class="palette-rationale">
+    <div class="rationale-item"><strong>Renk psikolojisi</strong>Bakır = dayanıklılık, zanaat, topraklılık. Mavi-gri zemin = teknik yetkinlik. İkisi birlikte "bu firma hem bilgili hem güvenilir" mesajı veriyor.</div>
+    <div class="rationale-item"><strong>Mevcut palete yakınlık</strong>Turuncu → bakır geçişi mevcut brand'i kırmadan yapılabilir. Koyu mavi-gri zemin mevcut slate'e zaten yakın. Minimum redesign efor.</div>
+    <div class="rationale-item"><strong>Kontrast</strong>Bakır CTA koyu mavi zeminde WCAG AA geçer (5.8:1). Teal yeşil ikincil aksiyonlar ve güven sinyalleri için ideal.</div>
+    <div class="rationale-item"><strong>Risk</strong>Mavi-gri tonlar "soğuk" hissettirebilir. İnşaat müteahhitlerine sıcak satış yaparken soğuk palette güven sinyali zayıflayabilir.</div>
+  </div>
+  
+  <div class="palette-demos">
+    <div>
+      <div class="demo-label">Fiyat paneli</div>
+      <div class="demo-card pc-bg" style="border-color: #1e2a38; font-family: 'Outfit', sans-serif;">
+        <div class="pc-muted" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">M² fiyatı</div>
+        <div class="demo-price pc-text" style="margin-top: 4px;">₺342,34 <span class="demo-price-unit">/ m²</span></div>
+        <div class="demo-price-note pc-muted">KDV hariç · 5 cm · Kamyon</div>
+        
+        <div class="demo-tier-grid">
+          <div class="demo-tier" style="background: #131a23; border-color: #1e2a38;">
+            <div class="demo-tier-name pc-text">🚛 Kamyon</div>
+            <div class="demo-tier-cap pc-muted">806 m²</div>
+            <div class="demo-tier-price pc-text">₺342,34</div>
+            <div class="demo-tier-price-note pc-muted">/m² KDV hariç</div>
+            <div class="demo-tier-saving" style="background: rgba(74,158,130,0.1); color: #4a9e82;">₺55,73/m² avantaj</div>
+          </div>
+          <div class="demo-tier demo-tier-recommended" style="background: rgba(212,132,90,0.05); border-color: #d4845a;">
+            <div class="demo-tier-badge" style="background: linear-gradient(135deg, #d4845a, #c46d3f); color: #fff;">En Avantajlı</div>
+            <div class="demo-tier-name" style="color: #d4845a;">🚚 TIR</div>
+            <div class="demo-tier-cap pc-muted">1.498 m²</div>
+            <div class="demo-tier-price pc-text">₺326,42</div>
+            <div class="demo-tier-price-note pc-muted">/m² KDV hariç</div>
+            <div class="demo-tier-saving" style="background: rgba(212,132,90,0.12); color: #d4845a;">₺71,65/m² avantaj</div>
+          </div>
+          <div class="demo-tier" style="background: #131a23; border-color: #1e2a38;">
+            <div class="demo-tier-name" style="color: #4a9e82;">⚡ Hızlı</div>
+            <div class="demo-tier-cap pc-muted">min. 300 m²</div>
+            <div class="demo-tier-price pc-text">₺398,07</div>
+            <div class="demo-tier-price-note pc-muted">/m² KDV hariç</div>
+          </div>
+        </div>
+        
+        <button class="demo-cta-btn" style="background: linear-gradient(135deg, #d4845a 0%, #c46d3f 100%); color: #fff; font-family: inherit;">Anında Teklif Oluştur</button>
+        <div class="demo-price-note pc-muted" style="text-align: center; margin-top: 8px;">Fiyat, şehir ve metraj bilginize kişisel teklif oluşturulur</div>
+      </div>
+    </div>
+    
+    <div>
+      <div class="demo-label">Header + kalınlık + öneri</div>
+      <div class="demo-header pc-bg" style="border-color: #1e2a38; margin-bottom: 16px; font-family: 'Outfit', sans-serif;">
+        <div class="demo-logo pc-text">
+          <div class="demo-logo-mark" style="background: linear-gradient(135deg, #d4845a, #c46d3f);">TY</div>
+          TaşYünü Fiyatları
+        </div>
+        <div class="demo-nav">
+          <a href="#" class="pc-muted">Ürün Kataloğu</a>
+          <a href="#" class="demo-nav-cta" style="background: linear-gradient(135deg, #d4845a, #c46d3f); color: #fff; border-radius: 8px;">Hesap Makinesi</a>
+        </div>
+      </div>
+      
+      <div class="demo-card pc-bg" style="border-color: #1e2a38; font-family: 'Outfit', sans-serif;">
+        <div class="pc-muted" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Kalınlık</div>
+        <div class="demo-thickness">
+          <span class="demo-thick-pill" style="border-color: #1e2a38; color: #6b7a8d;">3 cm</span>
+          <span class="demo-thick-pill" style="border-color: #1e2a38; color: #6b7a8d;">4 cm</span>
+          <span class="demo-thick-pill" style="background: #d4845a; border-color: #d4845a; color: #fff; font-weight: 600;">5 cm</span>
+          <span class="demo-thick-pill" style="border-color: #1e2a38; color: #6b7a8d;">6 cm</span>
+          <span class="demo-thick-pill" style="border-color: #1e2a38; color: #6b7a8d;">7 cm</span>
+          <span class="demo-thick-pill" style="border-color: #1e2a38; color: #6b7a8d;">8 cm</span>
+        </div>
+        
+        <div class="demo-suggestion" style="background: rgba(74,158,130,0.06); border: 1px solid rgba(74,158,130,0.15); margin-top: 16px; color: #4a9e82;">
+          <span>📦</span>
+          <div style="flex:1;">
+            <div style="font-weight: 500;">692 m² daha ekle → TIR indiriminden faydalan</div>
+            <div class="demo-progress-wrap" style="background: rgba(74,158,130,0.15); margin-top: 6px;">
+              <div class="demo-progress-bar" style="width: 54%; background: #4a9e82;"></div>
+            </div>
+            <div style="font-size: 10px; opacity: 0.7; margin-top: 4px;">806 / 1.498 m² TIR kapasitesi</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================== -->
+<!-- PALETTE D: Kireçtaşı + Zümrüt (Light)      -->
+<!-- =========================================== -->
+<div class="palette-section" style="background: #faf8f4;">
+  <div class="palette-header" style="border-color: #e0dbd2;">
+    <div class="palette-title-area">
+      <div class="palette-badge" style="background: rgba(26,122,90,0.08); color: #1a7a5a;">ÖNERİ C — RADİKAL ALTERNATİF</div>
+      <div class="palette-title" style="color: #2a2520;">Kireçtaşı + Zümrüt</div>
+      <div class="palette-subtitle" style="color: #7a746b;">Light tema. İnşaat sektöründe nadir — bu yüzden dikkat çeker. Sıcak kireçtaşı beyazı "temiz, profesyonel" hissi, zümrüt yeşil "güven, stabilite, büyüme" çağrıştırır. Rakiplerden radikal farklılaşma.</div>
+    </div>
+    <div class="palette-swatches" style="padding-bottom: 24px;">
+      <div class="swatch" style="background: #f5f2ec; border-color: #e0dbd2;"><span class="swatch-label">#f5f2ec</span></div>
+      <div class="swatch" style="background: #ffffff; border-color: #e0dbd2;"><span class="swatch-label">#ffffff</span></div>
+      <div class="swatch" style="background: #e0dbd2;"><span class="swatch-label">#e0dbd2</span></div>
+      <div class="swatch" style="background: #1a7a5a;"><span class="swatch-label">#1a7a5a</span></div>
+      <div class="swatch" style="background: #c9a84c;"><span class="swatch-label">#c9a84c</span></div>
+      <div class="swatch" style="background: #2a2520;"><span class="swatch-label">#2a2520</span></div>
+      <div class="swatch" style="background: #7a746b;"><span class="swatch-label">#7a746b</span></div>
+    </div>
+  </div>
+  
+  <div class="palette-rationale" style="border-color: #e0dbd2;">
+    <div class="rationale-item" style="color: #2a2520;"><strong style="color: #7a746b;">Renk psikolojisi</strong>Zümrüt yeşil = güven, istikrar, doğallık. Kireçtaşı = sıcaklık, topraklılık (soğuk beyazdan kaçınıyor). İkisi birlikte "bu firma sağlam zemin üzerinde" mesajı.</div>
+    <div class="rationale-item" style="color: #2a2520;"><strong style="color: #7a746b;">Sektör farklılaşma</strong>İnşaat malzemesi sitelerinin %90'ı koyu tema kullanıyor. Light tema radikal farklılaşma sağlar — hem dikkat çeker hem "biz farklıyız" mesajı verir.</div>
+    <div class="rationale-item" style="color: #2a2520;"><strong style="color: #7a746b;">Okunabilirlik</strong>Light tema metin okunabilirliğini artırır. B2B müşterisi fiyat tablosunu, kalınlık detaylarını, tier karşılaştırmasını daha rahat okur.</div>
+    <div class="rationale-item" style="color: #2a2520;"><strong style="color: #7a746b;">Risk</strong>Sektör beklentisine ters. Bazı müteahhitler "ciddi" bulmayabilir — ama doğru tipografi ve boşluk kullanımıyla bu aşılır. Admin paneli koyu kalabilir.</div>
+  </div>
+  
+  <div class="palette-demos" style="background: #faf8f4;">
+    <div>
+      <div class="demo-label" style="color: #7a746b;">Fiyat paneli</div>
+      <div class="demo-card pd-bg" style="border-color: #e0dbd2; font-family: 'Plus Jakarta Sans', sans-serif; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <div class="pd-muted" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">M² fiyatı</div>
+        <div class="demo-price pd-text" style="margin-top: 4px;">₺342,34 <span class="demo-price-unit">/ m²</span></div>
+        <div class="demo-price-note pd-muted">KDV hariç · 5 cm · Kamyon</div>
+        
+        <div class="demo-tier-grid">
+          <div class="demo-tier" style="background: #f5f2ec; border-color: #e0dbd2;">
+            <div class="demo-tier-name" style="color: #7a746b;">🚛 Kamyon</div>
+            <div class="demo-tier-cap pd-muted">806 m²</div>
+            <div class="demo-tier-price pd-text">₺342,34</div>
+            <div class="demo-tier-price-note pd-muted">/m² KDV hariç</div>
+            <div class="demo-tier-saving" style="background: rgba(26,122,90,0.08); color: #1a7a5a;">₺55,73/m² avantaj</div>
+          </div>
+          <div class="demo-tier demo-tier-recommended" style="background: rgba(26,122,90,0.03); border-color: #1a7a5a;">
+            <div class="demo-tier-badge" style="background: #1a7a5a; color: #fff;">En Avantajlı</div>
+            <div class="demo-tier-name" style="color: #1a7a5a;">🚚 TIR</div>
+            <div class="demo-tier-cap pd-muted">1.498 m²</div>
+            <div class="demo-tier-price pd-text">₺326,42</div>
+            <div class="demo-tier-price-note pd-muted">/m² KDV hariç</div>
+            <div class="demo-tier-saving" style="background: rgba(26,122,90,0.08); color: #1a7a5a;">₺71,65/m² avantaj</div>
+          </div>
+          <div class="demo-tier" style="background: #f5f2ec; border-color: #e0dbd2;">
+            <div class="demo-tier-name" style="color: #c9a84c;">⚡ Hızlı</div>
+            <div class="demo-tier-cap pd-muted">min. 300 m²</div>
+            <div class="demo-tier-price pd-text">₺398,07</div>
+            <div class="demo-tier-price-note pd-muted">/m² KDV hariç</div>
+          </div>
+        </div>
+        
+        <button class="demo-cta-btn pd-cta" style="font-family: inherit; font-size: 16px;">Anında Teklif Oluştur</button>
+        <div class="demo-price-note pd-muted" style="text-align: center; margin-top: 8px;">Fiyat, şehir ve metraj bilginize kişisel teklif oluşturulur</div>
+        
+        <div class="demo-trust" style="border-color: #e0dbd2; background: rgba(26,122,90,0.02); margin-top: 16px;">
+          <div class="demo-trust-row pd-muted"><div class="demo-trust-icon" style="color: #1a7a5a;">✓</div><span style="color: #2a2520;">Nakliye dahil fiyat</span></div>
+          <div class="demo-trust-row pd-muted"><div class="demo-trust-icon" style="color: #1a7a5a;">✓</div><span style="color: #2a2520;">24 saat geçerli teklif</span></div>
+          <div class="demo-trust-row pd-muted"><div class="demo-trust-icon" style="color: #1a7a5a;">✓</div><span style="color: #2a2520;">Tuzla depo — İstanbul teslim</span></div>
+        </div>
+      </div>
+    </div>
+    
+    <div>
+      <div class="demo-label" style="color: #7a746b;">Header + kalınlık + öneri</div>
+      <div class="demo-header" style="background: #fff; border-color: #e0dbd2; margin-bottom: 16px; font-family: 'Plus Jakarta Sans', sans-serif; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <div class="demo-logo" style="color: #2a2520;">
+          <div class="demo-logo-mark" style="background: #1a7a5a;">TY</div>
+          TaşYünü Fiyatları
+        </div>
+        <div class="demo-nav">
+          <a href="#" style="color: #7a746b;">Ürün Kataloğu</a>
+          <a href="#" class="demo-nav-cta" style="background: #1a7a5a; color: #fff; border-radius: 8px;">Hesap Makinesi</a>
+        </div>
+      </div>
+      
+      <div class="demo-card" style="background: #fff; border-color: #e0dbd2; font-family: 'Plus Jakarta Sans', sans-serif; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #7a746b;">Kalınlık</div>
+        <div class="demo-thickness">
+          <span class="demo-thick-pill" style="border-color: #e0dbd2; color: #7a746b; background: #fff;">3 cm</span>
+          <span class="demo-thick-pill" style="border-color: #e0dbd2; color: #7a746b; background: #fff;">4 cm</span>
+          <span class="demo-thick-pill" style="background: #1a7a5a; border-color: #1a7a5a; color: #fff; font-weight: 600;">5 cm</span>
+          <span class="demo-thick-pill" style="border-color: #e0dbd2; color: #7a746b; background: #fff;">6 cm</span>
+          <span class="demo-thick-pill" style="border-color: #e0dbd2; color: #7a746b; background: #fff;">7 cm</span>
+          <span class="demo-thick-pill" style="border-color: #e0dbd2; color: #7a746b; background: #fff;">8 cm</span>
+        </div>
+        
+        <div class="demo-suggestion" style="background: rgba(26,122,90,0.04); border: 1px solid rgba(26,122,90,0.12); margin-top: 16px; color: #1a7a5a;">
+          <span>📦</span>
+          <div style="flex:1;">
+            <div style="font-weight: 500;">692 m² daha ekle → TIR indiriminden faydalan</div>
+            <div class="demo-progress-wrap" style="background: rgba(26,122,90,0.1); margin-top: 6px;">
+              <div class="demo-progress-bar" style="width: 54%; background: #1a7a5a;"></div>
+            </div>
+            <div style="font-size: 10px; opacity: 0.7; margin-top: 4px;">806 / 1.498 m² TIR kapasitesi</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- =========================================== -->
+<!-- COMPARISON TABLE                            -->
+<!-- =========================================== -->
+<div class="comparison-table">
+  <div style="padding: 24px 20px 16px; border-bottom: 1px solid #1a1a1a;">
+    <div style="font-size: 16px; font-weight: 600;">Palet karşılaştırma matrisi</div>
+    <div style="font-size: 13px; color: #888; margin-top: 4px;">Her kriter 10 üzerinden skorlanmıştır</div>
+  </div>
+  <table>
+    <tr>
+      <th style="width: 22%;">Kriter</th>
+      <th style="width: 19.5%;">Mevcut</th>
+      <th style="width: 19.5%;">A: Antrasit + Altın</th>
+      <th style="width: 19.5%;">B: Grafit + Bakır</th>
+      <th style="width: 19.5%;">C: Kireçtaşı + Zümrüt</th>
+    </tr>
+    <tr>
+      <td style="color: #ccc; font-weight: 500;">CTA kontrast</td>
+      <td><span class="score-dot score-high"></span>8/10</td>
+      <td><span class="score-dot score-high"></span>9/10</td>
+      <td><span class="score-dot score-high"></span>8/10</td>
+      <td><span class="score-dot score-high"></span>9/10</td>
+    </tr>
+    <tr>
+      <td style="color: #ccc; font-weight: 500;">B2B güven algısı</td>
+      <td><span class="score-dot score-mid"></span>6/10</td>
+      <td><span class="score-dot score-high"></span>9/10</td>
+      <td><span class="score-dot score-mid"></span>7/10</td>
+      <td><span class="score-dot score-high"></span>8/10</td>
+    </tr>
+    <tr>
+      <td style="color: #ccc; font-weight: 500;">Tier hiyerarşisi</td>
+      <td><span class="score-dot score-low"></span>4/10</td>
+      <td><span class="score-dot score-high"></span>9/10</td>
+      <td><span class="score-dot score-high"></span>8/10</td>
+      <td><span class="score-dot score-high"></span>8/10</td>
+    </tr>
+    <tr>
+      <td style="color: #ccc; font-weight: 500;">Yüzey derinliği</td>
+      <td><span class="score-dot score-low"></span>5/10</td>
+      <td><span class="score-dot score-high"></span>8/10</td>
+      <td><span class="score-dot score-high"></span>8/10</td>
+      <td><span class="score-dot score-high"></span>9/10</td>
+    </tr>
+    <tr>
+      <td style="color: #ccc; font-weight: 500;">Sektör uyumu</td>
+      <td><span class="score-dot score-mid"></span>7/10</td>
+      <td><span class="score-dot score-high"></span>9/10</td>
+      <td><span class="score-dot score-high"></span>8/10</td>
+      <td><span class="score-dot score-mid"></span>6/10</td>
+    </tr>
+    <tr>
+      <td style="color: #ccc; font-weight: 500;">Okunabilirlik</td>
+      <td><span class="score-dot score-mid"></span>7/10</td>
+      <td><span class="score-dot score-high"></span>8/10</td>
+      <td><span class="score-dot score-mid"></span>7/10</td>
+      <td><span class="score-dot score-high"></span>9/10</td>
+    </tr>
+    <tr>
+      <td style="color: #ccc; font-weight: 500;">Premium hissi</td>
+      <td><span class="score-dot score-mid"></span>6/10</td>
+      <td><span class="score-dot score-high"></span>9/10</td>
+      <td><span class="score-dot score-high"></span>8/10</td>
+      <td><span class="score-dot score-high"></span>8/10</td>
+    </tr>
+    <tr>
+      <td style="color: #ccc; font-weight: 500;">Geçiş eforu</td>
+      <td><span class="score-dot score-high"></span>10/10</td>
+      <td><span class="score-dot score-mid"></span>7/10</td>
+      <td><span class="score-dot score-high"></span>9/10</td>
+      <td><span class="score-dot score-low"></span>4/10</td>
+    </tr>
+    <tr style="background: rgba(201,168,76,0.04);">
+      <td style="color: #c9a84c; font-weight: 700;">TOPLAM</td>
+      <td style="color: #ccc; font-weight: 700;">53/80</td>
+      <td style="color: #c9a84c; font-weight: 700;">68/80 ★</td>
+      <td style="color: #ccc; font-weight: 700;">63/80</td>
+      <td style="color: #ccc; font-weight: 700;">61/80</td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- =========================================== -->
+<!-- TYPOGRAPHY RECOMMENDATION                   -->
+<!-- =========================================== -->
+<div class="palette-section">
+  <div class="palette-header">
+    <div class="palette-title-area">
+      <div class="palette-badge" style="background: #1a1a1a; color: #aaa;">TİPOGRAFİ ÖNERİSİ</div>
+      <div class="palette-title">Font eşleştirme</div>
+      <div class="palette-subtitle">Her palet için önerilen tipografi. Premium hissi tipografiyle başlar.</div>
+    </div>
+  </div>
+  <div class="palette-demos">
+    <div>
+      <div class="demo-label">A: Antrasit + Altın</div>
+      <div class="demo-card" style="background: #111; border-color: #2a2a2a;">
+        <div style="font-family: 'Plus Jakarta Sans', sans-serif;">
+          <div style="font-size: 11px; color: #8c8880; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;">Plus Jakarta Sans</div>
+          <div style="font-size: 32px; font-weight: 700; color: #e8e6e1; letter-spacing: -1px;">₺342,34 /m²</div>
+          <div style="font-size: 14px; color: #8c8880; margin-top: 4px;">Geometrik, modern, keskin. Google Fonts'ta ücretsiz. Özellikle rakamları çok okunabilir — fiyat ağırlıklı bir site için ideal. Variable font: 300-700 arası tek dosya.</div>
+          <div style="font-size: 15px; font-weight: 600; color: #c9a84c; margin-top: 12px;">Anında Teklif Oluştur →</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="demo-label">B: Grafit + Bakır</div>
+      <div class="demo-card" style="background: #0c1117; border-color: #1e2a38;">
+        <div style="font-family: 'Outfit', sans-serif;">
+          <div style="font-size: 11px; color: #6b7a8d; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;">Outfit</div>
+          <div style="font-size: 32px; font-weight: 700; color: #d4dce8; letter-spacing: -1px;">₺342,34 /m²</div>
+          <div style="font-size: 14px; color: #6b7a8d; margin-top: 4px;">Yumuşak geometri, endüstriyel ama insancıl. Mühendislik hassasiyeti ile sıcaklık arasında denge. Hafif: ~20KB variable. Geniş karakter seti.</div>
+          <div style="font-size: 15px; font-weight: 600; color: #d4845a; margin-top: 12px;">Anında Teklif Oluştur →</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="demo-label">C: Kireçtaşı + Zümrüt</div>
+      <div class="demo-card" style="background: #fff; border-color: #e0dbd2;">
+        <div style="font-family: 'Plus Jakarta Sans', sans-serif;">
+          <div style="font-size: 11px; color: #7a746b; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;">Plus Jakarta Sans</div>
+          <div style="font-size: 32px; font-weight: 700; color: #2a2520; letter-spacing: -1px;">₺342,34 /m²</div>
+          <div style="font-size: 14px; color: #7a746b; margin-top: 4px;">Aynı font, light tema üzerinde. Koyu metin okunabilirliği çok yüksek. Kireçtaşı beyazı göz yormaz, zümrüt aksanlar canlılık katar.</div>
+          <div style="font-size: 15px; font-weight: 600; color: #1a7a5a; margin-top: 12px;">Anında Teklif Oluştur →</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="demo-label">Mevcut</div>
+      <div class="demo-card" style="background: #111318; border-color: #252830;">
+        <div style="font-family: 'DM Sans', sans-serif;">
+          <div style="font-size: 11px; color: #8a8d96; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;">DM Sans (mevcut alternatif)</div>
+          <div style="font-size: 32px; font-weight: 700; color: #e0e0e0; letter-spacing: -1px;">₺342,34 /m²</div>
+          <div style="font-size: 14px; color: #8a8d96; margin-top: 4px;">Mevcut sitenin font'u (muhtemelen system-ui veya Inter). DM Sans daha karakter sahibi bir alternatif — aynı okunabilirlik, daha fazla kişilik.</div>
+          <div style="font-size: 15px; font-weight: 600; color: #e8733a; margin-top: 12px;">Anında Teklif Oluştur →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</body>
+</html>

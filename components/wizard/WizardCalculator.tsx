@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { generateQuotePDF } from "@/lib/pdfGenerator";
 import { PackageCard } from "@/components/package/PackageCard";
 import { PdfOfferModal } from "@/components/modal/PdfOfferModal";
-import { Step1ProductSelection } from "@/components/wizard/Step1ProductSelection";
+import { WizardStep1 } from "@/components/wizard/WizardStep1";
+import { WizardStep2 } from "@/components/wizard/WizardStep2";
+import { WizardStep3 } from "@/components/wizard/WizardStep3";
+import { WizardStep4 } from "@/components/wizard/WizardStep4";
 import {
     getOfferValidityDate,
     getTruckMeterColor,
@@ -75,7 +78,74 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
     const [isLoading, setIsLoading] = useState(false);
     const [showResults, setShowResults] = useState(false);
 
-    // Wizard (tek adım)
+    // Wizard step
+    const [activeStep, setActiveStep] = useState<1 | 2 | 3 | 4>(1);
+
+    const isCurrentStepValid = (): boolean => {
+        switch (activeStep) {
+            case 1: return selectedBrandId != null;
+            case 2: return !!selectedKalinlik;
+            case 3: return selectedCityCode != null;
+            case 4: return !!metraj && Number(metraj) > 0;
+        }
+    };
+
+    const goNext = () => {
+        if (isCurrentStepValid() && activeStep < 4) setActiveStep(s => (s + 1) as 1 | 2 | 3 | 4);
+    };
+    const goBack = () => {
+        if (activeStep > 1) setActiveStep(s => (s - 1) as 1 | 2 | 3 | 4);
+    };
+
+    // Araç tipini ve bölge iskontosunu bilen getSmartAdvice wrapper'ı
+    const getSmartAdviceWithDiscount = (logistics: any): string | null => {
+        if (!logistics || logistics.vehicleType === 'multiple') return null;
+        const activeFill = logistics.vehicleType === 'lorry'
+            ? logistics.lorryFillPercentage
+            : logistics.truckFillPercentage;
+        if (activeFill >= 86) {
+            const isLorry = logistics.vehicleType === 'lorry';
+            const zone = shippingZones.find(z => z.city_code === selectedCityCode);
+            const discPct = isLorry ? (zone?.discount_kamyon ?? null) : (zone?.discount_tir ?? null);
+            const vehicleLabel = isLorry ? 'Kamyon' : 'TIR';
+            return `✅ Mükemmel — ${vehicleLabel} tam kapasite kullanılıyor, nakliye ücretsiz${discPct != null ? ` + %${discPct} iskonto` : ''}!`;
+        }
+        if (logistics.packagesNeededForOptimal > 0) {
+            const additionalM2 = (logistics.packagesNeededForOptimal * logistics.packageSizeM2).toFixed(1);
+            return `💡 Sadece ${logistics.packagesNeededForOptimal} paket daha (${additionalM2} m²) eklerseniz araç tam dolacak ve nakliye farkı sıfırlanacak!`;
+        }
+        return null;
+    };
+
+    // Seçili plaka için gerçek paket m²'sini hesapla (Step4 gamification tutarlılığı)
+    const effectiveLogistics = useMemo(() => {
+        if (!currentLogistics || !selectedBrandId || !selectedKalinlik) return currentLogistics;
+        const activeMaterialTypeId = materialTypes.find(m => m.slug === selectedMalzeme)?.id;
+        const plate = (
+            plates.find(p =>
+                p.brand_id === selectedBrandId &&
+                p.thickness_options.includes(parseInt(selectedKalinlik)) &&
+                (selectedModel ? p.short_name === selectedModel : true) &&
+                p.material_type_id === activeMaterialTypeId
+            ) ?? plates.find(p =>
+                p.brand_id === selectedBrandId &&
+                p.thickness_options.includes(parseInt(selectedKalinlik)) &&
+                p.material_type_id === activeMaterialTypeId
+            )
+        );
+        if (!plate) return currentLogistics;
+        const platePrice = platePrices.find(pp =>
+            pp.plate_id === plate.id && pp.thickness === parseInt(selectedKalinlik)
+        );
+        const realPkgM2 = platePrice?.package_m2 || plate.package_m2 || currentLogistics.package_size_m2;
+        if (!realPkgM2 || realPkgM2 === currentLogistics.package_size_m2) return currentLogistics;
+        return {
+            ...currentLogistics,
+            package_size_m2: realPkgM2,
+            lorry_capacity_m2: currentLogistics.lorry_capacity_packages * realPkgM2,
+            truck_capacity_m2: currentLogistics.truck_capacity_packages * realPkgM2,
+        };
+    }, [currentLogistics, plates, platePrices, selectedBrandId, selectedModel, selectedKalinlik, selectedMalzeme, materialTypes]);
 
     // Teklif Formu
     const [showQuoteModal, setShowQuoteModal] = useState(false);
@@ -525,7 +595,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                 const plateTotal = roundToKurus(plateM2Price * totalM2);
                 totalProductCost += plateTotal;
 
-                const materialSuffix = selectedMalzeme === "tasyunu" ? "Taşyünü Isı Yalıtım Levhası" : "EPS Isı Yalıtım Levhası";
+                const materialSuffix = selectedMalzeme === "tasyunu" ? "Taşyünü" : "EPS";
 
                 // Debug için fiyat detaylarını konsola yaz
                 console.log(`Fiyat Hesaplama Detayı (${plate.name}):`, {
@@ -540,7 +610,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                 });
 
                 items.push({
-                    name: `${plate.name} ${materialSuffix} ${selectedKalinlik} cm`,
+                    name: `${plateBrand?.name || ''} ${plate.short_name} ${selectedKalinlik} cm ${materialSuffix}`.trim(),
                     shortName: plate.short_name,
                     brandName: plateBrand?.name || '',
                     quantity: totalM2,
@@ -612,7 +682,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
 
             calculated.push({
                 definition: pkgDef,
-                plateBrandName: selectedBrand.name,
+                plateBrandName: selectedModel ? `${selectedBrand.name} ${selectedModel}` : selectedBrand.name,
                 accessoryBrandName: brands.find(b => b.id === pkgDef.accessory_brand_id)?.name || '',
                 items,
                 totalProductCost,
@@ -630,9 +700,10 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                     itemsPerPackage: logistics.items_per_package,
                     truckCapacityPackages: logistics.truck_capacity_packages,
                     lorryCapacityPackages: logistics.lorry_capacity_packages,
-                    truckFillPercentage: (packageCount / logistics.truck_capacity_packages) * 100,
-                    lorryFillPercentage: (packageCount / logistics.lorry_capacity_packages) * 100,
-                    vehicleType: packageCount > logistics.lorry_capacity_packages ? 'truck' : 'lorry',
+                    truckFillPercentage: Math.min((packageCount / logistics.truck_capacity_packages) * 100, 100),
+                    lorryFillPercentage: Math.min((packageCount / logistics.lorry_capacity_packages) * 100, 100),
+                    vehicleType: packageCount > logistics.truck_capacity_packages ? 'multiple' :
+                                 packageCount >= logistics.lorry_capacity_packages ? 'truck' : 'lorry',
                     isShippingIncluded: !isLowMetrageTasyunu,
                     shippingWarning: isLowMetrageTasyunu ? "Metraj kamyon kapasitesinin altında olduğu için nakliye alıcıya aittir. Ancak fabrikadan en iyi 'Tır İskontosu' fiyatları uygulanmıştır." : undefined
                 }
@@ -766,12 +837,12 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
     };
 
     return (
-        <div className="min-h-screen flex flex-col bg-slate-950">
+        <div className="min-h-screen flex flex-col bg-fe-bg">
             {/* HERO + WIZARD */}
             <section
                 className="relative bg-cover bg-center py-12 lg:py-16"
                 style={{
-                    backgroundImage: `linear-gradient(to right, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.8)), url('/images/markalogolar/bina-dis-cephe-kaplama-4000x4000.png')`,
+                    backgroundImage: `linear-gradient(to right, rgba(11, 11, 12, 0.96), rgba(11, 11, 12, 0.78)), url('/images/markalogolar/bina-dis-cephe-kaplama-4000x4000.png')`,
                 }}
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -781,16 +852,16 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                             <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-6 tracking-tight">
                                 Mantolama Maliyetini
                                 <br />
-                                <span className="text-[#f97316]">Lojistik Dahil</span> Hesaplayın
+                                <span className="text-brand-400">Lojistik Dahil</span> Hesaplayın
                             </h1>
-                            <p className="text-gray-300 text-lg mb-6 max-w-lg">
+                            <p className="text-fe-text text-lg mb-6 max-w-lg">
                                 Marka seçin, m² girin, 3 farklı paket seçeneği ile karşılaştırın.
                                 Bölgenize özel iskonto oranları otomatik uygulanır.
                             </p>
 
                             <div className="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/20">
-                                <h3 className="font-heading text-sm font-semibold mb-3 text-[#f97316]">📦 Paketlere Dahil:</h3>
-                                <div className="grid grid-cols-2 gap-2 text-sm text-gray-300">
+                                <h3 className="font-heading text-sm font-semibold mb-3 text-brand-400">📦 Paketlere Dahil:</h3>
+                                <div className="grid grid-cols-2 gap-2 text-sm text-fe-text">
                                     <span>✓ Yalıtım Levhası</span>
                                     <span>✓ Yapıştırıcı</span>
                                     <span>✓ Isı Yalıtım Sıvası</span>
@@ -804,62 +875,127 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                         </div>
 
                         {/* Sağ Taraf - Wizard */}
-                        <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-2xl p-6 sm:p-8">
-                            {/* Wizard Content (tek ekran) */}
-                            <AnimatePresence mode="wait">
-                                <Step1ProductSelection
-                                    selectedMalzeme={selectedMalzeme}
-                                    setSelectedMalzeme={setSelectedMalzeme}
-                                    selectedBrandId={selectedBrandId}
-                                    setSelectedBrandId={setSelectedBrandId}
-                                    brands={brands}
-                                    selectedModel={selectedModel}
-                                    setSelectedModel={setSelectedModel}
-                                    availableModels={availableModels}
-                                    selectedKalinlik={selectedKalinlik}
-                                    setSelectedKalinlik={setSelectedKalinlik}
-                                    metraj={metraj}
-                                    setMetraj={setMetraj}
-                                    shippingZones={shippingZones}
-                                    selectedCityCode={selectedCityCode}
-                                    onCityChange={handleCityChange}
-                                    isLoadingLogistics={isLoadingLogistics}
-                                    currentLogistics={currentLogistics}
-                                    getSliderMetrics={getSliderMetrics}
-                                    getDowelLength={null}
-                                />
-                            </AnimatePresence>
+                        <div className="bg-fe-surface/80 backdrop-blur-md border border-fe-border rounded-2xl p-6 sm:p-8">
 
-                            {/* Bottom Navigation */}
-                            <div className="mt-6">
-                                <button
-                                    onClick={handleShowPrices}
-                                    disabled={isLoading || !isStepValid()}
-                                    className="w-full py-5 px-4 rounded-xl font-bold text-xl text-white bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-600 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed transition-all shadow-xl shadow-orange-600/40 hover:shadow-orange-600/60 hover:scale-[1.02] transform"
-                                >
-                                    {isLoading ? (
-                                        <span className="flex items-center justify-center gap-2">
-                                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                            </svg>
-                                            Hesaplanıyor...
-                                        </span>
-                                    ) : (
-                                        "💰 FİYATLARI HEMEN GÖSTER"
-                                    )}
-                                </button>
+                            {/* Step Progress Bar */}
+                            {(() => {
+                                const stepLabels = ['Malzeme', 'Kalınlık', 'Konum', 'Metraj'];
+                                return (
+                                    <div className="flex items-center mb-7">
+                                        {[1, 2, 3, 4].map((step, i) => (
+                                            <div key={step} className="flex items-center flex-1 last:flex-none">
+                                                <div className="flex flex-col items-center">
+                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                                                        activeStep === step
+                                                            ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/40'
+                                                            : activeStep > step
+                                                                ? 'bg-green-600 text-white'
+                                                                : 'bg-fe-raised text-fe-muted'
+                                                    }`}>
+                                                        {activeStep > step ? '✓' : step}
+                                                    </div>
+                                                    <span className={`text-[10px] mt-1 font-medium whitespace-nowrap ${
+                                                        activeStep === step ? 'text-brand-400' : activeStep > step ? 'text-green-500' : 'text-fe-muted'
+                                                    }`}>
+                                                        {stepLabels[i]}
+                                                    </span>
+                                                </div>
+                                                {i < 3 && (
+                                                    <div className={`flex-1 h-0.5 mx-2 mb-4 rounded-full transition-all duration-300 ${
+                                                        activeStep > step ? 'bg-green-600' : 'bg-fe-raised'
+                                                    }`} />
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            })()}
+
+                            {/* Step Content — min-h prevents layout shift between steps */}
+                            <div className="min-h-[360px]">
+                            <AnimatePresence mode="wait">
+                                {activeStep === 1 && (
+                                    <WizardStep1
+                                        key="step1"
+                                        selectedMalzeme={selectedMalzeme}
+                                        setSelectedMalzeme={setSelectedMalzeme}
+                                        selectedBrandId={selectedBrandId}
+                                        setSelectedBrandId={setSelectedBrandId}
+                                        brands={brands}
+                                        selectedModel={selectedModel}
+                                        setSelectedModel={setSelectedModel}
+                                        availableModels={availableModels}
+                                    />
+                                )}
+                                {activeStep === 2 && (
+                                    <WizardStep2
+                                        key="step2"
+                                        selectedKalinlik={selectedKalinlik}
+                                        setSelectedKalinlik={setSelectedKalinlik}
+                                    />
+                                )}
+                                {activeStep === 3 && (
+                                    <WizardStep3
+                                        key="step3"
+                                        shippingZones={shippingZones}
+                                        selectedCityCode={selectedCityCode}
+                                        onCityChange={handleCityChange}
+                                    />
+                                )}
+                                {activeStep === 4 && (
+                                    <WizardStep4
+                                        key="step4"
+                                        metraj={metraj}
+                                        setMetraj={setMetraj}
+                                        currentLogistics={effectiveLogistics}
+                                        selectedKalinlik={selectedKalinlik}
+                                        shippingZones={shippingZones}
+                                        selectedCityCode={selectedCityCode}
+                                    />
+                                )}
+                            </AnimatePresence>
                             </div>
 
-                            {!isStepValid() && (
-                                <div className="mt-3 p-3 bg-yellow-900/30 border border-yellow-700/50 rounded-lg">
-                                    <p className="text-xs text-yellow-400 text-center">
-                                        💡 Lütfen marka, kalınlık, metraj ve il seçiniz
-                                    </p>
-                                </div>
-                            )}
+                            {/* Navigation */}
+                            <div className="mt-6 flex gap-3">
+                                {activeStep > 1 && (
+                                    <button
+                                        onClick={goBack}
+                                        className="px-5 py-3 rounded-xl border border-fe-border text-fe-text font-semibold text-sm hover:border-fe-muted/50 hover:text-white transition-all"
+                                    >
+                                        ← Geri
+                                    </button>
+                                )}
+                                {activeStep < 4 ? (
+                                    <button
+                                        onClick={goNext}
+                                        disabled={!isCurrentStepValid()}
+                                        className="flex-1 py-3 rounded-xl font-bold text-base text-white bg-brand-600 hover:bg-brand-500 disabled:bg-fe-raised disabled:text-fe-muted disabled:cursor-not-allowed transition-all"
+                                    >
+                                        İleri →
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleShowPrices}
+                                        disabled={isLoading || !isStepValid()}
+                                        className="flex-1 py-5 px-4 rounded-xl font-bold text-xl text-white bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 disabled:bg-fe-raised disabled:text-fe-muted disabled:cursor-not-allowed transition-all shadow-xl shadow-brand-600/40 hover:shadow-brand-600/60 hover:scale-[1.02] transform"
+                                    >
+                                        {isLoading ? (
+                                            <span className="flex items-center justify-center gap-2">
+                                                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                                </svg>
+                                                Hesaplanıyor...
+                                            </span>
+                                        ) : (
+                                            "💰 FİYATLARI GÖSTER"
+                                        )}
+                                    </button>
+                                )}
+                            </div>
 
-                            <p className="text-center text-gray-400 text-xs mt-4">
+                            <p className="text-center text-fe-muted text-xs mt-4">
                                 Fiyatlar KDV hariç, nakliye dahildir. Bölge iskontosu uygulanmıştır.
                             </p>
                         </div>
@@ -869,12 +1005,12 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
 
             {/* RESULTS - PACKAGE CARDS */}
             {showResults && calculatedPackages.length > 0 && (
-                <section ref={resultsRef} className="py-12 bg-slate-950 scroll-mt-20">
+                <section ref={resultsRef} className="py-12 bg-fe-bg scroll-mt-20">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <h3 className="font-heading text-2xl font-bold text-white mb-2 text-center tracking-tight">
-                            <span className="font-heading tabular-nums text-orange-500">{metraj} m²</span> için Paket Seçenekleri
+                            <span className="font-heading tabular-nums text-brand-500">{metraj} m²</span> için Paket Seçenekleri
                         </h3>
-                        <p className="text-slate-400 text-center mb-10 max-w-2xl mx-auto">
+                        <p className="text-fe-muted text-center mb-10 max-w-2xl mx-auto">
                             {shippingZones.find(z => z.city_code === selectedCityCode)?.city_name} bölgesine özel lojistik ve iskonto hesaplanmış anahtar teslim paket fiyatlarıdır.
                         </p>
 
@@ -894,7 +1030,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                                     onDownloadPDF={handleOpenPdfOffer}
                                     getOfferValidityDate={getOfferValidityDate}
                                     getTruckMeterColor={getTruckMeterColor}
-                                    getSmartAdvice={getSmartAdvice}
+                                    getSmartAdvice={getSmartAdviceWithDiscount}
                                 />
                             ))}
                         </div>
@@ -909,78 +1045,78 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-fe-bg/80 backdrop-blur-sm"
                         onClick={() => setShowQuoteModal(false)}
                     >
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl relative"
+                            className="bg-fe-surface border border-fe-border rounded-2xl p-6 max-w-md w-full shadow-2xl relative"
                             onClick={e => e.stopPropagation()}
                         >
                             <button
                                 onClick={() => setShowQuoteModal(false)}
-                                className="absolute top-4 right-4 text-slate-400 hover:text-white"
+                                className="absolute top-4 right-4 text-fe-muted hover:text-white"
                             >
                                 ✕
                             </button>
 
                             <h3 className="text-xl font-bold text-white mb-1">Teklif İste</h3>
-                            <p className="text-sm text-slate-400 mb-6">
+                            <p className="text-sm text-fe-muted mb-6">
                                 {selectedPackageForQuote.definition.name} Paketi için WhatsApp üzerinden hızlı teklif alın.
                             </p>
 
                             <form onSubmit={handleSubmitQuote} className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-300 mb-1">Ad Soyad</label>
+                                    <label className="block text-sm font-medium text-fe-text mb-1">Ad Soyad</label>
                                     <input
                                         required
                                         type="text"
                                         value={quoteForm.customerName}
                                         onChange={e => setQuoteForm({ ...quoteForm, customerName: e.target.value })}
-                                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-orange-500 outline-none"
+                                        className="w-full px-4 py-3 bg-fe-raised border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none"
                                         placeholder="Adınız Soyadınız"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-300 mb-1">Telefon</label>
+                                    <label className="block text-sm font-medium text-fe-text mb-1">Telefon</label>
                                     <input
                                         required
                                         type="tel"
                                         value={quoteForm.customerPhone}
                                         onChange={e => setQuoteForm({ ...quoteForm, customerPhone: e.target.value })}
-                                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-orange-500 outline-none"
+                                        className="w-full px-4 py-3 bg-fe-raised border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none"
                                         placeholder="05XXXXXXXXX"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-300 mb-1">E-posta</label>
+                                    <label className="block text-sm font-medium text-fe-text mb-1">E-posta</label>
                                     <input
                                         required
                                         type="email"
                                         value={quoteForm.customerEmail}
                                         onChange={e => setQuoteForm({ ...quoteForm, customerEmail: e.target.value })}
-                                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-orange-500 outline-none"
+                                        className="w-full px-4 py-3 bg-fe-raised border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none"
                                         placeholder="ornek@firma.com"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-300 mb-1">Firma</label>
+                                    <label className="block text-sm font-medium text-fe-text mb-1">Firma</label>
                                     <input
                                         type="text"
                                         value={quoteForm.customerCompany}
                                         onChange={e => setQuoteForm({ ...quoteForm, customerCompany: e.target.value })}
-                                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-orange-500 outline-none"
+                                        className="w-full px-4 py-3 bg-fe-raised border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none"
                                         placeholder="Opsiyonel"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-300 mb-1">Adres</label>
+                                    <label className="block text-sm font-medium text-fe-text mb-1">Adres</label>
                                     <textarea
                                         value={quoteForm.customerAddress}
                                         onChange={e => setQuoteForm({ ...quoteForm, customerAddress: e.target.value })}
-                                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-orange-500 outline-none resize-none"
+                                        className="w-full px-4 py-3 bg-fe-raised border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none resize-none"
                                         rows={3}
                                         placeholder="Opsiyonel teslimat adresi"
                                     />
@@ -1000,7 +1136,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                                     )}
                                 </button>
 
-                                <p className="text-center text-xs text-slate-500 mt-4">
+                                <p className="text-center text-xs text-fe-muted mt-4">
                                     "Teklif İste" butonuna tıklayarak Aydınlatma Metni'ni okuduğunuzu ve kabul ettiğinizi beyan edersiniz.
                                 </p>
                             </form>

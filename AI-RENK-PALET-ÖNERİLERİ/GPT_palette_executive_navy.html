@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Executive Navy — Güven Odaklı Palet</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --bg-soft: #0d1a2d;
+      --panel: #10213b;
+      --panel-2: #132844;
+      --line: #203553;
+      --text: #ebf2fb;
+      --muted: #9eb2cb;
+      --accent: #ff6a13;
+      --accent-2: #ff8f4d;
+      --success: #1fbf75;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(31,191,117,.08), transparent 30%),
+        radial-gradient(circle at top right, rgba(255,106,19,.09), transparent 26%),
+        linear-gradient(180deg, #0a1527 0%, var(--bg) 35%, #050b14 100%);
+      color: var(--text);
+    }
+    .wrap { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+    .topbar {
+      height: 78px; display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      position: sticky; top: 0; backdrop-filter: blur(12px); background: rgba(7,17,31,.72);
+    }
+    .brand { font-weight: 800; letter-spacing: -.03em; display:flex; align-items:center; gap:12px; }
+    .brand-badge { width: 38px; height: 38px; display:grid; place-items:center; border-radius: 11px; background: var(--accent); color: white; font-weight: 900; }
+    .nav { display:flex; gap: 28px; color: var(--muted); }
+    .nav a { color: inherit; text-decoration: none; }
+    .actions { display:flex; gap: 12px; }
+    .btn, .btn-secondary {
+      height: 48px; padding: 0 20px; display:inline-flex; align-items:center; justify-content:center; border-radius: 14px;
+      text-decoration:none; font-weight: 800;
+    }
+    .btn { background: linear-gradient(180deg, var(--accent-2), var(--accent)); color:#fff; box-shadow: 0 18px 34px rgba(255,106,19,.22); }
+    .btn-secondary { border:1px solid var(--line); color:var(--text); background: rgba(255,255,255,.02); }
+    .hero { display:grid; grid-template-columns: 1.1fr .9fr; gap: 28px; padding: 54px 0 32px; align-items: center; }
+    h1 { font-size: clamp(2.4rem, 6vw, 4.5rem); line-height: .95; letter-spacing: -.05em; margin: 0 0 16px; max-width: 780px; }
+    .lead { font-size: 1.14rem; color: var(--muted); max-width: 680px; margin-bottom: 28px; }
+    .chips { display:flex; flex-wrap:wrap; gap: 10px; margin-bottom: 32px; }
+    .chip { padding:10px 14px; border-radius:999px; background: rgba(255,255,255,.04); border:1px solid var(--line); color:var(--muted); }
+    .hero-card, .card { background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015)); border: 1px solid var(--line); border-radius: 26px; box-shadow: 0 28px 60px rgba(0,0,0,.28); }
+    .hero-card { padding: 22px; }
+    .mini-grid { display:grid; grid-template-columns: repeat(2,1fr); gap: 14px; margin-top: 18px; }
+    .mini { padding:16px; border-radius:18px; background: var(--bg-soft); border:1px solid var(--line); }
+    .mini small { color: var(--muted); display:block; margin-bottom:8px; }
+    .mini strong { font-size: 1.8rem; }
+    .section { padding: 24px 0 30px; }
+    .grid-3 { display:grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
+    .card { padding: 22px; }
+    .eyebrow { font-size:.82rem; text-transform: uppercase; letter-spacing: .18em; color: #7ea6d7; margin-bottom: 14px; }
+    .card h3 { margin: 0 0 12px; font-size: 1.25rem; }
+    .card p { color: var(--muted); margin: 0 0 18px; }
+    .list { display:grid; gap: 10px; color: var(--muted); }
+    .list div::before { content: '•'; color: var(--accent); margin-right: 8px; }
+    .cta-band {
+      margin: 30px 0 60px; padding: 24px; display:flex; align-items:center; justify-content:space-between; gap:18px;
+      background: linear-gradient(90deg, rgba(255,106,19,.12), rgba(255,255,255,.03)); border:1px solid rgba(255,106,19,.28); border-radius: 24px;
+    }
+    .pricebox { padding: 18px; background: var(--bg-soft); border-radius: 20px; border:1px solid var(--line); }
+    .pricebox .line { display:flex; justify-content:space-between; color:var(--muted); padding: 8px 0; }
+    .pricebox .line strong { color: var(--text); }
+    .pricebox .final { margin-top:10px; padding-top:12px; border-top:1px solid var(--line); font-size:1.45rem; font-weight:800; }
+    .swatches { display:flex; gap: 12px; margin-top: 20px; }
+    .sw { flex:1; min-height: 86px; border-radius: 18px; padding: 12px; font-size: .85rem; border:1px solid rgba(255,255,255,.08); }
+    @media (max-width: 940px) {
+      .hero, .grid-3, .cta-band { grid-template-columns: 1fr; display:grid; }
+      .nav { display:none; }
+      .actions { display:none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <div class="brand"><span class="brand-badge">TY</span> Taşyünü Fiyatları</div>
+      <nav class="nav"><a href="#">Ürünler</a><a href="#">Kurumsal</a><a href="#">Lojistik</a><a href="#">Teklif</a></nav>
+      <div class="actions"><a class="btn-secondary" href="#">Katalog</a><a class="btn" href="#">Teklif Oluştur</a></div>
+    </header>
+
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Executive Navy</div>
+        <h1>Güven veren profesyonellik, net ayrışan CTA</h1>
+        <p class="lead">Bu palet, özellikle B2B satışta “kurumsal ama bayat değil” çizgisini yakalar. Koyu lacivert güven hissi üretir; turuncu CTA ise dikkat dağılmadan ana aksiyonu öne çıkarır.</p>
+        <div class="chips">
+          <span class="chip">Maksimum güven algısı</span>
+          <span class="chip">Yüksek okunabilirlik</span>
+          <span class="chip">Tek vurgu mantığı</span>
+          <span class="chip">B2B ve teknik satış uyumlu</span>
+        </div>
+        <div class="swatches">
+          <div class="sw" style="background:#07111f">#07111F<br/>Ana zemin</div>
+          <div class="sw" style="background:#10213b">#10213B<br/>Panel</div>
+          <div class="sw" style="background:#203553">#203553<br/>Border</div>
+          <div class="sw" style="background:#ebf2fb;color:#0b1320">#EBF2FB<br/>Metin</div>
+          <div class="sw" style="background:#ff6a13">#FF6A13<br/>CTA</div>
+        </div>
+      </div>
+
+      <aside class="hero-card">
+        <div class="eyebrow">Örnek fiyat paneli</div>
+        <div class="pricebox">
+          <div class="line"><span>M² fiyatı</span><strong>₺342,34</strong></div>
+          <div class="line"><span>Teslim şehri</span><strong>İstanbul</strong></div>
+          <div class="line"><span>Avantajlı tier</span><strong style="color:var(--success)">Kamyon</strong></div>
+          <div class="final">₺331.275,94</div>
+        </div>
+        <div class="mini-grid">
+          <div class="mini"><small>Bugün gelen teklif</small><strong>18</strong></div>
+          <div class="mini"><small>PDF indirme oranı</small><strong>%71</strong></div>
+          <div class="mini"><small>WhatsApp onayı</small><strong>%12</strong></div>
+          <div class="mini"><small>Stok güveni</small><strong style="color:var(--success)">Aktif</strong></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section grid-3">
+      <article class="card">
+        <div class="eyebrow">Header / Nav</div>
+        <h3>Neden çalışır?</h3>
+        <p>Lacivert taban güven üretir. Çok parlak mavi yerine daha ağır bir ton kullanıldığı için “ucuz teknoloji” hissi vermez.</p>
+        <div class="list">
+          <div>Kurumsal hissi kuvvetli</div>
+          <div>Logo ve tipografi daha ciddi görünür</div>
+          <div>Uzun ömürlü, modaya bağımlı değil</div>
+        </div>
+      </article>
+      <article class="card">
+        <div class="eyebrow">CTA mantığı</div>
+        <h3>Turuncu neden doğru?</h3>
+        <p>Soğuk zemin üzerinde tek sıcak vurgu oluşturur. CTA’yı diğer aksiyonlardan ayırır; Von Restorff etkisini temiz çalıştırır.</p>
+        <div class="list">
+          <div>Tek ana buton vurgusu</div>
+          <div>Karar hızını artırır</div>
+          <div>Mobilde de rahat seçilir</div>
+        </div>
+      </article>
+      <article class="card">
+        <div class="eyebrow">Risk</div>
+        <h3>Neye dikkat edilmeli?</h3>
+        <p>Glow ve blur abartılırsa premium yerine “oyuncak dashboard” hissine kayar. Arka plan efekti düşük doz kalmalı.</p>
+        <div class="list">
+          <div>1 ana glow yeter</div>
+          <div>CTA dışı sıcak renk yayılmamalı</div>
+          <div>İkincil metin griye fazla düşmemeli</div>
+        </div>
+      </article>
+    </section>
+
+    <section class="cta-band">
+      <div>
+        <div class="eyebrow">En güçlü öneri</div>
+        <h2 style="margin:0 0 8px">İlk A/B test için en güvenli palet bu</h2>
+        <div style="color:var(--muted)">Profesyonel görünüm, yüksek kontrast ve net CTA ayrışması aynı anda geliyor.</div>
+      </div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap">
+        <a class="btn" href="#">Bu paleti seç</a>
+        <a class="btn-secondary" href="palette_index.html">Diğerlerini karşılaştır</a>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

@@ -22,8 +22,33 @@ export async function GET(req: NextRequest) {
     )
   }
 
+  const { data: eventRows, error: eventError } = await supabase
+    .from('quote_funnel_events')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(500)
+
+  if (eventError) {
+    console.warn('Admin quote events fetch failed:', eventError.message)
+  }
+
+  const eventsByQuoteId = (eventRows ?? []).reduce<Record<string, any[]>>((acc, event) => {
+    const key = event.quote_id ? String(event.quote_id) : 'unlinked'
+    if (!acc[key]) acc[key] = []
+    acc[key].push(event)
+    return acc
+  }, {})
+
+  const funnelSummary = (eventRows ?? []).reduce<Record<string, number>>((acc, event) => {
+    const key = event.event_type || 'unknown'
+    acc[key] = (acc[key] || 0) + 1
+    return acc
+  }, {})
+
   return NextResponse.json({
     ok: true,
     quotes: data ?? [],
+    eventsByQuoteId,
+    funnelSummary,
   })
 }

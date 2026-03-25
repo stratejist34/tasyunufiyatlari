@@ -107,8 +107,9 @@ export function ImportPreview({ summary, rows, isLoading = false }: ImportPrevie
     if (isLoading) return <LoadingState />;
     if (!summary && rows.length === 0) return <EmptyState />;
 
-    const allWarnings = rows.flatMap(r => r.debug.warnings);
-    const reviewRows  = rows.filter(r => r.match?.requiresReview);
+    const allWarnings    = rows.flatMap(r => r.debug.warnings);
+    const reviewRows     = rows.filter(r => r.match?.requiresReview);
+    const newProductRows = rows.filter(r => r.match?.status === 'new_product');
 
     return (
         <div className="space-y-6">
@@ -167,6 +168,44 @@ export function ImportPreview({ summary, rows, isLoading = false }: ImportPrevie
                 </div>
             )}
 
+            {/* Yeni ürün uyarısı — kritik */}
+            {newProductRows.length > 0 && (
+                <div className="bg-blue-950/40 border border-blue-500/50 rounded-xl p-4">
+                    <div className="flex items-start gap-3 mb-3">
+                        <Plus className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                            <p className="text-blue-300 font-semibold text-sm">
+                                {newProductRows.length} yeni ürün DB&apos;de bulunamadı — apply edilmez
+                            </p>
+                            <p className="text-blue-400/70 text-xs mt-1">
+                                Bu ürünler <strong className="text-blue-300">plates</strong> veya <strong className="text-blue-300">accessories</strong> tablosunda mevcut değil.
+                                Önce Admin → Ürün tablosuna manuel ekleyin, ardından bu Excel dosyasını tekrar import edin.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="divide-y divide-blue-900/40 rounded-lg overflow-hidden border border-blue-800/30">
+                        {newProductRows.map((row) => (
+                            <div key={row.raw.rowIndex} className="px-3 py-2 bg-blue-950/30 flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <span className="text-xs text-blue-200 font-medium truncate">
+                                        {row.raw.rawProductName}
+                                    </span>
+                                    {row.debug.thicknessCm !== null && (
+                                        <span className="text-[10px] text-blue-400/60 flex-shrink-0">
+                                            {row.debug.thicknessCm} cm
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-3 flex-shrink-0 text-[11px] text-blue-400/60">
+                                    <span>{row.debug.productType === 'plate' ? 'Levha' : row.debug.productType === 'accessory' ? 'Aksesuar' : '?'}</span>
+                                    <span>{row.debug.materialType === 'eps' ? 'EPS' : row.debug.materialType === 'tasyunu' ? 'Taşyünü' : '?'}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Büyük fiyat değişimi uyarısı */}
             {reviewRows.length > 0 && (
                 <div className="bg-purple-950/40 border border-purple-500/40 rounded-xl p-4 flex items-start gap-3">
@@ -210,8 +249,9 @@ export function ImportPreview({ summary, rows, isLoading = false }: ImportPrevie
                             <tbody className="divide-y divide-slate-800/40">
                                 {rows.map((row) => {
                                     const { debug, match } = row;
-                                    const hasWarnings = debug.warnings.length > 0;
-                                    const isReview    = match?.requiresReview;
+                                    const hasWarnings  = debug.warnings.length > 0;
+                                    const isReview     = match?.requiresReview;
+                                    const isNewProduct = match?.status === 'new_product';
 
                                     return (
                                         <tr
@@ -219,6 +259,8 @@ export function ImportPreview({ summary, rows, isLoading = false }: ImportPrevie
                                             className={`transition-colors ${
                                                 isReview
                                                     ? 'bg-purple-950/20 hover:bg-purple-950/30'
+                                                    : isNewProduct
+                                                    ? 'bg-blue-950/20 hover:bg-blue-950/30'
                                                     : 'hover:bg-slate-800/20'
                                             }`}
                                         >

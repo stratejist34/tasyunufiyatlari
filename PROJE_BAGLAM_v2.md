@@ -41,7 +41,7 @@ Mesela
 
 (If) eğer ürünün kalınlığa göre değişen metraj oranlarında kamyon miktarına denk gelirse yani tam dolu tır 2.496 m2, şehir değişir Balıkesir olursa iskonto %22 ye çıkar, 1.344 m2 olursa  %18 e düşer
 
-(If) yine aynı ürün Dalmaçyalı sw035 3 cm lik üzeirnden devam ediyoruz, şehir Bursa seçilirse Tır iskontosu %21, metraj tırdan 1 m2 bile düşük olursa %17 iskonto (Metraj artırıp iskontodan faydalanma noktası teklif aşamasında wizardda veya sonuçlarda vurgulanmalı)
+(If) yine aynı ürün Dalmaçyalı sw035 3 cm lik üzerinden devam ediyoruz, şehir Bursa seçilirse Tır iskontosu %21, metraj tırdan 1 m2 bile düşük olursa %17 iskonto (Metraj artırıp iskontodan faydalanma noktası teklif aşamasında wizardda veya sonuçlarda vurgulanmalı)
 
 Taşyünü için durum bu şekilde, eminim, umarım net anlaşılmıştır.
 
@@ -52,13 +52,13 @@ Kalem Bazında Ambalaj Tır Kampanyası.xlsx adıyla bize gelen lsitede ise 2 sa
 Bu listede DALMAÇYALI VE EXPERT te bize 2 iskonto sütunu ile karşılıyor, ilk sütundaki 9 bizimde içinde bulunduğumuz şehir istanbulunda dahil olduğu Bölge 1 şehirlerinin iskontosunu ifade ediyor. Bölge 1 Şehirleri Adana, Aksaray, Bilecik, Bolu, Bursa, Çorum, Düzce, İstanbul, Kahramanmaraş, Kayseri, Kırıkkale, Kırşehir, Kocaeli, Nevşehir, Niğde, Osmaniye, Sakarya,Sivas, Yalova ve Yozgat bu şehirlerin iskontosu %9 Eğer 
 
 
-2. Bölgeden Adıyaman, Afyonkarahisar, Amasya, Ankara, Balıkesir, Bartın, Batman, Bayburt, Çankırı, Diyarbakır, Edirne, Elazığ, erzincan, Eskşehir, Gaziantep, Giresun ve devamı bu listeleri ekte bulabilrsiniz, listelerin içindede bulabilirsiniz
+2. Bölgeden Adıyaman, Afyonkarahisar, Amasya, Ankara, Balıkesir, Bartın, Batman, Bayburt, Çankırı, Diyarbakır, Edirne, Elazığ, erzincan, Eskşehir, Gaziantep, Giresun ve devamı bu listeleri ekte bulabilirsiniz, listelerin içindede bulabilirsiniz
 
-bu listeden olursa %7 ye düşer iskonto oranı ve hesaplama buna göre devam eder. Bölge iskontosu da %5 Ağrı, Antalya,Ardahan, Aydın, Bingöl ile başlayıp devame den ilelrimizi kapsıyor tüm listelerde görebilrisiniz hangi şehirler olduğunu. DALMAÇYALI ve EXPERT EPS ve Toz grubu aksesuarları için durum bu şekilde
+bu listeden olursa %7 ye düşer iskonto oranı ve hesaplama buna göre devam eder. Bölge iskontosu da %5 Ağrı, Antalya,Ardahan, Aydın, Bingöl ile başlayıp devame den ilelrimizi kapsıyor tüm listelerde görebilirsiniz hangi şehirler olduğunu. DALMAÇYALI ve EXPERT EPS ve Toz grubu aksesuarları için durum bu şekilde
 
 FAWORİ OPTİMİX için ise 1.sütundaki İSK1 için yine 9 yazılı geliyor, aynı mantık devam ediyor, bölge ve şehir değiştikçe iskonto oranı %7-%5 şeklinde dğeişiyor
 
-İSK2 sütununda yazan 4. satırda "Fawori Optimix Isı Yalıtım Levhası Karbonlu 2 cm" ürünü ile başlayan ve 17. satırda "Fawori Optimix Mineral Kaplama (çizgi) 25 kg" ile biten ürünlere kadar %16 iskonto olduğunu görüyoruz lsienin devamında ise %8 sabit.  %16 iskonto yapılan alan için ise yine özel bir iskonto alanı var şehre göre adı OPTİMİX BÖLGE İSKONTOSU buda tablonun içinde fiyat lsitesinde var yine ekte ekliyorum 
+İSK2 sütununda yazan 4. satırda "Fawori Optimix Isı Yalıtım Levhası Karbonlu 2 cm" ürünü ile başlayan ve 17. satırda "Fawori Optimix Mineral Kaplama (çizgi) 25 kg" ile biten ürünlere kadar %16 iskonto olduğunu görüyoruz listenin devamında ise %8 sabit.  %16 iskonto yapılan alan için ise yine özel bir iskonto alanı var şehre göre adı OPTİMİX BÖLGE İSKONTOSU buda tablonun içinde fiyat lsitesinde var yine ekte ekliyorum 
 
 İskonto mantığı bu şekilde çalışıyor Filli boya grubu için.
 
@@ -68,7 +68,165 @@ Amaç bu wizardda dorğu iskontoları uygulayarak gösterebilmek.
 
 Henüz hazır olmayan tüm ürünleri klasik eticaret sitesi gibi sunma mantığı ilede gösterirken sayfa içinde yine aynı mantığı çalıştırarak doğru fiyatlar verebilmek
 
-  
+---
+
+## 🗺️ İskonto ve Nakliye Sistemi — Tam Harita (Mart 2026 Güncel)
+
+> Bu bölüm 21 Mart 2026'da doğrulandı ve DB verileriyle karşılaştırıldı.
+
+### shipping_zones Sütunları — Gerçek Anlamları
+
+| Sütun | Kimler için | Ne anlama gelir |
+|---|---|---|
+| `discount_tir` | Taşyünü levha | Tam TIR iskontosu (İSK1 — araç bazlı) |
+| `discount_kamyon` | Taşyünü levha | Tam kamyon iskontosu (İSK1 — araç bazlı) |
+| `eps_toz_region_discount` | Dalmaçyalı + Expert toz/EPS | Bölge iskontosu (İSK1 — bölge bazlı) |
+| `optimix_toz_discount` | Optimix toz ürünleri | Bölge iskontosu (İSK1 — bölge bazlı) |
+| `optimix_levha_discount` | Yalnızca Optimix levha | Bölge bazlı İSK2 (ürün + bölge kombine) |
+| `base_shipping_cost` | Parsiyel/küçük siparişler | Araç başı nakliye bedeli (TL) |
+
+### Bölge Sistemi — 2 FARKLI Harita (Toz/EPS ürünleri için)
+
+> ⚠️ İki toz sütunu **farklı** bölge haritalarını kullanır. Karıştırmayın.
+
+#### Harita A: Filli Boya / Dalmaçyalı — `eps_toz_region_discount` (20/34/27 il)
+*Kaynak: Şubat 2026 Filli Boya Isı Yalıtım Grubu Satış Şartları*
+
+| Bölge | İskonto | İl Sayısı | İller |
+|---|---|---|---|
+| Bölge 1 | **%9** | 20 | Adana, Aksaray, Bilecik, Bolu, Bursa, Çorum, Düzce, İstanbul, Kahramanmaraş, Kayseri, Kırıkkale, Kırşehir, Kocaeli, Nevşehir, Niğde, Osmaniye, Sakarya, Sivas, Yalova, Yozgat |
+| Bölge 2 | **%7** | 34 | Adıyaman, Afyonkarahisar, Amasya, Ankara, Balıkesir, Bartın, Batman, Bayburt, Çankırı, Diyarbakır, Edirne, Elazığ, Erzincan, Eskişehir, Gaziantep, Giresun, Gümüşhane, Hatay, Karabük, Karaman, Kilis, Kırklareli, Konya, Kütahya, Malatya, Mardin, Mersin, Ordu, Samsun, Şanlıurfa, Sinop, Tekirdağ, Tokat, Zonguldak |
+| Bölge 3 | **%5** | 27 | Ağrı, Antalya, Ardahan, Artvin, Aydın, Bingöl, Bitlis, Burdur, Çanakkale, Denizli, Erzurum, Hakkari, Iğdır, Isparta, İzmir, Kars, Kastamonu, Manisa, Muğla, Muş, Rize, Siirt, Şırnak, Trabzon, Tunceli, Uşak, Van |
+
+#### Harita B: Fawori / Optimix — `optimix_toz_discount` (34/28/19 il)
+*Kaynak: Fawori Optimix Gebze bölge iskonto listesi*
+
+| Bölge | İskonto | İl Sayısı | İller |
+|---|---|---|---|
+| Bölge 1 | **%9** | 34 | Adana, Adıyaman, Aksaray, Batman, Bilecik, Bingöl, Bitlis, Bolu, Bursa, Çorum, Diyarbakır, Düzce, Elazığ, İstanbul, Kahramanmaraş, Kayseri, Kırıkkale, Kırşehir, Kocaeli, Malatya, Mardin, Muş, Nevşehir, Niğde, Osmaniye, Sakarya, Şanlıurfa, Siirt, Sivas, Şırnak, Tunceli, Van, Yalova, Yozgat |
+| Bölge 2 | **%7** | 28 | Afyonkarahisar, Amasya, Ankara, Balıkesir, Bartın, Bayburt, Çankırı, Edirne, Erzincan, Eskişehir, Gaziantep, Giresun, Gümüşhane, Hakkari, Hatay, Karabük, Karaman, Kilis, Kırklareli, Konya, Kütahya, Mersin, Ordu, Samsun, Sinop, Tekirdağ, Tokat, Zonguldak |
+| Bölge 3 | **%5** | 19 | Ağrı, Antalya, Ardahan, Artvin, Aydın, Burdur, Çanakkale, Denizli, Erzurum, Iğdır, Isparta, İzmir, Kars, Kastamonu, Manisa, Muğla, Rize, Trabzon, Uşak |
+
+> **Fark:** Optimix haritasında doğu illeri (Batman, Bingöl, Diyarbakır, Elazığ vb.) Bölge 1'de; Filli Boya haritasında ise Bölge 2-3'te.
+
+### Ürün Tipine Göre Fiyat Hesaplama Formülleri
+
+#### 1. Taşyünü Levha (Dalmaçyalı / Expert)
+```
+Liste fiyatı → plate_prices.base_price (KDV HARİÇ)
+
+Katalog gösterimi:
+  displayPrice = base_price × (1 - discount_tir / 100)
+  [Şehir seçilince discount_tir değişir]
+
+Wizard hesabı (tam satış fiyatı):
+  kdvHaric = base_price × (1 - isk1/100) × (1 - isk2/100) × 1.10
+  kdvDahil = kdvHaric × 1.20
+  [isk1 = plates.discount_1, isk2 = plates.discount_2]
+```
+
+#### 2. Optimix Levha
+```
+Liste fiyatı → plate_prices.base_price (KDV HARİÇ)
+
+Katalog gösterimi:
+  displayPrice = base_price × (1 - optimix_levha_discount / 100)
+
+Wizard hesabı:
+  kdvHaric = base_price × (1 - isk1/100) × (1 - isk2/100) × 1.10
+  [isk2 = optimix_levha_discount (bölge bazlı)]
+```
+
+#### 3. Dalmaçyalı / Expert Toz & EPS Aksesuarlar
+```
+Liste fiyatı → accessories.base_price (KDV DAHİL)
+
+Hesap:
+  kdvHaric = base_price / 1.20
+  iskontolu = kdvHaric × (1 - isk1/100) × (1 - isk2/100)
+  kdvDahilSatis = iskontolu × 1.10 × 1.20
+  [isk1 = accessories.discount_1, isk2 = eps_toz_region_discount (şehre göre)]
+```
+
+#### 4. Optimix Toz Aksesuarlar
+```
+Liste fiyatı → accessories.base_price (KDV DAHİL)
+
+Hesap:
+  kdvHaric = base_price / 1.20
+  iskontolu = kdvHaric × (1 - isk1/100) × (1 - isk2/100)
+  kdvDahilSatis = iskontolu × 1.10 × 1.20
+  [isk1 = accessories.discount_1, isk2 = optimix_toz_discount (şehre göre)]
+```
+
+### base_shipping_cost — Ne Zaman Devreye Girer?
+
+Fabrika tam araç doldurmadan sevk etmez. Parsiyel sipariş (kamyon dolduramayan) durumunda nakliye bedeli ayrıca ödenir:
+
+| Şehir | base_shipping_cost | Açıklama |
+|---|---|---|
+| İstanbul | 0 | Tuzla depo — müşteri gelebilir |
+| Balıkesir | 0 | Fabrika — sıfır mesafe |
+| Kocaeli | ₺500 | Yakın ama depo yok |
+| Ankara | ₺3.000 | Uzak mesafe parsiyel |
+| İzmir | ₺3.500 | En uzak aktif hat |
+
+WizardCalculator'da şu an `shippingCost: 0` sabit (TODO notu var) — parsiyel nakliye entegrasyonu yapılmadı.
+
+### DB Güncel Durumu (21 Mart 2026)
+
+| Tablo/Sütun | Durum |
+|---|---|
+| `logistics_capacity` — 3-10cm | ✅ Dolu |
+| `logistics_capacity` — 11-20cm | ✅ Eklendi (21.03.2026) |
+| `discount_tir / discount_kamyon` — 81 il | ✅ Ocak 2025 listesinden güncellendi |
+| `eps_toz_region_discount` — 81 il | ✅ 3 bölge (9/7/5) tam dolu |
+| `optimix_toz_discount` — 81 il | ✅ 3 bölge (9/7/5) tam dolu |
+| `optimix_levha_discount` — 5 il özel | ✅ İst/Koc/Ank/Bal/İzm farklı |
+
+---
+
+## ⚠️ Risk Analizi (21 Mart 2026)
+
+### ✅ Kapatıldı Risk 1: Katalog Fiyat Paneli Yanlış İskonto Kullanıyordu
+
+**Dosya:** `components/catalog/ProductPricePanel.tsx`
+**Düzeltme (21.03.2026):** `product.brand.name` kontrolüyle:
+- Optimix → `optimix_levha_discount` (ISK2 bölge bazlı)
+- Dalmaçyalı/Expert → `discount_tir` (TIR iskontosu)
+
+### 🟡 Orta Risk 2: optimix_levha_discount 76 Şehirde Doğrulanmadı
+
+**Durum:** 76 şehir %16 default değerinde (seed SQL'den)
+**Soru:** Optimix levha bölge iskontosu da 9/7/5 mi yoksa sabit mi?
+**Etki:** Katalog Optimix levha fiyatı yanlış çıkabilir
+**Aksiyon:** Optimix levha bölge iskonto listesi temin edilip güncellenmeli
+
+### 🟡 Orta Risk 3: WizardCalculator Nakliye Hesaplamıyor
+
+**Dosya:** `components/wizard/WizardCalculator.tsx` satır 624
+**Durum:** `shippingCost: 0` — sabit sıfır
+**Etki:** Ankara/İzmir müşterileri nakliye ücreti görmüyor
+**Aksiyon:** `calcPricing.ts`'teki `resolveShipping()` wizard'a bağlanmalı
+
+### 🟢 Düşük Risk 4: plates.discount_1 / discount_2 Taşyünü İçin
+
+**Durum:** SW035 için discount_1=9, discount_2=8 — bu Kalem Bazında Ambalaj listesinden geliyor
+**Soru:** Taşyünü wizard hesabında ISK1 olarak `plates.discount_1` mı yoksa `discount_tir` mi kullanılıyor?
+**Aksiyon:** `calculateSalePrice` fonksiyonu gözden geçirilmeli
+
+### ✅ Kapanan Riskler
+
+| Risk | Çözüm |
+|---|---|
+| 76 ilde `discount_tir/kamyon = 0` | Ocak 2025 listesinden güncellendi |
+| `eps_toz_region_discount` eksik | 81 il Filli Boya bölge haritasıyla dolduruldu |
+| `optimix_toz_discount` eksik | 81 il Fawori/Optimix bölge haritasıyla dolduruldu |
+| ProductPricePanel yanlış iskonto kolonu | `product.brand` kontrolüyle Dalmaçyalı→discount_tir, Optimix→optimix_levha_discount düzeltildi |
+| PROJE_BAGLAM bölge haritası hatalı | İki ayrı harita (Filli Boya/Dalmaçyalı 20/34/27 ve Fawori/Optimix 34/28/19) olarak güncellendi |
+| 10cm üzeri kalınlık yok | 11-20cm logistics_capacity eklendi |
+
+---
 
 
 ## 📑 İçindekiler

@@ -64,3 +64,29 @@ export async function PATCH(
     quote: data,
   })
 }
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  const quoteId = Number(id)
+
+  if (!Number.isFinite(quoteId)) {
+    return NextResponse.json({ ok: false, error: 'Geçersiz teklif kimliği.' }, { status: 400 })
+  }
+
+  const supabase = createServerSupabaseClient()
+
+  // İlişkili funnel eventlerini önce sil
+  await supabase.from('quote_funnel_events').delete().eq('quote_id', quoteId)
+
+  const { error } = await supabase.from('quotes').delete().eq('id', quoteId)
+
+  if (error) {
+    console.error('Admin quote delete failed:', error)
+    return NextResponse.json({ ok: false, error: 'Teklif silinemedi.' }, { status: 500 })
+  }
+
+  return NextResponse.json({ ok: true })
+}

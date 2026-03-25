@@ -113,10 +113,10 @@ export function Step1ProductSelection({
             transition={{ duration: 0.3 }}
         >
             <h2 className="font-heading text-white text-xl font-bold mb-4 flex items-center gap-2 tracking-tight">
-                <span className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center text-white text-sm font-heading">1</span>
+                <span className="w-8 h-8 bg-brand-600 rounded-full flex items-center justify-center text-white text-sm font-heading">1</span>
                 Ürün Bilgileri
             </h2>
-            <p className="text-sm text-slate-400 mb-6">Malzeme tipini, markayı, kalınlığı ve metrajı seçin.</p>
+            <p className="text-sm text-fe-muted mb-6">Malzeme tipini, markayı, kalınlığı ve metrajı seçin.</p>
 
             {/* Malzeme Tipi - BÜYÜK BUTONLAR */}
             <div className="mb-5">
@@ -132,8 +132,8 @@ export function Step1ProductSelection({
                         className={`
                             relative group p-3 rounded-xl border-2 transition-all duration-300 flex items-center gap-3
                             ${selectedMalzeme === "tasyunu"
-                                ? "bg-slate-800 border-orange-500 shadow-lg shadow-orange-500/20"
-                                : "bg-slate-900 border-slate-700 hover:border-slate-500"
+                                ? "bg-fe-raised border-brand-500 shadow-lg shadow-brand-500/20"
+                                : "bg-fe-surface border-fe-border hover:border-fe-muted/50"
                             }
                         `}
                     >
@@ -143,11 +143,11 @@ export function Step1ProductSelection({
                             className="w-9 h-9 object-contain"
                         />
                         <div className="text-left">
-                            <div className={`font-bold leading-tight text-sm ${selectedMalzeme === "tasyunu" ? "text-white" : "text-slate-300"}`}>Taşyünü</div>
-                            <div className="text-[11px] text-slate-400 leading-tight">Yüksek Yangın Dayanımı</div>
+                            <div className={`font-bold leading-tight text-sm ${selectedMalzeme === "tasyunu" ? "text-white" : "text-fe-text"}`}>Taşyünü</div>
+                            <div className="text-[11px] text-fe-muted leading-tight">Yüksek Yangın Dayanımı</div>
                         </div>
                         {selectedMalzeme === "tasyunu" && (
-                            <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                            <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
                         )}
                     </button>
 
@@ -159,8 +159,8 @@ export function Step1ProductSelection({
                         className={`
                             relative group p-3 rounded-xl border-2 transition-all duration-300 flex items-center gap-3
                             ${selectedMalzeme === "eps"
-                                ? "bg-slate-800 border-orange-500 shadow-lg shadow-orange-500/20"
-                                : "bg-slate-900 border-slate-700 hover:border-slate-500"
+                                ? "bg-fe-raised border-brand-500 shadow-lg shadow-brand-500/20"
+                                : "bg-fe-surface border-fe-border hover:border-fe-muted/50"
                             }
                         `}
                     >
@@ -170,11 +170,11 @@ export function Step1ProductSelection({
                             className="w-11 h-7 object-contain"
                         />
                         <div className="text-left">
-                            <div className={`font-bold leading-tight text-sm ${selectedMalzeme === "eps" ? "text-white" : "text-slate-300"}`}>EPS</div>
-                            <div className="text-[11px] text-slate-400 leading-tight">Uygun Fiyat</div>
+                            <div className={`font-bold leading-tight text-sm ${selectedMalzeme === "eps" ? "text-white" : "text-fe-text"}`}>EPS</div>
+                            <div className="text-[11px] text-fe-muted leading-tight">Uygun Fiyat</div>
                         </div>
                         {selectedMalzeme === "eps" && (
-                            <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                            <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
                         )}
                     </button>
                 </div>
@@ -196,10 +196,10 @@ export function Step1ProductSelection({
                                 key={brand.id}
                                 onClick={() => setSelectedBrandId(brand.id)}
                                 className={`
-                                    relative p-2 rounded-xl border-2 transition-all duration-200 flex flex-col items-center justify-center h-16 bg-slate-950/40
+                                    relative p-2 rounded-xl border-2 transition-all duration-200 flex flex-col items-center justify-center h-16 bg-fe-bg/40
                                     ${selectedBrandId === brand.id
-                                        ? "border-orange-500 ring-2 ring-orange-500/20 z-10"
-                                        : "border-slate-700 hover:border-slate-500"
+                                        ? "border-brand-500 ring-2 ring-brand-500/20 z-10"
+                                        : "border-fe-border hover:border-fe-muted/50"
                                     }
                                 `}
                             >
@@ -212,9 +212,9 @@ export function Step1ProductSelection({
                                 ) : (
                                     <span className="font-bold text-white">{brand.name}</span>
                                 )}
-                                <span className="mt-0.5 text-[11px] font-semibold text-slate-300">{brand.name}</span>
+                                <span className="mt-0.5 text-[11px] font-semibold text-fe-text">{brand.name}</span>
                                 {selectedBrandId === brand.id && (
-                                    <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm">
+                                    <div className="absolute -top-2 -right-2 bg-brand-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm">
                                         ✓
                                     </div>
                                 )}
@@ -241,8 +241,8 @@ export function Step1ProductSelection({
                                             onClick={() => setSelectedModel(model)}
                                             className={`px-3 py-3 rounded-xl border-2 font-bold text-sm transition-all ${
                                                 selected
-                                                    ? "bg-slate-900 border-orange-500 text-white shadow-lg shadow-orange-500/10"
-                                                    : "bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-500"
+                                                    ? "bg-fe-surface border-brand-500 text-white shadow-lg shadow-brand-500/10"
+                                                    : "bg-fe-surface border-fe-border text-fe-text hover:border-fe-muted/50"
                                             }`}
                                         >
                                             {model}
@@ -258,7 +258,7 @@ export function Step1ProductSelection({
                     <label className="block text-sm font-medium text-white mb-2">
                         Kalınlık
                         {getDowelLength && selectedKalinlik && (
-                            <span className="ml-2 text-xs text-slate-400">
+                            <span className="ml-2 text-xs text-fe-muted">
                                 (Dübel: {getDowelLength(parseInt(selectedKalinlik))}cm)
                             </span>
                         )}
@@ -274,8 +274,8 @@ export function Step1ProductSelection({
                                     onClick={() => setSelectedKalinlik(k.value)}
                                     className={`relative w-full px-0 py-2 rounded-xl border-2 font-bold text-sm transition-all ${
                                         selected
-                                            ? "bg-slate-900 border-orange-500 text-white shadow-lg shadow-orange-500/10"
-                                            : "bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-500"
+                                            ? "bg-fe-surface border-brand-500 text-white shadow-lg shadow-brand-500/10"
+                                            : "bg-fe-surface border-fe-border text-fe-text hover:border-fe-muted/50"
                                     }`}
                                 >
                                     {k.label}
@@ -300,9 +300,9 @@ export function Step1ProductSelection({
                             placeholder="Örn: 150"
                             value={metraj}
                             onChange={(e) => setMetraj(e.target.value)}
-                            className="w-full px-4 py-3 border-2 border-slate-700 rounded-xl bg-slate-950 text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all tabular-nums pr-12"
+                            className="w-full px-4 py-3 border-2 border-fe-border rounded-xl bg-fe-bg text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all tabular-nums pr-12"
                         />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">m²</span>
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-fe-muted font-bold">m²</span>
                     </div>
                 </div>
 
@@ -314,7 +314,7 @@ export function Step1ProductSelection({
                     <select
                         value={selectedCityCode ?? ""}
                         onChange={(e) => onCityChange(Number(e.target.value))}
-                        className="w-full px-4 py-3 border-2 border-slate-700 rounded-xl bg-slate-950 text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                        className="w-full px-4 py-3 border-2 border-fe-border rounded-xl bg-fe-bg text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
                     >
                         <option value="">İl seçiniz...</option>
                         {shippingZones.map((zone) => (
@@ -323,14 +323,14 @@ export function Step1ProductSelection({
                             </option>
                         ))}
                     </select>
-                    <p className="mt-2 text-[11px] text-slate-400">
+                    <p className="mt-2 text-[11px] text-fe-muted">
                         Nakliye ve iskonto oranı şehir bazlı uygulanır.
                     </p>
                 </div>
 
                 {/* Kapasite satırı (eski görünüm) */}
                 {currentLogistics && (
-                    <div className="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
+                    <div className="px-4 py-2 rounded-xl bg-fe-surface border border-fe-border text-xs text-fe-muted">
                         Kamyon: {Math.round(currentLogistics.lorry_capacity_m2)} m² • TIR: {Math.round(currentLogistics.truck_capacity_m2)} m²
                     </div>
                 )}

@@ -54,3 +54,22 @@ nul
 *.xlsx
 *.xls
 *.pdf
+
+# MCP config (contains API tokens)
+.mcp.json
+
+# Large local image assets
+wp-imagelar/
+scripts/generated/wp-images-clean/
+scripts/generated/wp-images-clean-webp/
+
+# WordPress export XMLs (large)
+*.xml
+
+# Local screenshots
+Screenshot_*.png
+NExus.png
+nexusstyle-tasyunufiyatlari.png
+
+# Reference project (visual only)
+Nexus/

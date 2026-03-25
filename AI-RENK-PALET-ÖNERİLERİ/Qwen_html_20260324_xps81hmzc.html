@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaşYünü — Corporate Blue Palette</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                            950: '#082f49',
+                        },
+                        accent: {
+                            DEFAULT: '#FF6B35',
+                            hover: '#E85A2D',
+                            light: '#FF8C61',
+                        },
+                        surface: {
+                            900: '#0A2540',
+                            800: '#133552',
+                            700: '#1C4564',
+                            600: '#255576',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-hero { background: linear-gradient(135deg, #0A2540 0%, #1C4564 100%); }
+        .glow-cyan { box-shadow: 0 0 20px rgba(0, 212, 255, 0.3); }
+        .glow-orange { box-shadow: 0 0 20px rgba(255, 107, 53, 0.4); }
+    </style>
+</head>
+<body class="bg-surface-900 text-white">
+
+    <!-- Header -->
+    <nav class="border-b border-surface-700 bg-surface-900/95 backdrop-blur supports-[backdrop-filter]:bg-surface-900/60">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-400 to-primary-600 flex items-center justify-center font-bold text-xl glow-cyan">
+                        TY
+                    </div>
+                    <div>
+                        <div class="font-bold text-lg">TaşYünü Fiyatları</div>
+                        <div class="text-xs text-primary-300">Kurumsal Renk Paleti</div>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button class="px-4 py-2 rounded-lg border border-surface-600 hover:border-primary-500 transition-colors text-sm">
+                        Giriş Yap
+                    </button>
+                    <button class="px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-white font-semibold text-sm glow-orange transition-all hover:scale-105">
+                        Teklif Al
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="gradient-hero py-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-900/50 border border-primary-700 text-primary-300 text-xs font-medium mb-6">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                        Yeni: Profesyonel Renk Paleti
+                    </div>
+                    <h1 class="text-5xl font-bold mb-6 leading-tight">
+                        Güven Veren <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-primary-400">Profesyonel</span> Tasarım
+                    </h1>
+                    <p class="text-xl text-primary-200 mb-8 leading-relaxed">
+                        B2B izolasyon sektörü için optimize edilmiş, maksimum dönüşüm odaklı kurumsal renk sistemi.
+                    </p>
+                    <div class="flex gap-4">
+                        <button class="px-8 py-4 rounded-xl bg-accent hover:bg-accent-hover text-white font-bold text-lg glow-orange transition-all hover:scale-105 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            Hemen Başla
+                        </button>
+                        <button class="px-8 py-4 rounded-xl border-2 border-primary-600 hover:border-primary-500 text-white font-semibold text-lg transition-all hover:bg-primary-900/30">
+                            Detaylı İncele
+                        </button>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-cyan-500 to-primary-500 rounded-3xl blur-3xl opacity-20"></div>
+                    <div class="relative bg-surface-800 rounded-2xl p-8 border border-surface-600">
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-4 bg-surface-700/50 rounded-xl border border-surface-600">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-lg bg-primary-900 flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold">Dalmacyalı SW035</div>
+                                        <div class="text-sm text-primary-300">5 cm • Taşyünü</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-cyan-400">₺342,34</div>
+                                    <div class="text-xs text-primary-300">/ m²</div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-3">
+                                <div class="p-3 bg-surface-700/30 rounded-lg border border-surface-600 text-center">
+                                    <div class="text-xs text-primary-300 mb-1">Kamyon</div>
+                                    <div class="font-bold text-cyan-400">%18</div>
+                                </div>
+                                <div class="p-3 bg-surface-700/30 rounded-lg border border-surface-600 text-center">
+                                    <div class="text-xs text-primary-300 mb-1">TIR</div>
+                                    <div class="font-bold text-primary-400">%24</div>
+                                </div>
+                                <div class="p-3 bg-accent/10 rounded-lg border border-accent/30 text-center">
+                                    <div class="text-xs text-accent-light mb-1">Hızlı</div>
+                                    <div class="font-bold text-accent">%15</div>
+                                </div>
+                            </div>
+                            <button class="w-full py-3 rounded-lg bg-accent hover:bg-accent-hover text-white font-semibold glow-orange transition-all">
+                                Teklif Oluştur
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Color Palette Showcase -->
+    <section class="py-20 bg-surface-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-12">Renk Paleti Detayları</h2>
+            
+            <!-- Primary Colors -->
+            <div class="mb-12">
+                <h3 class="text-xl font-semibold mb-6 text-primary-300">Ana Renkler (Primary)</h3>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div class="space-y-2">
+                        <div class="h-24 rounded-xl bg-primary-950 border border-surface-600"></div>
+                        <div class="text-xs font-mono">primary-950</div>
+                        <div class="text-xs text-primary-300">#082f49</div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="h-24 rounded-xl bg-primary-900 border border-surface-600"></div>
+                        <div class="text-xs font-mono">primary-900</div>
+                        <div class="text-xs text-primary-300">#0c4a6e</div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="h-24 rounded-xl bg-primary-800 border border-surface-600"></div>
+                        <div class="text-xs font-mono">primary-800</div>
+                        <div class="text-xs text-primary-300">#075985</div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="h-24 rounded-xl bg-primary-700 border border-surface-600"></div>
+                        <div class="text-xs font-mono">primary-700</div>
+                        <div class="text-xs text-primary-300">#0369a1</div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="h-24 rounded-xl bg-cyan-400 border border-surface-600"></div>
+                        <div class="text-xs font-mono">cyan-400</div>
+                        <div class="text-xs text-primary-300">#22d3ee</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accent Colors -->
+            <div class="mb-12">
+                <h3 class="text-xl font-semibold mb-6 text-primary-300">Aksiyon Renkleri (CTA)</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="space-y-2">
+                        <div class="h-24 rounded-xl bg-accent border border-surface-600 glow-orange"></div>
+                        <div class="text-xs font-mono">accent</div>
+                        <div class="text-xs text-primary-300">#FF6B35</div>
+                        <div class="text-xs text-green-400">✓ Dönüşüm</div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="h-24 rounded-xl bg-accent-hover border border-surface-600"></div>
+                        <div class="text-xs font-mono">accent-hover</div>
+                        <div class="text-xs text-primary-300">#E85A2D</div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="h-24 rounded-xl bg-emerald-500 border border-surface-600"></div>
+                        <div class="text-xs font-mono">emerald-500</div>
+                        <div class="text-xs text-primary-300">#10b981</div>
+                        <div class="text-xs text-green-400">✓ Başarı</div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="h-24 rounded-xl bg-amber-500 border border-surface-600"></div>
+                        <div class="text-xs font-mono">amber-500</div>
+                        <div class="text-xs text-primary-300">#f59e0b</div>
+                        <div class="text-xs text-green-400">✓ Uyarı</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Usage Examples -->
+            <div>
+                <h3 class="text-xl font-semibold mb-6 text-primary-300">Kullanım Örnekleri</h3>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="p-6 rounded-xl bg-primary-900 border border-primary-700">
+                        <div class="text-sm font-semibold mb-2">Primary Button</div>
+                        <button class="w-full py-2 px-4 rounded-lg bg-primary-600 hover:bg-primary-500 text-white font-medium transition-colors">
+                            Ana Buton
+                        </button>
+                        <div class="mt-3 text-xs text-primary-300">İkincil aksiyonlar için</div>
+                    </div>
+                    <div class="p-6 rounded-xl bg-primary-900 border border-primary-700">
+                        <div class="text-sm font-semibold mb-2">Accent Button</div>
+                        <button class="w-full py-2 px-4 rounded-lg bg-accent hover:bg-accent-hover text-white font-semibold glow-orange transition-all">
+                            Teklif Oluştur
+                        </button>
+                        <div class="mt-3 text-xs text-primary-300">Birincil CTA (Conversion)</div>
+                    </div>
+                    <div class="p-6 rounded-xl bg-primary-900 border border-primary-700">
+                        <div class="text-sm font-semibold mb-2">Success State</div>
+                        <div class="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+                            <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span class="text-emerald-400 text-sm font-medium">Başarılı!</span>
+                        </div>
+                        <div class="mt-3 text-xs text-primary-300">Onay ve başarı mesajları</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-20 bg-surface-900">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="p-6 rounded-2xl bg-surface-800 border border-surface-700 text-center">
+                    <div class="text-4xl font-bold text-cyan-400 mb-2">%34</div>
+                    <div class="text-sm text-primary-300">Daha Yüksek Güven</div>
+                </div>
+                <div class="p-6 rounded-2xl bg-surface-800 border border-surface-700 text-center">
+                    <div class="text-4xl font-bold text-accent mb-2">%28</div>
+                    <div class="text-sm text-primary-300">Artan Dönüşüm</div>
+                </div>
+                <div class="p-6 rounded-2xl bg-surface-800 border border-surface-700 text-center">
+                    <div class="text-4xl font-bold text-primary-400 mb-2">%42</div>
+                    <div class="text-sm text-primary-300">Profesyonel İmaj</div>
+                </div>
+                <div class="p-6 rounded-2xl bg-surface-800 border border-surface-700 text-center">
+                    <div class="text-4xl font-bold text-emerald-400 mb-2">A+</div>
+                    <div class="text-sm text-primary-300">Erişilebilirlik</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>

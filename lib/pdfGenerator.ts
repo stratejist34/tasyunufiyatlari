@@ -111,7 +111,7 @@ function addWrappedText(doc: jsPDF, text: string, x: number, y: number, maxWidth
     return y + (lines.length * lineHeight);
 }
 
-function generateFallbackQuotePDF(data: PDFQuoteData): void {
+function generateFallbackQuotePDF(data: PDFQuoteData): string {
     const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -192,12 +192,14 @@ function generateFallbackQuotePDF(data: PDFQuoteData): void {
     y += 7;
     doc.text(`m2 Fiyat: ${fmtMoney(data.pricePerM2)}`, 14, y);
 
+    const blobUrl = doc.output('bloburl') as unknown as string;
     doc.save(buildSafeFileName(data));
+    return blobUrl;
 }
 
 // --- Ana Fonksiyon ---
 
-export async function generateQuotePDF(data: PDFQuoteData): Promise<void> {
+export async function generateQuotePDF(data: PDFQuoteData): Promise<string> {
     if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         const html2canvas = (await import('html2canvas')).default;
 
@@ -219,7 +221,7 @@ export async function generateQuotePDF(data: PDFQuoteData): Promise<void> {
         const SELLER = {
             name: 'ÖZERGRUP YALITIM ve İZOLASYON AŞ.',
             address: 'Mescit Mah. Ulugüney Sk. Harman Plaza Blok K2 No:15 Tuzla / İstanbul',
-            phones: '0 510 220 79 14 - 0 216 507 11 25',
+            phones: '0 532 204 18 25 - 0 216 507 11 25',
             website: 'www.ozeryapiinsaat.com',
         };
 
@@ -563,12 +565,15 @@ export async function generateQuotePDF(data: PDFQuoteData): Promise<void> {
 
             doc.addImage(imgData, 'JPEG', 0, 0, finalWidth, finalHeight, undefined, 'FAST');
 
+            const blobUrl = doc.output('bloburl') as unknown as string;
             doc.save(buildSafeFileName(data));
+            return blobUrl;
         } catch (error) {
             console.error('Rich PDF render failed, falling back to basic PDF:', error);
-            generateFallbackQuotePDF(data);
+            return generateFallbackQuotePDF(data);
         } finally {
             container.remove();
         }
     }
+    return '';
 }
