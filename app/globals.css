@@ -1,10 +1,100 @@
 @import "tailwindcss";
 
+/* ─── Nexus Animation Keyframes ─────────────────────────────────── */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes spin-slower {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+@keyframes nx-pulse-ring {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(1.08); }
+}
+@keyframes nx-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; }
+}
+
+@theme inline {
+  --animate-spin-slow: spin-slow 3s linear infinite;
+  --animate-spin-slower: spin-slower 6s linear infinite;
+  --animate-nx-pulse-ring: nx-pulse-ring 2s ease-in-out infinite;
+  --animate-nx-fade-in: nx-fade-in 0.4s ease-out;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
   --primary: #0f172a;
-  --brand: #f97316;
+  --brand: #d4845a;   /* Bakır — frontend CTA (eskiden #f97316 turuncu) */
+
+  /* ─── Admin: Antrasit + Altın ───────────────────────────────────────
+     Altın (#c9a84c) YALNIZCA: aktif nav, kritik metric highlight,
+     seçili durumlar, küçük accent detayları.
+     Tüm card border / buton / grafik için ANA RENK DEĞİL.
+     Fonksiyonel renkler (success/warning/danger) ayrı tutulur.
+  ───────────────────────────────────────────────────────────────────── */
+  --admin-bg:           #111111;
+  --admin-bg-2:         #1a1a1a;
+  --admin-panel:        rgba(26, 26, 26, 0.88);
+  --admin-panel-soft:   rgba(32, 30, 28, 0.78);
+  --admin-card:         rgba(28, 26, 24, 0.92);
+  --admin-card-2:       rgba(34, 32, 28, 0.90);
+  --admin-border:       rgba(72, 65, 52, 0.28);           /* ılık nötr */
+  --admin-border-strong: rgba(201, 168, 76, 0.28);        /* altın — aktif durumlar */
+  --admin-text:         #e8e6e1;                          /* ılık beyaz */
+  --admin-text-soft:    #8c8880;
+  --admin-text-muted:   #665f56;
+  --admin-accent:       #c9a84c;   /* Altın — aktif nav · kritik highlight · küçük accent */
+  --admin-accent-2:     #b87333;   /* Bakır — secondary */
+  --admin-accent-green: #22c55e;   /* Fonksiyonel: success */
+  --admin-accent-amber: #f59e0b;   /* Fonksiyonel: warning */
+  --admin-accent-red:   #ef4444;   /* Fonksiyonel: danger */
+  --admin-glow: 0 0 0 1px rgba(201, 168, 76, 0.06), 0 18px 48px rgba(8, 6, 4, 0.50);
+
+  /* ─── Nexus Admin Tokens (Antrasit + Altın) ─────────────────────── */
+  --nx-bg:            #111111;
+  --nx-bg-2:          #1a1a1a;
+  --nx-card:          rgba(28, 26, 24, 0.50);
+  --nx-border:        rgba(60, 56, 46, 0.50);
+  --nx-border-accent: rgba(201, 168, 76, 0.28);
+  --nx-gold:          #c9a84c;    /* aktif nav + kritik highlight */
+  --nx-copper:        #b87333;    /* secondary accent */
+  --nx-cyan:          #c9a84c;    /* backward-compat alias → altın */
+  --nx-purple:        #a855f7;    /* Fonksiyonel */
+  --nx-blue:          #3388ff;    /* Fonksiyonel */
+  --nx-green:         #22c55e;    /* Success */
+  --nx-amber:         #f59e0b;    /* Warning */
+  --nx-red:           #ef4444;    /* Danger */
+  --nx-text:          #e8e6e1;
+  --nx-text-soft:     #8c8880;
+  --nx-text-muted:    #665f56;
+  --nx-glow-gold:     0 0 20px rgba(201, 168, 76, 0.12);
+  --nx-glow-cyan:     0 0 20px rgba(201, 168, 76, 0.12);  /* backward-compat */
+  --nx-glow-purple:   0 0 20px rgba(168, 85, 247, 0.15);
+
+  /* ─── Frontend: Grafit + Bakır ─────────────────────────────────────
+     Gercek grafit — mavi-bias temizlendi (B-R ≤ 6).
+     Bakir (#d4845a) CTA ana rengi.
+     Onceki degerler (mavi-bias yuksek):
+       bg #0c1117 (B-R=11), surface #131a23 (B-R=16),
+       raised #181f2b (B-R=19), border rgba(30,42,56) (B-R=26),
+       muted #6b7a8d (B-R=34) — hepsi navy gorunuyordu.
+  ─────────────────────────────────────────────────────────────────── */
+  --fe-bg:             #0b0b0c;          /* sayfa zemini — near-black, B-R=1 */
+  --fe-surface:        #131315;          /* header, footer, section — dark gray, B-R=2 */
+  --fe-surface-raised: #1c1c21;          /* kart yüzeyi — slight metallic, B-R=5 */
+  --fe-border:         rgba(46, 46, 52, 0.65);   /* neutral border, B-R=6 */
+  --fe-border-subtle:  rgba(46, 46, 52, 0.35);
+  --fe-text:           #d6d6de;          /* light gray text, B-R=8 */
+  --fe-muted:          #6f6f78;
+  --fe-muted-strong:   #9a9aa3;          /* neutral muted — artik steel-blue degil, B-R=9 */
+  --fe-accent:         #d4845a;          /* Bakır CTA */
+  --fe-accent-hover:   #c46d3f;
+  --fe-glow:           0 0 20px rgba(212, 132, 90, 0.15);
 }
 
 @theme inline {
@@ -15,6 +105,28 @@
   --font-sans: var(--font-geist-sans);
   --font-heading: var(--font-barlow);
   --font-mono: var(--font-geist-mono);
+
+  /* ─── Grafit frontend yüzey sınıfları (dogrudan hex — var() calismiyor) */
+  --color-fe-bg:      #0b0b0c;
+  --color-fe-surface: #131315;
+  --color-fe-raised:  #1c1c21;
+  --color-fe-border:  rgba(46, 46, 52, 0.65);
+  --color-fe-text:    #d6d6de;
+  --color-fe-muted:   #6f6f78;
+  --color-fe-muted-strong: #9a9aa3;
+
+  /* ─── Bakır brand skalası (orange-* → brand-* geçişi) ───────────── */
+  --color-brand-50:   #fdf5ef;
+  --color-brand-100:  #fae6d2;
+  --color-brand-200:  #f4c9a0;
+  --color-brand-300:  #eca56c;
+  --color-brand-400:  #d4845a;
+  --color-brand-500:  #c46d3f;
+  --color-brand-600:  #a85432;
+  --color-brand-700:  #8a3f27;
+  --color-brand-800:  #6e3221;
+  --color-brand-900:  #58291c;
+  --color-brand-950:  #2e130d;
 }
 
 body {
@@ -22,3 +134,272 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
+
+@layer components {
+  .admin-nexus-shell {
+    background:
+      radial-gradient(circle at top left, rgba(201, 168, 76, 0.04), transparent 22%),
+      radial-gradient(circle at bottom right, rgba(184, 115, 51, 0.03), transparent 18%),
+      linear-gradient(135deg, var(--admin-bg) 0%, var(--admin-bg-2) 45%, #0d0b08 100%);
+    color: var(--admin-text);
+  }
+
+  .admin-nexus-grid {
+    position: relative;
+  }
+
+  .admin-nexus-grid::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(80, 70, 50, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(80, 70, 50, 0.05) 1px, transparent 1px);
+    background-size: 36px 36px;
+    mask-image: radial-gradient(circle at center, black 28%, transparent 88%);
+    opacity: 0.45;
+  }
+
+  .admin-nexus-topbar {
+    background: linear-gradient(180deg, rgba(20, 20, 20, 0.95), rgba(18, 18, 18, 0.82));
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--admin-border);
+    box-shadow: 0 12px 36px rgba(4, 3, 2, 0.42);
+  }
+
+  .admin-nexus-panel {
+    background: linear-gradient(180deg, rgba(28, 26, 24, 0.94), rgba(22, 20, 18, 0.88));
+    border: 1px solid var(--admin-border);
+    box-shadow: var(--admin-glow);
+    backdrop-filter: blur(18px);
+    border-radius: 1.25rem;
+  }
+
+  .admin-nexus-card {
+    background: linear-gradient(180deg, var(--admin-card-2), var(--admin-card));
+    border: 1px solid var(--admin-border);
+    box-shadow: 0 12px 32px rgba(4, 3, 2, 0.38);
+    border-radius: 1rem;
+    backdrop-filter: blur(12px);
+  }
+
+  .admin-nexus-subtle {
+    background: linear-gradient(180deg, rgba(28, 26, 24, 0.72), rgba(24, 22, 20, 0.56));
+    border: 1px solid rgba(72, 65, 52, 0.18);
+    border-radius: 0.875rem;
+  }
+
+  .admin-nexus-tab-active {
+    background: linear-gradient(180deg, rgba(42, 38, 22, 0.96), rgba(36, 32, 16, 0.90));
+    color: var(--admin-accent);
+    border-color: var(--admin-border-strong);
+    box-shadow: inset 0 1px 0 rgba(201, 168, 76, 0.16), 0 10px 24px rgba(4, 3, 2, 0.35);
+  }
+
+  .admin-nexus-tab {
+    border: 1px solid transparent;
+    color: var(--admin-text-soft);
+  }
+
+  .admin-nexus-tab:hover {
+    color: var(--admin-text);
+    background: rgba(30, 28, 24, 0.72);
+    border-color: rgba(72, 65, 52, 0.16);
+  }
+
+  .admin-nexus-input {
+    background: rgba(26, 24, 22, 0.92);
+    border: 1px solid rgba(72, 65, 52, 0.28);
+    color: var(--admin-text);
+    border-radius: 0.85rem;
+  }
+
+  .admin-nexus-input:focus {
+    outline: none;
+    border-color: rgba(201, 168, 76, 0.45);
+    box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.10);
+  }
+
+  .admin-nexus-button-secondary {
+    background: rgba(30, 28, 24, 0.90);
+    border: 1px solid rgba(72, 65, 52, 0.22);
+    color: var(--admin-text);
+    border-radius: 0.85rem;
+  }
+
+  .admin-nexus-button-secondary:hover {
+    background: rgba(38, 35, 28, 0.96);
+    border-color: rgba(201, 168, 76, 0.18);
+  }
+
+  .admin-nexus-table-wrap {
+    overflow-x: auto;
+    border: 1px solid rgba(72, 65, 52, 0.16);
+    border-radius: 1rem;
+    background: linear-gradient(180deg, rgba(18, 16, 14, 0.74), rgba(14, 13, 11, 0.60));
+  }
+
+  .admin-nexus-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .admin-nexus-table thead {
+    background: rgba(34, 32, 26, 0.90);
+  }
+
+  .admin-nexus-table th {
+    color: var(--admin-text-soft);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+  }
+
+  .admin-nexus-table tbody {
+    background: rgba(18, 16, 14, 0.32);
+  }
+
+  .admin-nexus-table tbody tr {
+    border-top: 1px solid rgba(72, 65, 52, 0.14);
+    transition: background-color 180ms ease;
+  }
+
+  .admin-nexus-table tbody tr:hover {
+    background: rgba(42, 38, 28, 0.42);
+  }
+
+  .admin-nexus-group {
+    border: 1px solid rgba(72, 65, 52, 0.20);
+    border-radius: 1rem;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(28, 26, 22, 0.88), rgba(22, 20, 18, 0.78));
+    box-shadow: 0 10px 28px rgba(4, 3, 2, 0.28);
+  }
+
+  .admin-nexus-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.95rem 1rem;
+    border-bottom: 1px solid rgba(72, 65, 52, 0.16);
+    background: linear-gradient(180deg, rgba(36, 33, 24, 0.98), rgba(30, 28, 20, 0.92));
+  }
+
+  /* ─── Nexus Layout Shell ─────────────────────────────────────────── */
+  .nx-shell {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #111111 0%, #1a1a1a 50%, #0d0b08 100%);
+    color: var(--nx-text);
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .nx-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 240px;
+    background: linear-gradient(180deg, rgba(22, 22, 22, 0.98), rgba(16, 16, 14, 0.96));
+    border-right: 1px solid var(--nx-border);
+    backdrop-filter: blur(20px);
+    display: flex;
+    flex-direction: column;
+    z-index: 40;
+    overflow-y: auto;
+  }
+
+  .nx-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    height: 56px;
+    background: linear-gradient(180deg, rgba(18, 18, 18, 0.96), rgba(16, 16, 14, 0.88));
+    border-bottom: 1px solid var(--nx-border);
+    backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    gap: 1rem;
+  }
+
+  .nx-card {
+    background: var(--nx-card);
+    border: 1px solid var(--nx-border);
+    backdrop-filter: blur(12px);
+    border-radius: 0.75rem;
+  }
+
+  .nx-card-glow-cyan {
+    box-shadow: var(--nx-glow-gold);
+    border-color: var(--nx-border-accent);
+  }
+
+  .nx-card-glow-purple {
+    box-shadow: var(--nx-glow-purple);
+    border-color: rgba(168, 85, 247, 0.30);
+  }
+
+  .nx-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--nx-text-soft);
+    transition: all 180ms ease;
+    cursor: pointer;
+    border: 1px solid transparent;
+    position: relative;
+  }
+
+  .nx-nav-item:hover {
+    background: rgba(38, 35, 28, 0.60);
+    color: var(--nx-text);
+    border-color: rgba(60, 56, 46, 0.30);
+  }
+
+  .nx-nav-item.active {
+    background: rgba(201, 168, 76, 0.08);
+    color: var(--nx-gold);
+    border-color: rgba(201, 168, 76, 0.20);
+    border-left: 2px solid var(--nx-gold);
+  }
+
+  .nx-metric-card {
+    background: var(--nx-card);
+    border: 1px solid var(--nx-border);
+    backdrop-filter: blur(12px);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: all 200ms ease;
+    border-top: 2px solid transparent;
+  }
+
+  .nx-metric-card:hover {
+    border-color: var(--nx-border-accent);
+    box-shadow: var(--nx-glow-gold);
+    transform: translateY(-2px);
+  }
+
+  .nx-metric-card.color-cyan   { border-top-color: var(--nx-gold); }
+  .nx-metric-card.color-blue   { border-top-color: var(--nx-blue); }
+  .nx-metric-card.color-purple { border-top-color: var(--nx-purple); }
+  .nx-metric-card.color-green  { border-top-color: var(--nx-green); }
+  .nx-metric-card.color-amber  { border-top-color: var(--nx-amber); }
+  .nx-metric-card.color-red    { border-top-color: var(--nx-red); }
+
+  /* Spin animations as utility classes */
+  .animate-spin-slow   { animation: spin-slow   3s linear infinite; }
+  .animate-spin-slower { animation: spin-slower  6s linear infinite; }
+  .animate-nx-pulse    { animation: nx-pulse-ring 2s ease-in-out infinite; }
+  .animate-nx-fade-in  { animation: nx-fade-in   0.4s ease-out both; }
+
+}
+
+

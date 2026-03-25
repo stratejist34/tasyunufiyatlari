@@ -1,0 +1,331 @@
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
+import { Suspense } from 'react';
+import type { Metadata } from 'next';
+import ProductImage     from '@/components/catalog/ProductImage';
+import ThicknessSelector from '@/components/catalog/ThicknessSelector';
+import ProductPricePanel from '@/components/catalog/ProductPricePanel';
+import { getCatalogProduct } from '@/lib/catalog/server';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { unstable_cache } from 'next/cache';
+import SiteHeader from '@/components/shared/SiteHeader';
+import SiteFooter from '@/components/shared/SiteFooter';
+import { ErrorBoundaryWrapper } from '@/components/shared/ErrorBoundaryWrapper';
+
+// ISR: 60 sn cache, admin güncellemesinde revalidatePath ile invalidate edilebilir
+export const revalidate = 60;
+
+// logistics_capacity nadiren değişir — 1 saatlik server-side cache
+const getLogisticsCapacity = unstable_cache(
+  async () => {
+    const supabase = createServerSupabaseClient();
+    const { data } = await supabase
+      .from('logistics_capacity')
+      .select('thickness, lorry_capacity_m2, truck_capacity_m2, package_size_m2')
+      .order('thickness');
+    return (data ?? []) as { thickness: number; lorry_capacity_m2: string | number; truck_capacity_m2: string | number; package_size_m2: string | number }[];
+  },
+  ['logistics_capacity'],
+  { revalidate: 3600, tags: ['logistics'] }
+);
+
+// ─── Şehir öncelik sırası ────────────────────────────────────
+
+const PRIORITY_CITIES = [
+  'İstanbul', 'Kocaeli', 'Bursa', 'Bolu', 'Sakarya',
+  'Düzce', 'Tekirdağ', 'Yalova', 'Balıkesir',
+];
+
+function sortZones(zones: { city_code: number; city_name: string; base_shipping_cost: string | number; optimix_levha_discount: string | number; discount_kamyon: string | number; discount_tir: string | number }[]) {
+  const prio = new Map(PRIORITY_CITIES.map((n, i) => [n.toLocaleLowerCase('tr-TR'), i]));
+  return [...zones].sort((a, b) => {
+    const ak = a.city_name.toLocaleLowerCase('tr-TR');
+    const bk = b.city_name.toLocaleLowerCase('tr-TR');
+    const ai = prio.get(ak);
+    const bi = prio.get(bk);
+    if (ai != null && bi != null) return ai - bi;
+    if (ai != null) return -1;
+    if (bi != null) return 1;
+    return a.city_name.localeCompare(b.city_name, 'tr-TR');
+  });
+}
+
+// ─── Tip sabitleri ───────────────────────────────────────────
+
+const KATEGORI_LABELS: Record<string, string> = {
+  'tasyunu-levha': 'Taşyünü Levha',
+  'eps-levha':     'EPS Levha',
+  aksesuar:        'Aksesuar',
+};
+
+const BADGE_MAP: Record<string, { label: string; cls: string }> = {
+  single_only:     { label: 'Direkt Alım',   cls: 'bg-green-900/50 text-green-400 border-green-800'  },
+  single_or_quote: { label: 'Alım / Teklif', cls: 'bg-fe-raised/50 text-fe-muted border-fe-border'   },
+  quote_only:      { label: 'Teklif',         cls: 'bg-amber-900/50 text-amber-400 border-amber-800' },
+  system_only:     { label: 'Sistem Ürünü',   cls: 'bg-fe-raised text-fe-muted border-fe-border'    },
+};
+
+// ─── Props ───────────────────────────────────────────────────
+
+interface Props {
+  params:       Promise<{ kategori: string; slug: string }>;
+  searchParams: Promise<{ kalinlik?: string }>;
+}
+
+// ─── Metadata ───────────────────────────────────────────────
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const data = await getCatalogProduct(slug);
+  if (!data) return { title: 'Ürün Bulunamadı' };
+  const { product } = data;
+  return {
+    title:       product.meta_title       ?? `${product.name} — TaşYünü Fiyatları`,
+    description: product.meta_description ?? product.catalog_description ?? undefined,
+  };
+}
+
+// ─── Page ────────────────────────────────────────────────────
+
+export default async function UrunDetayPage({ params, searchParams }: Props) {
+  const { slug, kategori }     = await params;
+  const { kalinlik: kalinlikParam } = await searchParams;
+
+  // Paralel veri çekimi (logistics ayrı cache'ten)
+  const supabase = createServerSupabaseClient();
+  const [productData, zonesResult, logisticsCapacity] = await Promise.all([
+    getCatalogProduct(slug, kategori),
+    supabase
+      .from('shipping_zones')
+      .select('city_code, city_name, base_shipping_cost, optimix_levha_discount, discount_kamyon, discount_tir')
+      .eq('is_active', true)
+      .order('city_name'),
+    getLogisticsCapacity(),
+  ]);
+
+  if (!productData) notFound();
+
+  const { product, decision } = productData;
+  const shippingZones = sortZones((zonesResult.data ?? []) as {
+    city_code: number; city_name: string; base_shipping_cost: string | number;
+    optimix_levha_discount: string | number; discount_kamyon: string | number; discount_tir: string | number;
+  }[]);
+
+  // Seçili kalınlık (URL'den): "9cm" → 9
+  const selectedThickness = kalinlikParam ? parseInt(kalinlikParam, 10) : null;
+  const isValidThickness  =
+    selectedThickness !== null &&
+    Array.isArray(product.thickness_options) &&
+    product.thickness_options.includes(selectedThickness);
+
+  const activePrefill = product.wizard_prefill
+    ? { ...product.wizard_prefill, kalinlik: isValidThickness ? selectedThickness : product.wizard_prefill.kalinlik }
+    : null;
+
+  const badge = BADGE_MAP[product.rules.sales_mode] ?? BADGE_MAP.quote_only;
+  const kategoriLabel = KATEGORI_LABELS[kategori] ?? kategori;
+
+  // ─── Schema.org JSON-LD ──────────────────────────────────────
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.catalog_description ?? undefined,
+    brand: { '@type': 'Brand', name: product.brand.name },
+    category: product.category.name,
+    ...(product.base_price ? {
+      offers: {
+        '@type': 'Offer',
+        priceCurrency: 'TRY',
+        price: product.base_price,
+        availability: 'https://schema.org/InStock',
+      },
+    } : {}),
+  };
+
+  return (
+    <div className="min-h-screen bg-fe-bg flex flex-col">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <SiteHeader />
+
+      {/* Breadcrumb */}
+      <div className="bg-fe-surface/80 border-b border-fe-border/60">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-3.5">
+          <nav className="flex items-center gap-1 text-xs text-fe-muted flex-wrap">
+            <Link href="/" className="hover:text-brand-400 transition-colors">Ana Sayfa</Link>
+            <ChevronRight className="w-3 h-3 flex-shrink-0" />
+            <Link href="/urunler" className="hover:text-brand-400 transition-colors">Ürünler</Link>
+            <ChevronRight className="w-3 h-3 flex-shrink-0" />
+            <Link href={`/urunler/${kategori}`} className="hover:text-brand-400 transition-colors">
+              {kategoriLabel}
+            </Link>
+            <ChevronRight className="w-3 h-3 flex-shrink-0" />
+            <span className="text-fe-text truncate max-w-[200px]">{product.name}</span>
+          </nav>
+        </div>
+      </div>
+
+      {/* Ana İçerik */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 lg:py-12">
+        <ErrorBoundaryWrapper>
+
+        {/* Mobil: başlık + kalınlık seçimi — fiyat paneli öncesinde bağlam verir */}
+        <div className="lg:hidden mb-5 space-y-4">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="text-xs text-brand-500 font-semibold uppercase tracking-wider">
+                {product.brand.name}
+              </span>
+              <span className="text-fe-muted/60">·</span>
+              <span className="text-xs text-fe-muted">{product.category.name}</span>
+              <span className={`text-xs px-2 py-0.5 rounded border font-medium ${badge.cls}`}>
+                {badge.label}
+              </span>
+            </div>
+            <h1 className="text-2xl font-bold text-white leading-tight mb-1">
+              {product.name}
+            </h1>
+            {product.model && (
+              <p className="text-fe-muted text-sm">{product.model}</p>
+            )}
+          </div>
+
+          {product.thickness_options && product.thickness_options.length > 0 && (
+            <div>
+              <p className="text-xs text-fe-muted uppercase tracking-wide font-medium mb-2.5">
+                Kalınlık
+              </p>
+              <Suspense fallback={
+                <div className="flex flex-wrap gap-2">
+                  {product.thickness_options.map(t => (
+                    <span key={t} className="px-3 py-1.5 bg-fe-raised/60 text-fe-text text-sm rounded-lg border border-fe-border">
+                      {t} cm
+                    </span>
+                  ))}
+                </div>
+              }>
+                <ThicknessSelector
+                  thicknessOptions={product.thickness_options}
+                  popularThickness={product.wizard_prefill?.kalinlik ?? null}
+                />
+              </Suspense>
+            </div>
+          )}
+
+          <p className="text-[10px] text-fe-muted">
+            Seçtiğiniz kalınlığa göre fiyatlar aşağıda gösterilir
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 lg:gap-12 items-start">
+
+          {/* ── SOL: Ürün Bilgileri ─────────────────────────── */}
+          <div className="space-y-6 order-2 lg:order-1">
+
+            {/* Görsel */}
+            <ProductImage
+              src={product.image_cover}
+              alt={product.name}
+              priority
+              className="w-full aspect-[4/3] rounded-2xl"
+            />
+
+            {/* Başlık Bloğu — sadece desktop (mobilde üstteki lg:hidden blokta gösterilir) */}
+            <div className="hidden lg:block">
+              {/* Marka · Kategori · Satış Modu */}
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <span className="text-xs text-brand-500 font-semibold uppercase tracking-wider">
+                  {product.brand.name}
+                </span>
+                <span className="text-fe-muted/60">·</span>
+                <span className="text-xs text-fe-muted">{product.category.name}</span>
+                <span className={`text-xs px-2 py-0.5 rounded border font-medium ${badge.cls}`}>
+                  {badge.label}
+                </span>
+              </div>
+
+              {/* Ürün Adı */}
+              <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight mb-2">
+                {product.name}
+              </h1>
+
+              {product.model && (
+                <p className="text-fe-muted text-sm">{product.model}</p>
+              )}
+            </div>
+
+            {/* Kalınlık Seçici — sadece desktop */}
+            {product.thickness_options && product.thickness_options.length > 0 && (
+              <div className="hidden lg:block">
+                <p className="text-xs text-fe-muted uppercase tracking-wide font-medium mb-2.5">
+                  Kalınlık
+                </p>
+                <Suspense fallback={
+                  <div className="flex flex-wrap gap-2">
+                    {product.thickness_options.map(t => (
+                      <span key={t} className="px-3 py-1.5 bg-fe-raised/60 text-fe-text text-sm rounded-lg border border-fe-border">
+                        {t} cm
+                      </span>
+                    ))}
+                  </div>
+                }>
+                  <ThicknessSelector
+                    thicknessOptions={product.thickness_options}
+                    popularThickness={product.wizard_prefill?.kalinlik ?? null}
+                  />
+                </Suspense>
+              </div>
+            )}
+
+            {/* Açıklama */}
+            {product.catalog_description && (
+              <div className="pt-2 border-t border-fe-border/60">
+                <p className="text-xs text-fe-muted uppercase tracking-wide font-medium mb-3">
+                  Ürün Hakkında
+                </p>
+                <div className="bg-fe-raised/20 border-l-2 border-brand-500/40 pl-4 py-3 rounded-r-lg">
+                  <p className="text-fe-text text-sm leading-relaxed">{product.catalog_description}</p>
+                </div>
+                {product.rules.requires_system_context && (
+                  <p className="text-xs text-fe-muted mt-3 italic">
+                    Doğru ürün kombinasyonu için sistem hesaplama önerilir.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* ── SAĞ: Dönüşüm Paneli ─────────────────────────── */}
+          <div className="lg:sticky lg:top-6 order-1 lg:order-2">
+            <Suspense fallback={<PricePanelSkeleton />}>
+              <ProductPricePanel
+                product={product}
+                decision={decision}
+                prefill={activePrefill}
+                shippingZones={shippingZones}
+                logisticsCapacity={logisticsCapacity}
+                selectedThickness={isValidThickness ? selectedThickness : null}
+              />
+            </Suspense>
+          </div>
+
+        </div>
+        </ErrorBoundaryWrapper>
+      </div>
+
+      <SiteFooter />
+    </div>
+  );
+}
+
+// ─── Skeleton ────────────────────────────────────────────────
+
+function PricePanelSkeleton() {
+  return (
+    <div className="space-y-3 animate-pulse">
+      <div className="rounded-xl border border-fe-border bg-fe-raised/40 h-44" />
+      <div className="rounded-xl border border-fe-border bg-fe-raised/40 h-40" />
+    </div>
+  );
+}

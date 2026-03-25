@@ -52,6 +52,36 @@ export async function POST(req: NextRequest) {
     const payload = apiQuoteSchema.parse(body)
     const supabase = createServerSupabaseClient()
 
+    // Katalog kanalında tier eligibility'yi server tarafında doğrula.
+    // Wizard kendi hesabını yapıyor (özel tasyunu kuralları dahil), o kanalı atla.
+    if (
+      payload.sourceChannel === 'catalog' &&
+      (payload.vehicleType === 'lorry' || payload.vehicleType === 'truck')
+    ) {
+      const thicknessMm = payload.thicknessCm * 10
+      const { data: logRow } = await supabase
+        .from('logistics_capacity')
+        .select('lorry_capacity_m2, truck_capacity_m2')
+        .eq('thickness', thicknessMm)
+        .single()
+
+      if (logRow) {
+        const minM2 =
+          payload.vehicleType === 'lorry'
+            ? Number(logRow.lorry_capacity_m2)
+            : Number(logRow.truck_capacity_m2)
+        if (payload.areaM2 < minM2) {
+          return NextResponse.json(
+            {
+              ok: false,
+              error: `Bu metraj için ${payload.vehicleType === 'lorry' ? 'Kamyon' : 'TIR'} fiyatı uygulanamaz. Minimum ${minM2} m² gereklidir.`,
+            },
+            { status: 400 }
+          )
+        }
+      }
+    }
+
     const insertPayload = mapQuotePayload(payload)
 
     const { data, error } = await supabase
