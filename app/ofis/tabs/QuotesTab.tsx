@@ -121,7 +121,7 @@ export function QuotesTab() {
     const filteredQuotes = quotes.filter((quote) => {
         const matchesStatus = statusFilter === "all" || quote.status === statusFilter;
         const matchesRequestType = requestTypeFilter === "all" || quote.request_type === requestTypeFilter;
-        const haystack = [quote.customer_name, quote.customer_email, quote.customer_phone, quote.brand_name, quote.package_name, quote.city_name]
+        const haystack = [quote.customer_name, quote.customer_email, quote.customer_phone, quote.brand_name, quote.package_name, quote.city_name, quote.quote_code]
             .filter(Boolean).join(" ").toLocaleLowerCase("tr-TR");
         const matchesSearch = searchTerm.trim().length === 0 || haystack.includes(searchTerm.trim().toLocaleLowerCase("tr-TR"));
         return matchesStatus && matchesRequestType && matchesSearch;
@@ -371,6 +371,11 @@ export function QuotesTab() {
                                 <div className="min-w-0">
                                     <div className="flex flex-wrap items-center gap-2">
                                         <span className="text-base font-semibold text-white">{quote.customer_name}</span>
+                                        {quote.quote_code && (
+                                            <span className="rounded-md px-2 py-0.5 text-xs font-mono bg-white/8 text-slate-400 border border-white/10">
+                                                {quote.quote_code}
+                                            </span>
+                                        )}
                                         <span className={`rounded-full px-2.5 py-0.5 text-xs border ${urgencyStyle[quote.priority] ?? urgencyStyle.normal}`}>
                                             {urgencyLabel[quote.priority] ?? "Normal"}
                                         </span>
@@ -428,7 +433,12 @@ export function QuotesTab() {
                         <div className="sticky top-0 rounded-t-2xl border-b border-cyan-400/20 bg-gradient-to-r from-cyan-500/18 via-blue-500/14 to-slate-900 p-6 text-white shadow-[0_18px_34px_rgba(2,8,23,0.34)]">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h3 className="text-2xl font-bold mb-2">Teklif Detayı #{selectedQuote.id}</h3>
+                                    <h3 className="text-2xl font-bold mb-2">
+                                        Teklif Detayı #{selectedQuote.id}
+                                        {selectedQuote.quote_code && (
+                                            <span className="ml-3 text-base font-mono font-normal text-cyan-300/80">{selectedQuote.quote_code}</span>
+                                        )}
+                                    </h3>
                                     <p className="text-orange-100 text-sm">{new Date(selectedQuote.created_at).toLocaleString("tr-TR")}</p>
                                 </div>
                                 <button onClick={() => setSelectedQuote(null)} className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2">
