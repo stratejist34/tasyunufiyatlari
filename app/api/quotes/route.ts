@@ -43,6 +43,7 @@ function mapQuotePayload(payload: ReturnType<typeof apiQuoteSchema.parse>) {
     request_type: payload.submissionType,
     source_channel: payload.sourceChannel,
     status: payload.submissionType === 'pdf_quote' ? 'quoted' : 'pending',
+    quote_code: payload.quoteCode || null,
   }
 }
 

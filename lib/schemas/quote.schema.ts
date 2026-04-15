@@ -85,6 +85,7 @@ export const apiQuoteSchema = z.object({
   truckFillPercentage: z.number().min(0).optional().nullable(),
 
   packageItems: z.record(z.string(), z.any()),
+  quoteCode: z.string().optional().nullable(),
 })
 
 export type ApiQuoteData = z.infer<typeof apiQuoteSchema>

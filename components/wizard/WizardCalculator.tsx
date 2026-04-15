@@ -309,7 +309,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         return shippingZones.find((z) => z.city_code === selectedCityCode);
     };
 
-    const buildPdfData = (pkg: CalculatedPackage, customer: PdfOfferFormData) => {
+    const buildPdfData = (pkg: CalculatedPackage, customer: PdfOfferFormData, externalRefCode?: string) => {
         const cityName =
             (selectedCityCode
                 ? shippingZones.find(z => z.city_code === selectedCityCode)?.city_name
@@ -320,7 +320,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         const vatAmount = priceWithoutVat * 0.20;
         const grandTotal = priceWithoutVat + vatAmount;
 
-        const refCode = `TY${Date.now().toString().slice(-7)}`;
+        const refCode = externalRefCode || `TY${Date.now().toString().slice(-7)}`;
         const validityDate = getOfferValidityDate();
 
         const metrajNumber = Number(metraj) || 0;
@@ -406,6 +406,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         if (!selectedPackageForPdf) return;
         setIsSubmittingPdf(true);
         try {
+            const refCode = `TY${Date.now().toString().slice(-7)}`;
             const customerAddress = [data.deliveryAddress, data.district, data.city]
                 .filter(Boolean)
                 .join(' / ');
@@ -417,6 +418,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                 customerCompany: data.customerCompany || '',
                 customerAddress,
                 cityName: data.city || getSelectedCityName() || '',
+                quoteCode: refCode,
             });
 
             const quoteRes = await fetch('/api/quotes', {
@@ -437,7 +439,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                 throw new Error(quoteResult.error || "Teklif kaydı oluşturulamadı.");
             }
 
-            await generateQuotePDF(buildPdfData(selectedPackageForPdf, data));
+            await generateQuotePDF(buildPdfData(selectedPackageForPdf, data, refCode));
             setShowPdfOfferModal(false);
             setSelectedPackageForPdf(null);
         } catch (error) {
@@ -733,6 +735,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
             customerCompany?: string;
             customerAddress?: string;
             cityName?: string;
+            quoteCode?: string;
         }
     ) => {
         const selectedBrand = brands.find(b => b.id === selectedBrandId);
@@ -785,6 +788,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                 items: pkg.items,
                 logistics: pkg.logistics || null,
             },
+            quoteCode: overrides?.quoteCode || null,
         };
     };
 
@@ -795,7 +799,9 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         setIsSubmittingQuote(true);
 
         try {
-            const quotePayload = buildQuotePayload(selectedPackageForQuote, 'whatsapp_order');
+            const quotePayload = buildQuotePayload(selectedPackageForQuote, 'whatsapp_order', {
+                quoteCode: `TY${Date.now().toString().slice(-7)}`,
+            });
             const quoteRes = await fetch('/api/quotes', {
                 method: 'POST',
                 headers: {
