@@ -16,8 +16,10 @@ export function proxy(req: NextRequest) {
 
   if (authHeader) {
     const base64 = authHeader.replace('Basic ', '');
-    const decoded = Buffer.from(base64, 'base64').toString('utf-8');
-    const [user, pass] = decoded.split(':');
+    const decoded = atob(base64);
+    const colonIdx = decoded.indexOf(':');
+    const user = decoded.slice(0, colonIdx);
+    const pass = decoded.slice(colonIdx + 1);
 
     const expectedUser = process.env.ADMIN_USER ?? 'admin';
     const expectedPass = process.env.ADMIN_PASSWORD;
