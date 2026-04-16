@@ -32,7 +32,9 @@ export function AdminShell({ activeSection, onNavigate, children }: Props) {
             <div className="relative z-10 flex flex-col" style={{ marginLeft: "240px" }}>
                 <AdminTopbar activeSection={activeSection} />
                 <main className="flex-1 p-6 min-w-0 animate-nx-fade-in">
-                    {children}
+                    <div className="max-w-[1400px] mx-auto">
+                        {children}
+                    </div>
                 </main>
             </div>
         </div>
