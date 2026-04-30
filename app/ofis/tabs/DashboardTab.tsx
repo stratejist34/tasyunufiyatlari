@@ -1,41 +1,101 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
-    FileText, Clock, MessageSquare, TrendingUp, TrendingDown,
+    FileText, Clock, MessageSquare, TrendingUp, TrendingDown, CheckCircle2,
 } from "lucide-react";
 import {
     PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer,
+    AreaChart, Area, XAxis, YAxis, CartesianGrid,
 } from "recharts";
-import { MetricCard } from "@/components/admin/MetricCard";
 import type { DashboardMetrics } from "@/app/api/admin/dashboard-metrics/types";
-import { buildBrandRanking, formatCurrency, formatAmount, formatM2 } from "@/lib/admin/utils";
+import { formatCurrency, formatAmount, formatM2 } from "@/lib/admin/utils";
 
-function StatCard({ title, value, icon, color, onClick }: any) {
-    const colors: Record<string, string> = {
-        blue: "from-cyan-500/14 to-cyan-500/4 text-cyan-300 border-cyan-400/20",
-        green: "from-emerald-500/14 to-emerald-500/4 text-emerald-300 border-emerald-400/20",
-        orange: "from-amber-500/14 to-amber-500/4 text-amber-300 border-amber-400/20",
-        purple: "from-fuchsia-500/14 to-fuchsia-500/4 text-fuchsia-300 border-fuchsia-400/20",
-    };
+type LucideIcon = typeof FileText;
+
+function Sparkline({ data }: { data: number[] }) {
+    if (!data.length) return null;
+    const max = Math.max(...data, 1);
+    const w = 100;
+    const h = 38;
+    const step = w / Math.max(1, data.length - 1);
+    const points = data.map((v, i) => `${(i * step).toFixed(2)},${(h - (v / max) * h * 0.85 - h * 0.08).toFixed(2)}`);
+    const line = `M ${points.join(" L ")}`;
+    const fill = `${line} L ${w},${h} L 0,${h} Z`;
+    return (
+        <svg className="nx-sparkline" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="nx-sparkline-grad" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="#c9a84c" stopOpacity="0.5" />
+                    <stop offset="100%" stopColor="#c9a84c" stopOpacity="0" />
+                </linearGradient>
+            </defs>
+            <path className="fill" d={fill} />
+            <path className="line" d={line} />
+        </svg>
+    );
+}
+
+function KpiTile({ label, value, icon: Icon, trend, spark, onClick }: {
+    label: string;
+    value: string | number;
+    icon: LucideIcon;
+    trend?: { dir: "up" | "down" | "flat"; pct: number } | null;
+    spark: number[];
+    onClick?: () => void;
+}) {
     return (
         <div
-            className={`admin-nexus-card bg-gradient-to-br p-6 ${colors[color as string] || colors.blue} ${onClick ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_18px_44px_rgba(2,8,23,0.46)] transition-all duration-300' : ''}`}
+            className="nx-kpi-tile"
             onClick={onClick}
+            role={onClick ? "button" : undefined}
+            style={{ cursor: onClick ? "pointer" : "default" }}
         >
-            <div className="flex items-center justify-between">
-                <div>
-                    <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400">{title}</p>
-                    <p className="text-3xl font-bold mt-2 text-slate-50">{value}</p>
-                </div>
-                <div className="text-4xl opacity-90">{icon}</div>
+            <span className="nx-kpi-tile__icon"><Icon className="w-4 h-4" /></span>
+            <span className="nx-kpi-tile__label">{label}</span>
+            <div className="flex items-end justify-between gap-2">
+                <span className="nx-kpi-tile__value">{value}</span>
+                {trend && (
+                    <span className={`nx-kpi-tile__trend ${trend.dir}`}>
+                        {trend.dir === "up" && <TrendingUp className="w-3 h-3" />}
+                        {trend.dir === "down" && <TrendingDown className="w-3 h-3" />}
+                        {trend.dir === "flat"
+                            ? "±0%"
+                            : `${trend.dir === "up" ? "+" : "−"}${Math.abs(Math.round(trend.pct))}%`}
+                    </span>
+                )}
+            </div>
+            <Sparkline data={spark} />
+        </div>
+    );
+}
+
+function Gauge({ percent, label }: { percent: number; label: string }) {
+    const pct = Math.max(0, Math.min(100, percent));
+    const arcLen = Math.PI * 80;
+    return (
+        <div className="nx-gauge">
+            <svg viewBox="0 0 200 110" preserveAspectRatio="xMidYMid meet">
+                <path className="nx-gauge__track" d="M 20 100 A 80 80 0 0 1 180 100" />
+                <path
+                    className="nx-gauge__value"
+                    d="M 20 100 A 80 80 0 0 1 180 100"
+                    style={{
+                        strokeDasharray: arcLen,
+                        strokeDashoffset: arcLen * (1 - pct / 100),
+                    }}
+                />
+            </svg>
+            <div className="nx-gauge__center">
+                <div className="num">%{Math.round(pct)}</div>
+                <div className="label">{label}</div>
             </div>
         </div>
     );
 }
 
 export function DashboardTab({ stats, onNavigate }: { stats: any; onNavigate: (tab: string) => void }) {
-    const totalCatalogItems = stats.plateCount + stats.accessoryCount;
+    void stats;
     const [dashboardQuotes, setDashboardQuotes] = useState<any[]>([]);
     const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
     const [metricsError, setMetricsError] = useState(false);
@@ -60,18 +120,13 @@ export function DashboardTab({ stats, onNavigate }: { stats: any; onNavigate: (t
 
     const dashboardQuoteSummary = {
         total: dashboardQuotes.length,
-        pending: dashboardQuotes.filter((quote) => quote.status === "pending").length,
-        pdfQuote: dashboardQuotes.filter((quote) => quote.request_type === "pdf_quote").length,
-        whatsappOrder: dashboardQuotes.filter((quote) => quote.request_type === "whatsapp_order").length,
-        approved: dashboardQuotes.filter((quote) => quote.status === "approved").length,
+        approved: dashboardQuotes.filter((q) => q.status === "approved").length,
     };
     const recentQuotes = [...dashboardQuotes]
         .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at))
         .slice(0, 4);
-    const topQuoteBrands = buildBrandRanking(dashboardQuotes, 3);
 
-    // Son 24 saat saatlik dağılım
-    const hourlyBuckets = (() => {
+    const hourlyBuckets = useMemo(() => {
         const buckets = new Array(24).fill(0);
         const now = Date.now();
         for (const q of dashboardQuotes) {
@@ -79,433 +134,378 @@ export function DashboardTab({ stats, onNavigate }: { stats: any; onNavigate: (t
             if (diff >= 0 && diff < 24) buckets[23 - Math.floor(diff)]++;
         }
         return buckets;
-    })();
-    const maxHourly = Math.max(...hourlyBuckets, 1);
+    }, [dashboardQuotes]);
 
-    void totalCatalogItems;
-    void topQuoteBrands;
+    const hourlyPdfBuckets = useMemo(() => {
+        const buckets = new Array(24).fill(0);
+        const now = Date.now();
+        for (const q of dashboardQuotes) {
+            if (q.request_type !== "pdf_quote") continue;
+            const diff = (now - new Date(q.created_at).getTime()) / (1000 * 60 * 60);
+            if (diff >= 0 && diff < 24) buckets[23 - Math.floor(diff)]++;
+        }
+        return buckets;
+    }, [dashboardQuotes]);
+
+    const hourlyWaBuckets = useMemo(() => {
+        const buckets = new Array(24).fill(0);
+        const now = Date.now();
+        for (const q of dashboardQuotes) {
+            if (q.request_type !== "whatsapp_order") continue;
+            const diff = (now - new Date(q.created_at).getTime()) / (1000 * 60 * 60);
+            if (diff >= 0 && diff < 24) buckets[23 - Math.floor(diff)]++;
+        }
+        return buckets;
+    }, [dashboardQuotes]);
+
+    const hourlyPendingBuckets = useMemo(() => {
+        const buckets = new Array(24).fill(0);
+        const now = Date.now();
+        for (const q of dashboardQuotes) {
+            if (q.status !== "pending") continue;
+            const diff = (now - new Date(q.created_at).getTime()) / (1000 * 60 * 60);
+            if (diff >= 0 && diff < 24) buckets[23 - Math.floor(diff)]++;
+        }
+        return buckets;
+    }, [dashboardQuotes]);
+
+    const areaChartData = hourlyBuckets.map((value, i) => ({
+        hour: i === 23 ? "Şimdi" : `${23 - i}s`,
+        value,
+    }));
+
+    const velocityTrendRaw = metrics?.velocity_trend ?? "stable";
+    const velocityDir: "up" | "down" | "flat" =
+        velocityTrendRaw === "up" ? "up" : velocityTrendRaw === "down" ? "down" : "flat";
+    const velocityPct = metrics?.velocity_ratio != null
+        ? Math.round((metrics.velocity_ratio - 1) * 100)
+        : 0;
+    const generalTrend = metrics ? { dir: velocityDir, pct: velocityPct } : null;
+
+    const conversionRate = dashboardQuoteSummary.total > 0
+        ? (dashboardQuoteSummary.approved / dashboardQuoteSummary.total) * 100
+        : 0;
+
     void metricsError;
 
     return (
         <div className="space-y-6">
-            {/* Zaman Penceresi KPI Kartları */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Bugün */}
-                <div className="admin-nexus-panel p-6 border border-cyan-500/20">
-                    <div className="flex items-center justify-between mb-4">
-                        <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Bugün</p>
-                        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-nx-pulse" />
-                    </div>
-                    {metrics ? (
-                        <>
-                            <p className="text-4xl font-bold text-slate-50 leading-none">{metrics.daily_total}</p>
-                            <p className="text-xs text-slate-500 mt-1">teklif</p>
-                            <div className="mt-4 flex items-center gap-2 text-[11px]">
-                                <span className="text-sky-400/80">{metrics.today_area_m2 > 0 ? formatM2(metrics.today_area_m2) : "—"}</span>
-                                <span className="text-slate-700">·</span>
-                                <span className="text-amber-400/80">{metrics.today_amount > 0 ? formatAmount(metrics.today_amount) : "—"}</span>
-                            </div>
-                        </>
-                    ) : (
-                        <div className="space-y-2 mt-1">
-                            <div className="h-9 w-16 bg-slate-800 rounded animate-pulse" />
-                            <div className="h-3 w-24 bg-slate-800 rounded animate-pulse mt-4" />
-                        </div>
-                    )}
-                </div>
-
-                {/* Bu Hafta */}
-                <div className="admin-nexus-panel p-6 border border-blue-500/20">
-                    <div className="flex items-center justify-between mb-4">
-                        <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Bu Hafta <span className="text-slate-700">/ 7g</span></p>
-                        <span className="w-2 h-2 rounded-full bg-blue-400" />
-                    </div>
-                    {metrics ? (
-                        <>
-                            <p className="text-4xl font-bold text-slate-50 leading-none">{metrics.week_count}</p>
-                            <p className="text-xs text-slate-500 mt-1">teklif</p>
-                            <div className="mt-4 flex items-center gap-2 text-[11px]">
-                                <span className="text-sky-400/80">{metrics.week_area_m2 > 0 ? formatM2(metrics.week_area_m2) : "—"}</span>
-                                <span className="text-slate-700">·</span>
-                                <span className="text-amber-400/80">{metrics.week_amount > 0 ? formatAmount(metrics.week_amount) : "—"}</span>
-                            </div>
-                        </>
-                    ) : (
-                        <div className="space-y-2 mt-1">
-                            <div className="h-9 w-16 bg-slate-800 rounded animate-pulse" />
-                            <div className="h-3 w-24 bg-slate-800 rounded animate-pulse mt-4" />
-                        </div>
-                    )}
-                </div>
-
-                {/* Bu Ay */}
-                <div className="admin-nexus-panel p-6 border border-purple-500/20">
-                    <div className="flex items-center justify-between mb-4">
-                        <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Bu Ay <span className="text-slate-700">/ 30g</span></p>
-                        <span className="w-2 h-2 rounded-full bg-purple-400" />
-                    </div>
-                    {metrics ? (
-                        <>
-                            <p className="text-4xl font-bold text-slate-50 leading-none">{metrics.month_count}</p>
-                            <p className="text-xs text-slate-500 mt-1">teklif</p>
-                            <div className="mt-4 flex items-center gap-2 text-[11px]">
-                                <span className="text-sky-400/80">{metrics.month_area_m2 > 0 ? formatM2(metrics.month_area_m2) : "—"}</span>
-                                <span className="text-slate-700">·</span>
-                                <span className="text-amber-400/80">{metrics.month_amount > 0 ? formatAmount(metrics.month_amount) : "—"}</span>
-                            </div>
-                        </>
-                    ) : (
-                        <div className="space-y-2 mt-1">
-                            <div className="h-9 w-16 bg-slate-800 rounded animate-pulse" />
-                            <div className="h-3 w-24 bg-slate-800 rounded animate-pulse mt-4" />
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Row 2: MetricCards */}
-            <div className="grid gap-4 lg:grid-cols-4">
-                <MetricCard
-                    title="Bugünkü Teklif"
+            {/* Row 1: KPI strip */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <KpiTile
+                    label="Bugünkü Teklif"
                     value={metrics?.daily_total ?? 0}
                     icon={FileText}
-                    color="blue"
-                    detail="Bugün İstanbul saatiyle"
+                    trend={generalTrend}
+                    spark={hourlyBuckets}
                     onClick={() => onNavigate("quotes")}
                 />
-                <MetricCard
-                    title="Bekleyen Talep"
+                <KpiTile
+                    label="Bekleyen Talep"
                     value={metrics?.daily_pending_count ?? 0}
                     icon={Clock}
-                    color="amber"
-                    detail="Bugün bekleyen"
+                    trend={null}
+                    spark={hourlyPendingBuckets}
                     onClick={() => onNavigate("quotes")}
                 />
-                <MetricCard
-                    title="PDF Talepleri"
+                <KpiTile
+                    label="PDF Talepleri"
                     value={metrics?.daily_pdf_count ?? 0}
                     icon={FileText}
-                    color="purple"
-                    detail="Bugün PDF talebi"
+                    trend={null}
+                    spark={hourlyPdfBuckets}
                     onClick={() => onNavigate("quotes")}
                 />
-                <MetricCard
-                    title="WhatsApp Onayı"
+                <KpiTile
+                    label="WhatsApp Onayı"
                     value={metrics?.daily_whatsapp_count ?? 0}
                     icon={MessageSquare}
-                    color="green"
-                    detail="Bugün sipariş onayı"
+                    trend={null}
+                    spark={hourlyWaBuckets}
                     onClick={() => onNavigate("quotes")}
                 />
             </div>
 
-            {/* Row 3: Son 24 Saat — full width */}
-            <div className="nx-card p-4">
-                <div className="flex items-center gap-2 mb-3">
-                    <Clock className="w-3.5 h-3.5 text-[var(--nx-cyan)]" />
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--nx-text-muted)]">Son 24 Saat</p>
+            {/* Row 2: hero chart + gauges */}
+            <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+                <div className="nx-hero-card">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--nx-text-soft)]">Talep Akışı</p>
+                            <h3 className="mt-1 text-lg font-semibold text-[var(--nx-text)]">Son 24 Saat</h3>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="px-3 py-1.5 rounded-full text-[11px] bg-[rgba(201,168,76,0.10)] border border-[rgba(201,168,76,0.25)] text-[var(--nx-gold)]">
+                                Bu Hafta · {metrics?.week_count ?? 0}
+                            </span>
+                            <span className="px-3 py-1.5 rounded-full text-[11px] bg-[rgba(168,85,247,0.08)] border border-[rgba(168,85,247,0.20)] text-purple-300">
+                                Bu Ay · {metrics?.month_count ?? 0}
+                            </span>
+                        </div>
+                    </div>
+                    <div style={{ width: "100%", height: 220 }}>
+                        <ResponsiveContainer>
+                            <AreaChart data={areaChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="nx-area-grad" x1="0" x2="0" y1="0" y2="1">
+                                        <stop offset="0%" stopColor="#c9a84c" stopOpacity={0.45} />
+                                        <stop offset="100%" stopColor="#c9a84c" stopOpacity={0.02} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid stroke="rgba(72,65,52,0.18)" vertical={false} />
+                                <XAxis
+                                    dataKey="hour"
+                                    tick={{ fill: "#8c8880", fontSize: 10 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    interval={3}
+                                />
+                                <YAxis
+                                    tick={{ fill: "#8c8880", fontSize: 10 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    width={28}
+                                    allowDecimals={false}
+                                />
+                                <RechartsTooltip
+                                    contentStyle={{
+                                        background: "#1a1a1a",
+                                        border: "1px solid rgba(201,168,76,0.25)",
+                                        borderRadius: 8,
+                                        fontSize: 11,
+                                    }}
+                                    labelStyle={{ color: "#8c8880" }}
+                                    itemStyle={{ color: "#c9a84c" }}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="value"
+                                    stroke="#c9a84c"
+                                    strokeWidth={2}
+                                    fill="url(#nx-area-grad)"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
-                <div className="flex items-end gap-px h-14">
-                    {hourlyBuckets.map((v, i) => (
-                        <div
-                            key={i}
-                            className="flex-1 rounded-sm transition-all"
-                            style={{
-                                height: `${Math.max(4, (v / maxHourly) * 100)}%`,
-                                background: v > 0
-                                    ? "linear-gradient(to top, rgba(23,208,255,0.8), rgba(51,136,255,0.4))"
-                                    : "rgba(51,65,85,0.3)",
-                            }}
-                            title={`${v} teklif`}
-                        />
-                    ))}
-                </div>
-                <div className="flex justify-between mt-1.5">
-                    <span className="text-[9px] text-[var(--nx-text-muted)]">24s önce</span>
-                    <span className="text-[9px] text-[var(--nx-text-muted)]">Şimdi</span>
+
+                <div className="grid gap-4">
+                    <div className="nx-hero-card">
+                        <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--nx-text-soft)]">Dönüşüm Oranı</p>
+                        <div className="mt-3 flex justify-center">
+                            <Gauge percent={conversionRate} label="Onaylanan" />
+                        </div>
+                        <div className="mt-4 flex items-center justify-center gap-4 text-xs text-[var(--nx-text-soft)]">
+                            <span className="flex items-center gap-1.5">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-[var(--nx-green)]" />
+                                {dashboardQuoteSummary.approved} onay
+                            </span>
+                            <span className="text-[var(--nx-text-muted)]">·</span>
+                            <span>{dashboardQuoteSummary.total} toplam</span>
+                        </div>
+                    </div>
+                    <div className="nx-hero-card">
+                        <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--nx-text-soft)]">Malzeme Dengesi <span className="text-[var(--nx-text-muted)]">(30g)</span></p>
+                        <div className="mt-3 flex justify-center">
+                            <Gauge percent={metrics?.eps_ratio_30d ?? 0} label="EPS Oranı" />
+                        </div>
+                        <div className="mt-4 flex items-center justify-between text-xs text-[var(--nx-text-soft)]">
+                            <span>EPS %{metrics?.eps_ratio_30d ?? 0}</span>
+                            <span>Taşyünü %{metrics?.rockwool_ratio_30d ?? 0}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Row 4: 2-col main */}
-            <div className="grid gap-6 xl:grid-cols-[1.7fr_1fr]">
-                {/* Sol: Son Talep Akışı + Funnel */}
-                <div className="space-y-6">
-                    <div className="admin-nexus-panel p-6">
-                        <div className="flex items-center justify-between gap-3">
-                            <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-cyan-300/80">Teklif Sinyalleri</p>
-                                <h3 className="mt-2 text-xl font-semibold text-slate-50">Son Talep Akışı</h3>
-                            </div>
-                            <button
-                                onClick={() => onNavigate("quotes")}
-                                className="admin-nexus-button-secondary px-3 py-2 text-xs font-medium"
-                            >
-                                Tekliflere Git
-                            </button>
+            {/* Row 3: 3-col hero cards */}
+            <div className="grid gap-4 lg:grid-cols-3">
+                {/* Son Talep Akışı */}
+                <div className="nx-hero-card">
+                    <div className="flex items-center justify-between mb-3">
+                        <div>
+                            <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--nx-text-soft)]">Talep Akışı</p>
+                            <h3 className="mt-1 text-base font-semibold text-[var(--nx-text)]">Son Kayıtlar</h3>
                         </div>
-                        <div className="mt-4 space-y-3">
-                            {recentQuotes.length > 0 ? recentQuotes.map((quote) => (
-                                <div key={quote.id} className="admin-nexus-subtle flex items-start justify-between gap-4 p-4">
-                                    <div>
-                                        <p className="font-medium text-slate-100">{quote.customer_name}</p>
-                                        <p className="mt-1 text-sm text-slate-400">
-                                            {quote.brand_name || "Markasız"} • {quote.package_name || "Paket yok"} • {quote.area_m2} m²
-                                        </p>
-                                        <p className="mt-1 text-xs text-slate-500">
-                                            {new Date(quote.created_at).toLocaleDateString("tr-TR")} {new Date(quote.created_at).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}
-                                        </p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-sm font-semibold text-cyan-300">
-                                            {quote.request_type === "pdf_quote" ? "PDF" : "WhatsApp"}
-                                        </p>
-                                        <p className="mt-1 text-xs text-slate-500">{formatCurrency(quote.total_price)}</p>
-                                    </div>
-                                </div>
-                            )) : (
-                                <div className="admin-nexus-subtle p-4 text-sm text-slate-500">
-                                    Henüz teklif akışı görünmüyor. İlk kayıt geldiğinde burası canlı takip paneli gibi çalışacak.
-                                </div>
-                            )}
-                        </div>
+                        <button
+                            onClick={() => onNavigate("quotes")}
+                            className="text-[11px] px-3 py-1.5 rounded-full bg-[rgba(201,168,76,0.10)] border border-[rgba(201,168,76,0.25)] text-[var(--nx-gold)] hover:bg-[rgba(201,168,76,0.18)] transition-colors"
+                        >
+                            Tümü
+                        </button>
                     </div>
-
-                    <div className="admin-nexus-panel p-6">
-                        <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Funnel Özeti</p>
-                        <div className="mt-4 space-y-4">
-                            <div className="admin-nexus-subtle p-4">
-                                <div className="flex items-center justify-between text-sm text-slate-300">
-                                    <span>Onaylanan oran</span>
-                                    <span className="font-semibold text-slate-50">
-                                        %{dashboardQuoteSummary.total > 0 ? Math.round((dashboardQuoteSummary.approved / dashboardQuoteSummary.total) * 100) : 0}
-                                    </span>
-                                </div>
-                                <div className="mt-3 h-2 rounded-full bg-slate-800">
-                                    <div
-                                        className="h-2 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400"
-                                        style={{
-                                            width: `${dashboardQuoteSummary.total > 0 ? Math.max(6, Math.round((dashboardQuoteSummary.approved / dashboardQuoteSummary.total) * 100)) : 0}%`,
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                            <div className="admin-nexus-subtle p-4">
-                                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Bugün Ort. Fiyat / m²</p>
-                                <p className="mt-2 text-2xl font-semibold text-slate-50">
-                                    {metrics?.avg_price_per_m2_today != null
-                                        ? `₺${metrics.avg_price_per_m2_today.toLocaleString('tr-TR')}`
-                                        : '—'}
-                                </p>
-                                <p className="mt-1 text-xs text-slate-500">
-                                    {metrics?.avg_price_per_m2_today != null ? 'Fiyatlı tekliflerden' : 'Bugün henüz fiyatlı teklif yok'}
-                                </p>
-                            </div>
-                            <div className="admin-nexus-subtle p-4">
-                                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Kanal Dağılımı</p>
-                                <div className="mt-3 space-y-3 text-sm">
-                                    <div className="flex items-center justify-between text-slate-300">
-                                        <span>PDF teklif</span>
-                                        <span className="font-semibold text-slate-50">{metrics?.daily_pdf_count ?? 0}</span>
+                    <div className="space-y-2.5">
+                        {recentQuotes.length > 0 ? recentQuotes.map((q) => (
+                            <div key={q.id} className="p-3 rounded-xl bg-[rgba(26,24,22,0.6)] border border-[rgba(72,65,52,0.2)]">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-medium text-[var(--nx-text)] truncate">{q.customer_name}</p>
+                                        <p className="mt-0.5 text-[11px] text-[var(--nx-text-soft)] truncate">
+                                            {q.brand_name || "Markasız"} · {q.area_m2} m²
+                                        </p>
                                     </div>
-                                    <div className="flex items-center justify-between text-slate-300">
-                                        <span>WhatsApp onay</span>
-                                        <span className="font-semibold text-slate-50">{metrics?.daily_whatsapp_count ?? 0}</span>
+                                    <div className="text-right flex-shrink-0">
+                                        <p className="text-[10px] uppercase tracking-wider text-[var(--nx-gold)]">
+                                            {q.request_type === "pdf_quote" ? "PDF" : "WhatsApp"}
+                                        </p>
+                                        <p className="text-[11px] text-[var(--nx-text-soft)]">{formatCurrency(q.total_price)}</p>
                                     </div>
                                 </div>
                             </div>
-                            <div className="admin-nexus-subtle p-4">
-                                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Malzeme Dengesi <span className="text-slate-600">(30g)</span></p>
-                                <div className="mt-3 space-y-3">
-                                    <div>
-                                        <div className="flex justify-between text-xs text-slate-400 mb-1.5">
-                                            <span>EPS</span>
-                                            <span className="text-slate-200 font-medium">%{metrics?.eps_ratio_30d ?? 0}</span>
-                                        </div>
-                                        <div className="h-1.5 rounded-full bg-slate-800">
-                                            <div className="h-1.5 rounded-full bg-gradient-to-r from-cyan-500 to-cyan-400 transition-all" style={{ width: `${metrics?.eps_ratio_30d ?? 0}%` }} />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div className="flex justify-between text-xs text-slate-400 mb-1.5">
-                                            <span>Taşyünü</span>
-                                            <span className="text-slate-200 font-medium">%{metrics?.rockwool_ratio_30d ?? 0}</span>
-                                        </div>
-                                        <div className="h-1.5 rounded-full bg-slate-800">
-                                            <div className="h-1.5 rounded-full bg-gradient-to-r from-purple-500 to-purple-400 transition-all" style={{ width: `${metrics?.rockwool_ratio_30d ?? 0}%` }} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="admin-nexus-subtle p-4">
-                                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">EPS Markaları <span className="text-slate-600">(7g)</span></p>
-                                <div className="mt-3 space-y-2">
-                                    {(metrics?.eps_brands_7d ?? []).length > 0 ? (metrics?.eps_brands_7d ?? []).map((item, index) => (
-                                        <div key={item.brand} className="flex items-center justify-between text-sm">
-                                            <div className="flex items-center gap-3">
-                                                <span className="flex h-6 w-6 items-center justify-center rounded-full border border-cyan-400/20 bg-cyan-500/10 text-xs font-semibold text-cyan-200">
-                                                    {index + 1}
-                                                </span>
-                                                <span className="text-slate-300">{item.brand}</span>
-                                            </div>
-                                            <span className="font-semibold text-slate-50">{item.count}</span>
-                                        </div>
-                                    )) : (
-                                        <p className="text-sm text-slate-500">Son 7 günde EPS talebi yok.</p>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="admin-nexus-subtle p-4">
-                                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Taşyünü Markaları <span className="text-slate-600">(7g)</span></p>
-                                <div className="mt-3 space-y-2">
-                                    {(metrics?.rockwool_brands_7d ?? []).length > 0 ? (metrics?.rockwool_brands_7d ?? []).map((item, index) => (
-                                        <div key={item.brand} className="flex items-center justify-between text-sm">
-                                            <div className="flex items-center gap-3">
-                                                <span className="flex h-6 w-6 items-center justify-center rounded-full border border-purple-400/20 bg-purple-500/10 text-xs font-semibold text-purple-200">
-                                                    {index + 1}
-                                                </span>
-                                                <span className="text-slate-300">{item.brand}</span>
-                                            </div>
-                                            <span className="font-semibold text-slate-50">{item.count}</span>
-                                        </div>
-                                    )) : (
-                                        <p className="text-sm text-slate-500">Son 7 günde Taşyünü talebi yok.</p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                        )) : (
+                            <p className="text-sm text-[var(--nx-text-soft)] p-3">Henüz teklif yok.</p>
+                        )}
                     </div>
                 </div>
 
-                {/* Sağ: Anlık Aktivite + Malzeme Dağılımı + Ürün Kırılımı */}
-                <div className="space-y-6">
-                    <div className="admin-nexus-panel p-6">
-                        <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Anlık Aktivite</p>
-                        <div className="mt-4 space-y-3">
-                            <div className="admin-nexus-subtle p-4">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-xs text-slate-500">Son 2 saat</p>
-                                        <p className="mt-1 text-3xl font-semibold text-slate-50">{metrics?.recent_2h ?? 0}</p>
-                                        <p className="mt-1 text-xs text-slate-500">teklif</p>
-                                    </div>
-                                    <div className="flex flex-col items-end gap-1">
-                                        {metrics?.velocity_trend === 'up' && (
-                                            <TrendingUp className="h-6 w-6 text-emerald-400" />
-                                        )}
-                                        {metrics?.velocity_trend === 'down' && (
-                                            <TrendingDown className="h-6 w-6 text-red-400" />
-                                        )}
-                                        {metrics?.velocity_trend === 'stable' && (
-                                            <div className="h-6 w-6 flex items-center justify-center">
-                                                <span className="h-0.5 w-4 bg-amber-400 rounded-full" />
-                                            </div>
-                                        )}
-                                        {metrics?.velocity_ratio != null && (
-                                            <span className={`text-xs font-semibold ${
-                                                metrics.velocity_trend === 'up' ? 'text-emerald-400' :
-                                                metrics.velocity_trend === 'down' ? 'text-red-400' : 'text-amber-400'
-                                            }`}>
-                                                {metrics.velocity_trend === 'up' ? '+' : ''}{Math.round((metrics.velocity_ratio - 1) * 100)}%
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="admin-nexus-subtle px-4 py-3 flex items-center justify-between text-xs text-slate-400">
-                                <span>Önceki 2 saat</span>
-                                <span className="text-slate-300 font-medium">{metrics?.prev_2h ?? 0} teklif</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="admin-nexus-panel p-6">
-                        <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Malzeme Dağılımı <span className="text-slate-600">(30g)</span></p>
-                        <div className="mt-4">
-                            {metrics && (metrics.eps_ratio_30d > 0 || metrics.rockwool_ratio_30d > 0) ? (
-                                <div className="flex items-center gap-4">
-                                    <ResponsiveContainer width={140} height={140}>
+                {/* Malzeme Dağılımı */}
+                <div className="nx-hero-card">
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--nx-text-soft)]">Malzeme Dağılımı <span className="text-[var(--nx-text-muted)]">(30g)</span></p>
+                    <div className="mt-3">
+                        {metrics && (metrics.eps_ratio_30d > 0 || metrics.rockwool_ratio_30d > 0) ? (
+                            <>
+                                <div className="flex justify-center">
+                                    <ResponsiveContainer width={160} height={160}>
                                         <PieChart>
                                             <Pie
                                                 data={[
-                                                    { name: 'EPS', value: metrics.eps_ratio_30d },
-                                                    { name: 'Taşyünü', value: metrics.rockwool_ratio_30d },
+                                                    { name: "EPS", value: metrics.eps_ratio_30d },
+                                                    { name: "Taşyünü", value: metrics.rockwool_ratio_30d },
                                                 ]}
                                                 cx="50%" cy="50%"
-                                                innerRadius={42} outerRadius={62}
+                                                innerRadius={48} outerRadius={70}
                                                 dataKey="value"
                                                 paddingAngle={3}
                                             >
-                                                <Cell fill="#17d0ff" />
-                                                <Cell fill="#a855f7" />
+                                                <Cell fill="#c9a84c" />
+                                                <Cell fill="#b87333" />
                                             </Pie>
                                             <RechartsTooltip
-                                                formatter={(v) => [`%${v}`, '']}
-                                                contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', fontSize: '11px' }}
-                                                itemStyle={{ color: '#94a3b8' }}
+                                                formatter={(v) => [`%${v}`, ""]}
+                                                contentStyle={{ background: "#1a1a1a", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 8, fontSize: 11 }}
                                             />
                                         </PieChart>
                                     </ResponsiveContainer>
-                                    <div className="space-y-3 flex-1">
-                                        <div>
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="h-2.5 w-2.5 rounded-full bg-cyan-400 flex-shrink-0" />
-                                                    <span className="text-xs font-medium text-slate-200">EPS</span>
-                                                </div>
-                                                <span className="text-sm font-semibold text-slate-50">%{metrics.eps_ratio_30d}</span>
-                                            </div>
-                                            <div className="mt-1 ml-4.5 flex gap-2 text-[10px] text-slate-500">
-                                                <span>{metrics.eps_count_30d} teklif</span>
-                                                <span>·</span>
-                                                <span>{formatM2(metrics.eps_area_m2_30d ?? 0)}</span>
-                                                <span>·</span>
-                                                <span>{formatAmount(metrics.eps_amount_30d ?? 0)}</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="h-2.5 w-2.5 rounded-full bg-purple-400 flex-shrink-0" />
-                                                    <span className="text-xs font-medium text-slate-200">Taşyünü</span>
-                                                </div>
-                                                <span className="text-sm font-semibold text-slate-50">%{metrics.rockwool_ratio_30d}</span>
-                                            </div>
-                                            <div className="mt-1 ml-4.5 flex gap-2 text-[10px] text-slate-500">
-                                                <span>{metrics.rockwool_count_30d} teklif</span>
-                                                <span>·</span>
-                                                <span>{formatM2(metrics.rockwool_area_m2_30d ?? 0)}</span>
-                                                <span>·</span>
-                                                <span>{formatAmount(metrics.rockwool_amount_30d ?? 0)}</span>
-                                            </div>
-                                        </div>
+                                </div>
+                                <div className="mt-3 space-y-2 text-xs">
+                                    <div className="flex items-center justify-between">
+                                        <span className="flex items-center gap-2">
+                                            <span className="h-2 w-2 rounded-full bg-[var(--nx-gold)]" />
+                                            <span className="text-[var(--nx-text)]">EPS</span>
+                                        </span>
+                                        <span className="text-[var(--nx-text-soft)]">
+                                            {metrics.eps_count_30d} · {formatM2(metrics.eps_area_m2_30d ?? 0)} · {formatAmount(metrics.eps_amount_30d ?? 0)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="flex items-center gap-2">
+                                            <span className="h-2 w-2 rounded-full bg-[var(--nx-copper)]" />
+                                            <span className="text-[var(--nx-text)]">Taşyünü</span>
+                                        </span>
+                                        <span className="text-[var(--nx-text-soft)]">
+                                            {metrics.rockwool_count_30d} · {formatM2(metrics.rockwool_area_m2_30d ?? 0)} · {formatAmount(metrics.rockwool_amount_30d ?? 0)}
+                                        </span>
                                     </div>
                                 </div>
-                            ) : (
-                                <p className="text-sm text-slate-500">Son 30 günde veri yok.</p>
-                            )}
+                            </>
+                        ) : (
+                            <p className="text-sm text-[var(--nx-text-soft)] p-3">Son 30 günde veri yok.</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Anlık Aktivite */}
+                <div className="nx-hero-card">
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--nx-text-soft)]">Anlık Aktivite</p>
+                    <div className="mt-3 flex items-start justify-between">
+                        <div>
+                            <p className="text-[11px] text-[var(--nx-text-muted)]">Son 2 saat</p>
+                            <p className="mt-1 text-3xl font-semibold text-[var(--nx-text)]">{metrics?.recent_2h ?? 0}</p>
+                            <p className="mt-0.5 text-[11px] text-[var(--nx-text-soft)]">teklif</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                            {velocityDir === "up" && <TrendingUp className="h-5 w-5 text-[var(--nx-green)]" />}
+                            {velocityDir === "down" && <TrendingDown className="h-5 w-5 text-[var(--nx-red)]" />}
+                            {velocityDir === "flat" && <span className="h-0.5 w-4 bg-[var(--nx-amber)] rounded-full mt-2.5" />}
+                            <span className={`text-xs font-semibold ${
+                                velocityDir === "up" ? "text-[var(--nx-green)]" :
+                                velocityDir === "down" ? "text-[var(--nx-red)]" : "text-[var(--nx-amber)]"
+                            }`}>
+                                {velocityDir === "up" ? "+" : ""}{velocityPct}%
+                            </span>
                         </div>
                     </div>
+                    <div className="mt-3 pt-3 border-t border-[rgba(72,65,52,0.2)] flex items-center justify-between text-xs text-[var(--nx-text-soft)]">
+                        <span>Önceki 2 saat</span>
+                        <span className="font-medium text-[var(--nx-text)]">{metrics?.prev_2h ?? 0} teklif</span>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-[rgba(72,65,52,0.2)]">
+                        <p className="text-[11px] text-[var(--nx-text-muted)]">Bugün Ort. Fiyat / m²</p>
+                        <p className="mt-1 text-xl font-semibold text-[var(--nx-text)]">
+                            {metrics?.avg_price_per_m2_today != null
+                                ? `₺${metrics.avg_price_per_m2_today.toLocaleString("tr-TR")}`
+                                : "—"}
+                        </p>
+                    </div>
+                </div>
+            </div>
 
-                    <div className="admin-nexus-panel p-6">
-                        <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Ürün Kırılımı <span className="text-slate-600">(7g)</span></p>
-                        <div className="mt-4 space-y-2">
-                            {(metrics?.product_breakdown_7d ?? []).length > 0 ? (metrics?.product_breakdown_7d ?? []).map((item) => (
-                                <div key={`${item.brand}-${item.model}-${item.material}`} className="admin-nexus-subtle flex items-center justify-between gap-3 px-3 py-2.5">
-                                    <div className="flex items-center gap-2.5 min-w-0">
-                                        <span className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded text-[10px] font-bold ${item.material === 'eps' ? 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/20' : 'bg-purple-500/10 text-purple-300 border border-purple-500/20'}`}>
-                                            {item.material === 'eps' ? 'E' : 'T'}
-                                        </span>
-                                        <div className="min-w-0">
-                                            <p className="text-xs font-medium text-slate-200 truncate">{item.brand}</p>
-                                            <p className="text-[10px] text-slate-500 truncate">{item.model}</p>
-                                        </div>
-                                    </div>
-                                    <span className="flex-shrink-0 text-sm font-semibold text-slate-50">{item.count}</span>
+            {/* Row 4: Marka sıralamaları + Ürün Kırılımı */}
+            <div className="grid gap-4 lg:grid-cols-3">
+                <div className="nx-hero-card">
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--nx-text-soft)]">EPS Markaları <span className="text-[var(--nx-text-muted)]">(7g)</span></p>
+                    <div className="mt-3 space-y-2">
+                        {(metrics?.eps_brands_7d ?? []).length > 0 ? (metrics?.eps_brands_7d ?? []).map((item, index) => (
+                            <div key={item.brand} className="flex items-center justify-between text-sm">
+                                <div className="flex items-center gap-3">
+                                    <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[rgba(201,168,76,0.25)] bg-[rgba(201,168,76,0.10)] text-xs font-semibold text-[var(--nx-gold)]">
+                                        {index + 1}
+                                    </span>
+                                    <span className="text-[var(--nx-text)]">{item.brand}</span>
                                 </div>
-                            )) : (
-                                <p className="text-sm text-slate-500">Son 7 günde ürün verisi yok.</p>
-                            )}
-                        </div>
+                                <span className="font-semibold text-[var(--nx-text)]">{item.count}</span>
+                            </div>
+                        )) : (
+                            <p className="text-sm text-[var(--nx-text-soft)]">Son 7 günde EPS talebi yok.</p>
+                        )}
+                    </div>
+                </div>
+                <div className="nx-hero-card">
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--nx-text-soft)]">Taşyünü Markaları <span className="text-[var(--nx-text-muted)]">(7g)</span></p>
+                    <div className="mt-3 space-y-2">
+                        {(metrics?.rockwool_brands_7d ?? []).length > 0 ? (metrics?.rockwool_brands_7d ?? []).map((item, index) => (
+                            <div key={item.brand} className="flex items-center justify-between text-sm">
+                                <div className="flex items-center gap-3">
+                                    <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[rgba(184,115,51,0.30)] bg-[rgba(184,115,51,0.10)] text-xs font-semibold text-[var(--nx-copper)]">
+                                        {index + 1}
+                                    </span>
+                                    <span className="text-[var(--nx-text)]">{item.brand}</span>
+                                </div>
+                                <span className="font-semibold text-[var(--nx-text)]">{item.count}</span>
+                            </div>
+                        )) : (
+                            <p className="text-sm text-[var(--nx-text-soft)]">Son 7 günde Taşyünü talebi yok.</p>
+                        )}
+                    </div>
+                </div>
+                <div className="nx-hero-card">
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--nx-text-soft)]">Ürün Kırılımı <span className="text-[var(--nx-text-muted)]">(7g)</span></p>
+                    <div className="mt-3 space-y-2">
+                        {(metrics?.product_breakdown_7d ?? []).length > 0 ? (metrics?.product_breakdown_7d ?? []).slice(0, 6).map((item) => (
+                            <div key={`${item.brand}-${item.model}-${item.material}`} className="flex items-center justify-between gap-3 text-sm">
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                    <span className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded text-[10px] font-bold ${item.material === "eps" ? "bg-[rgba(201,168,76,0.10)] text-[var(--nx-gold)] border border-[rgba(201,168,76,0.25)]" : "bg-[rgba(184,115,51,0.10)] text-[var(--nx-copper)] border border-[rgba(184,115,51,0.25)]"}`}>
+                                        {item.material === "eps" ? "E" : "T"}
+                                    </span>
+                                    <div className="min-w-0">
+                                        <p className="text-xs font-medium text-[var(--nx-text)] truncate">{item.brand}</p>
+                                        <p className="text-[10px] text-[var(--nx-text-soft)] truncate">{item.model}</p>
+                                    </div>
+                                </div>
+                                <span className="flex-shrink-0 text-sm font-semibold text-[var(--nx-text)]">{item.count}</span>
+                            </div>
+                        )) : (
+                            <p className="text-sm text-[var(--nx-text-soft)]">Son 7 günde ürün verisi yok.</p>
+                        )}
                     </div>
                 </div>
             </div>

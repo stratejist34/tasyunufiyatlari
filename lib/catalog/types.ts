@@ -68,7 +68,7 @@ export interface CatalogProductView {
   material_type: string;             // 'tasyunu' | 'eps' | accessory_type.slug
   product_type: 'plate' | 'accessory';
   base_price: number | null;         // pricing_visibility_mode='hidden' → null
-  thickness_prices: Array<{ thickness: number; base_price: number; is_kdv_included: boolean; discount_2: number; stock_tuzla: number }> | null;
+  thickness_prices: Array<{ thickness: number; base_price: number; is_kdv_included: boolean; discount_2: number; stock_tuzla: number; package_m2: number | null }> | null;
   rules: ProductRules;
   minimum_order: MinimumOrderSummary;
   catalog_description: string | null;

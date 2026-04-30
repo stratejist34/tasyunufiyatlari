@@ -21,8 +21,8 @@ function getTier(m2: number, lorryM2: number, truckM2: number): Tier {
 }
 
 const TIER_CONFIG: Record<Tier, { label: string; emoji: string; ring: string; bg: string; text: string }> = {
-    parsiyel: { label: 'Kısmi Yük',     emoji: '📦', ring: 'ring-slate-500',  bg: 'bg-fe-raised',    text: 'text-fe-text' },
-    kamyon:   { label: 'Kamyon Dolusu', emoji: '🚚', ring: 'ring-amber-500',  bg: 'bg-amber-900/40', text: 'text-amber-300' },
+    parsiyel: { label: 'Kısmi Yük',     emoji: '📦', ring: 'ring-fe-muted',  bg: 'bg-fe-raised',    text: 'text-fe-text' },
+    kamyon:   { label: 'Kamyon Dolusu', emoji: '🚚', ring: 'ring-brand-500',  bg: 'bg-brand-900/40', text: 'text-brand-300' },
     tir:      { label: 'TIR Dolusu',    emoji: '🚛', ring: 'ring-brand-500',   bg: 'bg-brand-900/40',  text: 'text-brand-300'  },
 };
 
@@ -160,7 +160,7 @@ export function WizardStep4({
                     </p>
                 )}
                 {!isSnapped && showRound && (
-                    <p className="mt-1.5 text-xs text-amber-400/80">
+                    <p className="mt-1.5 text-xs text-brand-400/80">
                         ↳ Sipariş {roundedM2.toFixed(1)} m² olacak ({pkgCount} paket × {pkgSizeM2} m²)
                         {isMultiVehicle && (
                             <span className="text-brand-300/80">
@@ -203,7 +203,7 @@ export function WizardStep4({
                             </span>
                             {/* İskonto oranı badge */}
                             {t === 'kamyon' && discKamyon != null && (
-                                <span className={`mt-1 text-[10px] font-bold tabular-nums ${isActive ? 'text-amber-300' : 'text-fe-muted'}`}>
+                                <span className={`mt-1 text-[10px] font-bold tabular-nums ${isActive ? 'text-brand-300' : 'text-fe-muted'}`}>
                                     %{discKamyon}
                                 </span>
                             )}
@@ -253,7 +253,7 @@ export function WizardStep4({
                         <div>
                             <div className="flex justify-between items-center mb-1">
                                 <span className="text-xs text-fe-muted">🚚 Kamyon</span>
-                                <span className={`text-xs font-bold tabular-nums ${lorryPct >= 100 ? 'text-amber-300' : 'text-fe-muted'}`}>
+                                <span className={`text-xs font-bold tabular-nums ${lorryPct >= 100 ? 'text-brand-300' : 'text-fe-muted'}`}>
                                     {hasVal
                                         ? `${roundedM2.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 1 })} / ${Math.round(lorryM2).toLocaleString('tr-TR')} m²`
                                         : `${Math.round(lorryM2)} m²`}
@@ -261,7 +261,7 @@ export function WizardStep4({
                             </div>
                             <div className="h-2.5 bg-fe-raised rounded-full overflow-hidden">
                                 <motion.div
-                                    className={`h-full rounded-full ${lorryPct >= 100 ? 'bg-amber-400' : 'bg-amber-500/70'}`}
+                                    className={`h-full rounded-full ${lorryPct >= 100 ? 'bg-brand-400' : 'bg-brand-500/70'}`}
                                     initial={{ width: 0 }}
                                     animate={{ width: `${lorryPct}%` }}
                                     transition={{ duration: 0.45, ease: "easeOut" }}
@@ -357,23 +357,35 @@ export function WizardStep4({
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -6 }}
                         transition={{ duration: 0.2 }}
-                        className={`p-3 rounded-xl border ${ (nudge as any).target === 'kamyon' ? 'bg-amber-900/20 border-amber-700/40' : 'bg-brand-900/20 border-brand-700/40' }`}
+                        className={`p-3 rounded-xl border ${ (nudge as any).target === 'kamyon' ? 'bg-brand-900/20 border-brand-700/40' : 'bg-brand-900/20 border-brand-700/40' }`}
                     >
                         <p className="text-sm font-bold text-white mb-1">
                             {(nudge as any).target === 'kamyon' ? '🚚' : '🚛'}{' '}
                             {(nudge as any).target === 'kamyon' ? 'Kamyona' : "TIR'a"}{' '}
-                            <span className={(nudge as any).target === 'kamyon' ? 'text-amber-300' : 'text-brand-300'}>
+                            <span className={(nudge as any).target === 'kamyon' ? 'text-brand-300' : 'text-brand-300'}>
                                 {((nudge as any).remainingPkgs * pkgSizeM2).toFixed(1)} m² kaldı
                             </span>
                         </p>
                         {(nudge as any).target === 'kamyon' ? (
-                            <p className="text-xs text-amber-300">
-                                ▲ {((nudge as any).remainingPkgs * pkgSizeM2).toFixed(1)} m² ekleyin →{' '}
-                                nakliye ücretsiz + <span className="font-bold text-amber-200">%{(nudge as any).pct}</span> iskonto!
+                            <p className="text-xs text-brand-300">
+                                <button
+                                    type="button"
+                                    onClick={() => setMetraj(String(Math.round((rawPkgCount + (nudge as any).remainingPkgs) * pkgSizeM2)))}
+                                    className="font-semibold underline decoration-dotted underline-offset-2 hover:text-hub-warm hover:decoration-solid transition-colors"
+                                >
+                                    ▲ {((nudge as any).remainingPkgs * pkgSizeM2).toFixed(1)} m² ekleyin
+                                </button>
+                                {' '}→ nakliye ücretsiz + <span className="font-bold text-brand-200">%{(nudge as any).pct}</span> iskonto!
                             </p>
                         ) : (
                             <p className="text-xs text-brand-300">
-                                ▲ {((nudge as any).remainingPkgs * pkgSizeM2).toFixed(1)} m² daha ekleyin{' '}
+                                <button
+                                    type="button"
+                                    onClick={() => setMetraj(String(Math.round((rawPkgCount + (nudge as any).remainingPkgs) * pkgSizeM2)))}
+                                    className="font-semibold underline decoration-dotted underline-offset-2 hover:text-hub-warm hover:decoration-solid transition-colors"
+                                >
+                                    ▲ {((nudge as any).remainingPkgs * pkgSizeM2).toFixed(1)} m² daha ekleyin
+                                </button>{' '}
                                 {discKamyon != null && (nudge as any).pct > discKamyon && (
                                     <><span className="font-bold text-brand-200">%{(nudge as any).pct - discKamyon} ekstra iskontolu</span>{' '}</>
                                 )}
@@ -391,13 +403,13 @@ export function WizardStep4({
                         transition={{ duration: 0.25 }}
                         className={(nudge as any).tier === 'tir'
                             ? 'p-3 rounded-xl border bg-brand-900/25 border-brand-600/50'
-                            : 'p-3 rounded-xl border bg-amber-900/25 border-amber-600/50'}
+                            : 'p-3 rounded-xl border bg-brand-900/25 border-brand-600/50'}
                     >
-                        <p className={(nudge as any).tier === 'tir' ? 'text-sm font-medium text-brand-300' : 'text-sm font-medium text-amber-300'}>
+                        <p className={(nudge as any).tier === 'tir' ? 'text-sm font-medium text-brand-300' : 'text-sm font-medium text-brand-300'}>
                             🎉{' '}
                             {(nudge as any).tier === 'tir' ? 'TIR tam dolu' : 'Kamyon tam dolu'} —{' '}
                             nakliye{(nudge as any).tier === 'tir' ? '' : ' bedava +'}{' '}
-                            <span className={(nudge as any).tier === 'tir' ? 'font-bold text-brand-200' : 'font-bold text-amber-200'}>
+                            <span className={(nudge as any).tier === 'tir' ? 'font-bold text-brand-200' : 'font-bold text-brand-200'}>
                                 %{(nudge as any).pct}
                             </span>{' '}
                             iskonto otomatik uygulandı!

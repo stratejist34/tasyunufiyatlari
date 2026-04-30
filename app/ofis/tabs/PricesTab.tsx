@@ -56,11 +56,11 @@ export function PricesTab() {
             <h2 className="text-lg font-semibold text-white mb-4">Fiyat Yönetimi</h2>
             <div className="space-y-6">
                 <div className="admin-nexus-subtle p-4">
-                    <h3 className="mb-2 font-semibold text-cyan-300">📥 CSV'den Toplu İmport</h3>
+                    <h3 className="mb-2 font-semibold text-amber-300">📥 CSV'den Toplu İmport</h3>
                     <p className="text-sm text-slate-400 mb-4">tasyunu_maliyet.csv dosyasındaki güncel fiyatları veritabanına aktar</p>
                     <div className="flex gap-3">
                         <button onClick={handleImport} disabled={importing}
-                            className="rounded-xl bg-gradient-to-r from-cyan-500/90 to-blue-500/90 px-4 py-2 text-sm font-semibold text-slate-950 transition-all shadow-[0_16px_34px_rgba(23,208,255,0.24)] hover:from-cyan-400 hover:to-blue-400 disabled:opacity-50">
+                            className="rounded-xl bg-gradient-to-r from-amber-500/90 to-orange-500/90 px-4 py-2 text-sm font-semibold text-slate-950 transition-all shadow-[0_16px_34px_rgba(23,208,255,0.24)] hover:from-amber-400 hover:to-orange-400 disabled:opacity-50">
                             {importing ? "İşlem Devam Ediyor..." : "Import Talimatlarını Göster"}
                         </button>
                         <button onClick={() => window.open("/tasyunu_maliyet.csv", "_blank")}
@@ -69,7 +69,7 @@ export function PricesTab() {
                         </button>
                     </div>
                     {importMessage && (
-                        <div className="mt-4 p-3 rounded-xl border border-cyan-400/20 bg-cyan-400/[0.05]">
+                        <div className="mt-4 p-3 rounded-xl border border-amber-400/20 bg-amber-400/[0.05]">
                             <pre className="text-xs text-slate-300 whitespace-pre-wrap">{importMessage}</pre>
                         </div>
                     )}
@@ -81,7 +81,7 @@ export function PricesTab() {
                             <label className="block text-sm font-medium text-slate-300 mb-2">Tüm Fiyatlara % Artış/İndirim</label>
                             <div className="flex gap-2">
                                 <input type="number" placeholder="Ör: 10" className="admin-nexus-input flex-1 px-3 py-2 text-sm" />
-                                <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500/90 to-blue-500/90 text-slate-950 text-sm font-semibold transition-all shadow-[0_16px_34px_rgba(23,208,255,0.24)] hover:from-cyan-400 hover:to-blue-400">Uygula</button>
+                                <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500/90 to-orange-500/90 text-slate-950 text-sm font-semibold transition-all shadow-[0_16px_34px_rgba(23,208,255,0.24)] hover:from-amber-400 hover:to-orange-400">Uygula</button>
                             </div>
                             <p className="text-xs text-slate-500 mt-1">Pozitif: artış, Negatif: indirim</p>
                         </div>
@@ -100,7 +100,7 @@ export function PricesTab() {
                 <div>
                     <h3 className="font-semibold text-white mb-3">
                         Son Fiyat Güncellemeleri
-                        <button onClick={loadRecentPrices} className="ml-3 text-xs text-blue-400 hover:text-blue-300 transition-colors">🔄 Yenile</button>
+                        <button onClick={loadRecentPrices} className="ml-3 text-xs text-orange-400 hover:text-blue-300 transition-colors">🔄 Yenile</button>
                     </h3>
                     {loading ? (
                         <p className="text-slate-400">Yükleniyor...</p>

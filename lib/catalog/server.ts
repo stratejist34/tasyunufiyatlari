@@ -6,6 +6,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { buildMinimumOrderLabel } from '@/lib/catalog/slug';
 import { getDecisionContext } from '@/lib/catalog/decision';
+import { KATEGORI_MAP } from '@/lib/catalog/categories';
 import type {
   CatalogProductView,
   CatalogProductDetailResponse,
@@ -20,7 +21,8 @@ const MATERIAL_IDS: Record<string, number> = { tasyunu: 2, eps: 1 };
 // ─── Plates listesi ──────────────────────────────────────────
 
 export async function getCatalogProducts(
-  material: string
+  material: string,
+  options?: { accessoryTypeSlug?: string; brandId?: number }
 ): Promise<CatalogProductsResponse> {
   const supabase = createServerSupabaseClient();
 
@@ -32,7 +34,7 @@ export async function getCatalogProducts(
         sales_mode, pricing_visibility_mode,
         minimum_order_type, minimum_order_value,
         requires_system_context, recommended_bundle_family,
-        catalog_description, image_cover,
+        catalog_description, image_cover, brand_id,
         brands ( id, name, tier ),
         accessory_types ( id, name, slug )
       `)
@@ -42,7 +44,15 @@ export async function getCatalogProducts(
 
     if (error) return { products: [], total: 0, filters_applied: { material } };
 
-    const products: CatalogProductView[] = (data ?? []).map((row: any) => {
+    let rows = data ?? [];
+    if (options?.accessoryTypeSlug) {
+      rows = rows.filter((r: any) => r.accessory_types?.slug === options.accessoryTypeSlug);
+    }
+    if (options?.brandId != null) {
+      rows = rows.filter((r: any) => r.brand_id === options.brandId);
+    }
+
+    const products: CatalogProductView[] = rows.map((row: any) => {
       const rules = buildAccessoryRules(row);
       const minimum_order = buildMinOrder(rules);
       const base_price = rules.pricing_visibility_mode === 'hidden' ? null : (row.base_price ?? null);
@@ -80,7 +90,7 @@ export async function getCatalogProducts(
     .from('plates')
     .select(`
       id, name, short_name, slug, base_price, discount_2,
-      thickness_options, sales_mode, pricing_visibility_mode,
+      thickness_options, preferred_thickness, sales_mode, pricing_visibility_mode,
       minimum_order_type, minimum_order_value,
       requires_city_for_pricing, requires_system_context,
       recommended_bundle_family, catalog_description, meta_title, meta_description,
@@ -88,7 +98,7 @@ export async function getCatalogProducts(
       stock_tuzla, depot_discount, depot_min_m2,
       brands ( id, name, tier ),
       material_types ( id, name, slug ),
-      plate_prices ( thickness, base_price, is_kdv_included, stock_tuzla )
+      plate_prices ( thickness, base_price, is_kdv_included, stock_tuzla, package_m2 )
     `)
     .eq('is_active', true)
     .not('slug', 'is', null);
@@ -96,6 +106,9 @@ export async function getCatalogProducts(
   const materialId = MATERIAL_IDS[material];
   if (materialId) {
     query = query.eq('material_type_id', materialId);
+  }
+  if (options?.brandId != null) {
+    query = query.eq('brand_id', options.brandId);
   }
 
   const { data, error } = await query;
@@ -108,6 +121,23 @@ export async function getCatalogProducts(
   return { products, total: products.length, filters_applied: { material } };
 }
 
+// ─── Brand bazlı katalog (marka sayfaları için) ──────────────
+
+export async function getCatalogProductsByBrand(brandId: number): Promise<{
+  plates: CatalogProductView[];
+  accessories: CatalogProductView[];
+}> {
+  const [tasyunu, eps, aksesuar] = await Promise.all([
+    getCatalogProducts('tasyunu',  { brandId }),
+    getCatalogProducts('eps',      { brandId }),
+    getCatalogProducts('aksesuar', { brandId }),
+  ]);
+  return {
+    plates:      [...tasyunu.products, ...eps.products],
+    accessories: aksesuar.products,
+  };
+}
+
 // ─── Tekil ürün detayı ───────────────────────────────────────
 
 export async function getCatalogProduct(
@@ -116,89 +146,108 @@ export async function getCatalogProduct(
 ): Promise<CatalogProductDetailResponse | null> {
   const supabase = createServerSupabaseClient();
 
-  const skipPlates      = kategori === 'aksesuar';
-  const skipAccessories = kategori === 'tasyunu' || kategori === 'eps';
+  // Kategori → KATEGORI_MAP üzerinden material/accessory_type otoritesi.
+  // Bilinmeyen kategori 404 (yanlış route).
+  const info = kategori ? KATEGORI_MAP[kategori] : undefined;
+  if (kategori && !info) return null;
+
+  const wantPlates           = !info || info.material === 'tasyunu' || info.material === 'eps';
+  const wantAccessories      = !info || info.material === 'aksesuar';
+  const expectedAccessoryType = info?.accessoryTypeSlug ?? null;
+  const expectedMaterialId   =
+    info?.material === 'tasyunu' ? MATERIAL_IDS.tasyunu :
+    info?.material === 'eps'     ? MATERIAL_IDS.eps     : null;
 
   // Plates sorgusu (aksesuar kategorisinde atla)
-  if (!skipPlates) {
-  const { data: plateRow } = await supabase
-    .from('plates')
-    .select(`
-      id, name, short_name, slug, base_price, discount_2,
-      thickness_options, sales_mode, pricing_visibility_mode,
-      minimum_order_type, minimum_order_value,
-      requires_city_for_pricing, requires_system_context,
-      recommended_bundle_family, catalog_description, meta_title, meta_description,
-      image_cover, image_gallery,
-      stock_tuzla, depot_discount, depot_min_m2,
-      brands ( id, name, tier ),
-      material_types ( id, name, slug ),
-      plate_prices ( thickness, base_price, is_kdv_included, stock_tuzla )
-    `)
-    .eq('slug', slug)
-    .eq('is_active', true)
-    .single();
+  if (wantPlates) {
+    let plateQuery = supabase
+      .from('plates')
+      .select(`
+        id, name, short_name, slug, base_price, discount_2,
+        thickness_options, preferred_thickness, sales_mode, pricing_visibility_mode,
+        minimum_order_type, minimum_order_value,
+        requires_city_for_pricing, requires_system_context,
+        recommended_bundle_family, catalog_description, meta_title, meta_description,
+        image_cover, image_gallery,
+        stock_tuzla, depot_discount, depot_min_m2,
+        brands ( id, name, tier ),
+        material_types ( id, name, slug ),
+        plate_prices ( thickness, base_price, is_kdv_included, stock_tuzla, package_m2 )
+      `)
+      .eq('slug', slug)
+      .eq('is_active', true);
+    if (expectedMaterialId != null) {
+      plateQuery = plateQuery.eq('material_type_id', expectedMaterialId);
+    }
+    const { data: plateRow } = await plateQuery.single();
 
-  if (plateRow) {
-    const product = buildPlateView(plateRow as any);
-    const decision = getDecisionContext(product.rules, product.wizard_prefill ?? undefined);
-    return { product, decision };
-  }
+    if (plateRow) {
+      const product = buildPlateView(plateRow as any);
+      const decision = getDecisionContext(product.rules, product.wizard_prefill ?? undefined);
+      return { product, decision };
+    }
   }
 
   // Accessories sorgusu (tasyunu/eps kategorisinde atla)
-  if (!skipAccessories) {
-  const { data: accRow } = await supabase
-    .from('accessories')
-    .select(`
-      id, name, short_name, slug, base_price,
-      sales_mode, pricing_visibility_mode,
-      minimum_order_type, minimum_order_value,
-      requires_system_context, recommended_bundle_family,
-      catalog_description, image_cover,
-      brands ( id, name, tier ),
-      accessory_types ( id, name, slug )
-    `)
-    .eq('slug', slug)
-    .eq('is_active', true)
-    .single();
+  if (wantAccessories) {
+    const { data: accRow } = await supabase
+      .from('accessories')
+      .select(`
+        id, name, short_name, slug, base_price,
+        sales_mode, pricing_visibility_mode,
+        minimum_order_type, minimum_order_value,
+        requires_system_context, recommended_bundle_family,
+        catalog_description, image_cover,
+        brands ( id, name, tier ),
+        accessory_types ( id, name, slug )
+      `)
+      .eq('slug', slug)
+      .eq('is_active', true)
+      .single();
 
-  if (accRow) {
-  const row = accRow as any;
-  const brand = row.brands ?? {};
-  const accType = row.accessory_types ?? {};
-  const rules = buildAccessoryRules(row);
-  const minimum_order = buildMinOrder(rules);
-  const base_price = rules.pricing_visibility_mode === 'hidden' ? null : (row.base_price ?? null);
+    if (accRow) {
+      const row = accRow as any;
+      const accTypeSlug = row.accessory_types?.slug ?? null;
 
-  const product: CatalogProductView = {
-    id: row.id,
-    slug: row.slug,
-    name: row.name,
-    brand: { id: brand.id ?? 0, name: brand.name ?? '', tier: brand.tier ?? '' },
-    model: row.short_name ?? null,
-    thickness_options: null,
-    category: { slug: accType.slug ?? 'aksesuar', name: accType.name ?? 'Aksesuar' },
-    material_type: 'aksesuar',
-    product_type: 'accessory',
-    base_price,
-    thickness_prices: null,
-    rules,
-    minimum_order,
-    catalog_description: row.catalog_description ?? null,
-    meta_title: null,
-    meta_description: null,
-    image_cover: row.image_cover ?? null,
-    image_gallery: null,
-    wizard_prefill: null,
-    depot_stock:    null,
-    depot_discount: null,
-    depot_min_m2:   null,
-  };
+      // Kategori bir aksesuar slug'ı ise, accessory_types.slug eşleşmek zorunda
+      if (expectedAccessoryType && accTypeSlug !== expectedAccessoryType) {
+        return null;
+      }
 
-  const decision = getDecisionContext(rules, null);
-  return { product, decision };
-  }
+      const brand = row.brands ?? {};
+      const accType = row.accessory_types ?? {};
+      const rules = buildAccessoryRules(row);
+      const minimum_order = buildMinOrder(rules);
+      const base_price = rules.pricing_visibility_mode === 'hidden' ? null : (row.base_price ?? null);
+
+      const product: CatalogProductView = {
+        id: row.id,
+        slug: row.slug,
+        name: row.name,
+        brand: { id: brand.id ?? 0, name: brand.name ?? '', tier: brand.tier ?? '' },
+        model: row.short_name ?? null,
+        thickness_options: null,
+        category: { slug: accType.slug ?? 'aksesuar', name: accType.name ?? 'Aksesuar' },
+        material_type: 'aksesuar',
+        product_type: 'accessory',
+        base_price,
+        thickness_prices: null,
+        rules,
+        minimum_order,
+        catalog_description: row.catalog_description ?? null,
+        meta_title: null,
+        meta_description: null,
+        image_cover: row.image_cover ?? null,
+        image_gallery: null,
+        wizard_prefill: null,
+        depot_stock:    null,
+        depot_discount: null,
+        depot_min_m2:   null,
+      };
+
+      const decision = getDecisionContext(rules, null);
+      return { product, decision };
+    }
   }
 
   return null;
@@ -224,7 +273,14 @@ function buildPlateView(row: any): CatalogProductView {
   const base_price = rules.pricing_visibility_mode === 'hidden' ? null : (row.base_price ?? null);
 
   // thickness_prices: plate_prices'tan tam fiyat tablosu
-  type PriceRow = { thickness: number; base_price: number; is_kdv_included: boolean; discount_2: number; stock_tuzla: number };
+  type PriceRow = {
+    thickness: number;
+    base_price: number;
+    is_kdv_included: boolean;
+    discount_2: number;
+    stock_tuzla: number;
+    package_m2: number | null;
+  };
   const plateLevelDiscount2: number = row.discount_2 ?? 8;
   const thickness_prices: PriceRow[] | null = (() => {
     if (!Array.isArray(row.plate_prices) || row.plate_prices.length === 0) return null;
@@ -236,6 +292,7 @@ function buildPlateView(row: any): CatalogProductView {
         is_kdv_included: p.is_kdv_included ?? false,
         discount_2:      p.discount_2 ?? plateLevelDiscount2,
         stock_tuzla:     (p.stock_tuzla as number) ?? 0,
+        package_m2:      p.package_m2 != null ? parseFloat(String(p.package_m2)) : null,
       }))
       .sort((a, b) => a.thickness - b.thickness);
     return rows.length > 0 ? rows : null;
@@ -252,7 +309,12 @@ function buildPlateView(row: any): CatalogProductView {
     return null;
   })();
 
-  const dominantThickness = derivedThicknesses ? derivedThicknesses[0] : null;
+  const dominantThickness = (() => {
+    if (!derivedThicknesses || derivedThicknesses.length === 0) return null;
+    const preferred = row.preferred_thickness as number | null | undefined;
+    if (preferred != null && derivedThicknesses.includes(preferred)) return preferred;
+    return derivedThicknesses[0];
+  })();
 
   const wizard_prefill: WizardPrefill = {
     levhaTipi: (materialType.slug as 'tasyunu' | 'eps') ?? null,

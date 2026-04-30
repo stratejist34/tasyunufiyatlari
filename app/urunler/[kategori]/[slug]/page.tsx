@@ -22,9 +22,16 @@ const getLogisticsCapacity = unstable_cache(
     const supabase = createServerSupabaseClient();
     const { data } = await supabase
       .from('logistics_capacity')
-      .select('thickness, lorry_capacity_m2, truck_capacity_m2, package_size_m2')
+      .select('thickness, lorry_capacity_m2, truck_capacity_m2, package_size_m2, lorry_capacity_packages, truck_capacity_packages')
       .order('thickness');
-    return (data ?? []) as { thickness: number; lorry_capacity_m2: string | number; truck_capacity_m2: string | number; package_size_m2: string | number }[];
+    return (data ?? []) as {
+      thickness: number;
+      lorry_capacity_m2: string | number;
+      truck_capacity_m2: string | number;
+      package_size_m2: string | number;
+      lorry_capacity_packages: number;
+      truck_capacity_packages: number;
+    }[];
   },
   ['logistics_capacity'],
   { revalidate: 3600, tags: ['logistics'] }
@@ -62,7 +69,7 @@ const KATEGORI_LABELS: Record<string, string> = {
 const BADGE_MAP: Record<string, { label: string; cls: string }> = {
   single_only:     { label: 'Direkt Alım',   cls: 'bg-green-900/50 text-green-400 border-green-800'  },
   single_or_quote: { label: 'Alım / Teklif', cls: 'bg-fe-raised/50 text-fe-muted border-fe-border'   },
-  quote_only:      { label: 'Teklif',         cls: 'bg-amber-900/50 text-amber-400 border-amber-800' },
+  quote_only:      { label: 'Teklif',         cls: 'bg-brand-900/50 text-brand-400 border-brand-800' },
   system_only:     { label: 'Sistem Ürünü',   cls: 'bg-fe-raised text-fe-muted border-fe-border'    },
 };
 
@@ -112,8 +119,9 @@ export default async function UrunDetayPage({ params, searchParams }: Props) {
     optimix_levha_discount: string | number; discount_kamyon: string | number; discount_tir: string | number;
   }[]);
 
-  // Seçili kalınlık (URL'den): "9cm" → 9
-  const selectedThickness = kalinlikParam ? parseInt(kalinlikParam, 10) : null;
+  // Seçili kalınlık (URL'den): "9cm" → 9, "7.5cm" → 7.5
+  const parsedThickness   = kalinlikParam ? parseFloat(kalinlikParam) : NaN;
+  const selectedThickness = Number.isFinite(parsedThickness) ? parsedThickness : null;
   const isValidThickness  =
     selectedThickness !== null &&
     Array.isArray(product.thickness_options) &&
@@ -170,27 +178,37 @@ export default async function UrunDetayPage({ params, searchParams }: Props) {
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 lg:py-12">
         <ErrorBoundaryWrapper>
 
-        {/* Mobil: başlık + kalınlık seçimi — fiyat paneli öncesinde bağlam verir */}
+        {/* Mobile: thumbnail + kimlik + kalınlık — fiyat paneli öncesinde bağlam */}
         <div className="lg:hidden mb-5 space-y-4">
-          <div>
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="text-xs text-brand-500 font-semibold uppercase tracking-wider">
-                {product.brand.name}
-              </span>
-              <span className="text-fe-muted/60">·</span>
-              <span className="text-xs text-fe-muted">{product.category.name}</span>
-              <span className={`text-xs px-2 py-0.5 rounded border font-medium ${badge.cls}`}>
+
+          {/* Ürün kimliği: 60×60 thumbnail + marka/ad/SKU tek satır */}
+          <div className="flex items-start gap-3">
+            <ProductImage
+              src={product.image_cover}
+              alt={product.name}
+              className="w-[60px] h-[60px] shrink-0 rounded-xl"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                <span className="text-xs text-brand-500 font-semibold uppercase tracking-wider">
+                  {product.brand.name}
+                </span>
+                <span className="text-fe-muted/60">·</span>
+                <span className="text-xs text-fe-muted">{product.category.name}</span>
+              </div>
+              <h1 className="text-xl font-bold text-white leading-tight">
+                {product.name}
+              </h1>
+              {product.model && (
+                <p className="text-fe-muted text-xs mt-0.5">{product.model}</p>
+              )}
+              <span className={`inline-block mt-1.5 text-xs px-2 py-0.5 rounded border font-medium ${badge.cls}`}>
                 {badge.label}
               </span>
             </div>
-            <h1 className="text-2xl font-bold text-white leading-tight mb-1">
-              {product.name}
-            </h1>
-            {product.model && (
-              <p className="text-fe-muted text-sm">{product.model}</p>
-            )}
           </div>
 
+          {/* Kalınlık seçici */}
           {product.thickness_options && product.thickness_options.length > 0 && (
             <div>
               <p className="text-xs text-fe-muted uppercase tracking-wide font-medium mb-2.5">

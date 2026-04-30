@@ -10,7 +10,7 @@ import { roundToKurus, formatCurrency } from "@/lib/admin/utils";
 
 function StatCard({ title, value, icon, color, onClick }: any) {
     const colors: Record<string, string> = {
-        blue: "from-cyan-500/14 to-cyan-500/4 text-cyan-300 border-cyan-400/20",
+        blue: "from-amber-500/14 to-amber-500/4 text-amber-300 border-amber-400/20",
         green: "from-emerald-500/14 to-emerald-500/4 text-emerald-300 border-emerald-400/20",
         orange: "from-amber-500/14 to-amber-500/4 text-amber-300 border-amber-400/20",
         purple: "from-fuchsia-500/14 to-fuchsia-500/4 text-fuchsia-300 border-fuchsia-400/20",
@@ -156,7 +156,7 @@ export function ProductsTab() {
 
             <div className="mb-6 grid gap-4 xl:grid-cols-[1.35fr_1fr]">
                 <div className="admin-nexus-subtle p-5">
-                    <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-300/80">Katalog Mantığı</p>
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-amber-300/80">Katalog Mantığı</p>
                     <p className="mt-3 text-sm leading-6 text-slate-400">
                         Bu ekrandaki sayaçlar aynı veri katmanını saymaz. Levhalarda aile ve varyant ayrı, aksesuarlarda ise kayıt ve tür ayrı tutulur.
                     </p>
@@ -190,10 +190,10 @@ export function ProductsTab() {
                     <div className="admin-nexus-subtle p-5">
                         <div className="flex items-center justify-between gap-3">
                             <div>
-                                <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-300/80">Levha Görünümü</p>
+                                <p className="text-[11px] uppercase tracking-[0.22em] text-amber-300/80">Levha Görünümü</p>
                                 <p className="mt-2 text-sm text-slate-300">Filtreler sonrası görünen aile ve varyant kümesi.</p>
                             </div>
-                            <span className="rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-200">{filteredPlates.length} aile</span>
+                            <span className="rounded-full border border-amber-400/20 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-200">{filteredPlates.length} aile</span>
                         </div>
                         <div className="mt-4 grid gap-3 sm:grid-cols-3">
                             <div className="rounded-2xl border border-slate-700/50 bg-slate-950/40 p-4">
@@ -231,10 +231,10 @@ export function ProductsTab() {
                     <div className="admin-nexus-subtle p-5">
                         <div className="flex items-center justify-between gap-3">
                             <div>
-                                <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-300/80">Aksesuar Operasyon Görünümü</p>
+                                <p className="text-[11px] uppercase tracking-[0.22em] text-amber-300/80">Aksesuar Operasyon Görünümü</p>
                                 <p className="mt-2 text-sm text-slate-300">Aksesuar tarafında liste, satış fiyatı ve paket/adet bilgisi aynı tabloda okunur.</p>
                             </div>
-                            <span className="rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-200">{accessoryTypeCount} tür</span>
+                            <span className="rounded-full border border-amber-400/20 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-200">{accessoryTypeCount} tür</span>
                         </div>
                         <div className="mt-4 grid gap-3 sm:grid-cols-3">
                             <div className="rounded-2xl border border-slate-700/50 bg-slate-950/40 p-4">
@@ -365,7 +365,7 @@ export function ProductsTab() {
                                                                     {plate.material_types?.slug === "tasyunu" ? (
                                                                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-orange-500/20 text-orange-300 border border-orange-500/30"><Flame className="w-3 h-3" />Taşyünü</span>
                                                                     ) : (
-                                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-300 border border-blue-500/30"><Snowflake className="w-3 h-3" />EPS</span>
+                                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-orange-500/20 text-blue-300 border border-orange-500/30"><Snowflake className="w-3 h-3" />EPS</span>
                                                                     )}
                                                                 </td>
                                                                 <td className="px-4 py-3 text-sm text-slate-200 font-medium">{thickness} cm</td>

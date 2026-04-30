@@ -80,6 +80,11 @@ export function WizardStep3({ shippingZones, selectedCityCode, onCityChange }: W
                 </motion.div>
             )}
 
+            {selectedZone?.city_name === 'İstanbul' && (
+                <p className="text-[11px] text-fe-muted text-center mt-3">
+                    Varsayılan İstanbul. Farklı il için seçim yapın.
+                </p>
+            )}
             {!selectedCityCode && (
                 <p className="text-xs text-fe-muted text-center mt-3">
                     İl seçimi, bölge iskontosunu ve nakliye hesaplamasını belirler.

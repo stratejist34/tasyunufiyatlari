@@ -40,7 +40,7 @@ export default function DecisionPanel({ rules, minimumOrder }: DecisionPanelProp
           icon={minimumOrder.has_minimum ? <InfoIcon /> : <Check />}
           label="Minimum sipariş"
           value={minimumOrder.label ?? 'Minimum sipariş yok'}
-          valueColor={minimumOrder.has_minimum ? 'text-amber-400' : 'text-fe-muted'}
+          valueColor={minimumOrder.has_minimum ? 'text-brand-400' : 'text-fe-muted'}
         />
 
         {/* Şehir gerekli mi? */}
@@ -48,7 +48,7 @@ export default function DecisionPanel({ rules, minimumOrder }: DecisionPanelProp
           icon={rules.requires_city_for_pricing ? <InfoIcon /> : <Check />}
           label="Fiyat için şehir gerekli mi?"
           value={rules.requires_city_for_pricing ? 'Evet — şehre göre değişir' : 'Hayır'}
-          valueColor={rules.requires_city_for_pricing ? 'text-amber-400' : 'text-fe-muted'}
+          valueColor={rules.requires_city_for_pricing ? 'text-brand-400' : 'text-fe-muted'}
         />
 
         {/* Sistem ürünü mü? */}
@@ -96,5 +96,5 @@ function Cross() {
 }
 
 function InfoIcon() {
-  return <Info className="w-4 h-4 text-amber-500" />;
+  return <Info className="w-4 h-4 text-brand-500" />;
 }

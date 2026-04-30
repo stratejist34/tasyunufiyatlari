@@ -1,12 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+// TODO (teknik borç): URL parsing `?kalinlik=7.5cm` için parseInt kullanılıyor
+// (app/urunler/[kategori]/[slug]/page.tsx:116) → 7.5 cm'lik kalınlıklar 7 olarak parse ediliyor.
+// Düzeltme: parseFloat veya '7-5' URL formatına geçirilmesi gerekecek.
+// Bu dosya kapsamında değil; ayrı bir PR'da ele alınacak.
+
+import { useCallback, useEffect, useState } from "react";
+import { WHATSAPP_ORDER } from "@/lib/config";
 import { ChevronDown, Layers, Package } from "lucide-react";
 
 import type { CatalogProductView, DecisionContext, WizardPrefill } from "@/lib/catalog/types";
-import AreaThresholdAssist from "./AreaThresholdAssist";
+import SepetUI, { type SepetState, type SepetScenario } from "./SepetUI";
 import SingleProductQuoteButton from "./SingleProductQuoteButton";
-import TransportTierRail, { type TierOption } from "./TransportTierSelector";
+import StokAlternatifSection from "./StokAlternatifSection";
 import WizardLinkButton from "./WizardLinkButton";
 
 interface ShippingZone {
@@ -23,6 +29,8 @@ interface LogisticsCap {
   lorry_capacity_m2: string | number;
   truck_capacity_m2: string | number;
   package_size_m2: string | number;
+  lorry_capacity_packages: number;
+  truck_capacity_packages: number;
 }
 
 interface Props {
@@ -33,8 +41,6 @@ interface Props {
   logisticsCapacity: LogisticsCap[];
   selectedThickness: number | null;
 }
-
-type TierId = "lorry" | "truck" | "depot";
 
 const PROFIT_MARGIN = 0.1;
 
@@ -48,8 +54,31 @@ export default function ProductPricePanel({
 }: Props) {
   const defaultCity = shippingZones.find((z) => z.city_code === 34) ?? shippingZones[0];
   const [selectedCode, setSelectedCode] = useState<number>(defaultCity?.city_code ?? 34);
-  const [selectedTier, setSelectedTier] = useState<TierId>("depot");
   const [neededM2, setNeededM2] = useState<string>("");
+  const [debouncedM2, setDebouncedM2] = useState<string>("");
+  type MetrajMode = "custom" | "lorry" | "truck";
+  const [metrajMode, setMetrajMode] = useState<MetrajMode>("custom");
+
+  // Debounce: senaryo hesapları 350ms bekler — "400" yazarken "40" uyarısı tetiklenmez
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedM2(neededM2), 350);
+    return () => clearTimeout(t);
+  }, [neededM2]);
+  const [sepetState, setSepetState] = useState<SepetState>({
+    kamyon: 0,
+    tir: 0,
+    autoApplied: false,
+    totalM2: 0,
+    effectivePrice: null,
+    stokOnerisi: false,
+    scenario: 'empty',
+  });
+
+  // Boş deps: setSepetState React useState'ten gelir → stabil.
+  // Boş dep olmadan her render yeni fonksiyon → SepetUI'ın onChange effect'i döngüye girer.
+  const handleSepetChange = useCallback((state: SepetState) => {
+    setSepetState(state);
+  }, []);
 
   const zone = shippingZones.find((z) => z.city_code === selectedCode) ?? defaultCity;
   const { rules, base_price, minimum_order, thickness_prices } = product;
@@ -57,22 +86,39 @@ export default function ProductPricePanel({
   const activeThicknessPrice = thickness_prices
     ? selectedThickness
       ? thickness_prices.find((p) => p.thickness === selectedThickness) ?? thickness_prices[0]
-      : thickness_prices[0]
+      : thickness_prices.find((p) => p.thickness === (prefill?.kalinlik ?? null)) ?? thickness_prices[0]
     : null;
 
   const activeThickness = activeThicknessPrice?.thickness ?? selectedThickness;
   const isKdvIncluded = activeThicknessPrice?.is_kdv_included ?? false;
   const rawPrice = activeThicknessPrice?.base_price ?? base_price;
 
+  // logistics_capacity.thickness mm cinsinden tutuluyor (50, 75, 125)
+  // activeThickness cm cinsinden (5, 7.5, 12.5) — ×10 ile mm'ye çevrilir
   const logistics =
     logisticsCapacity.find((l) => l.thickness === (activeThickness ?? 0) * 10) ?? null;
-  const lorryM2 = logistics ? parseFloat(String(logistics.lorry_capacity_m2)) : null;
-  const truckM2 = logistics ? parseFloat(String(logistics.truck_capacity_m2)) : null;
-  const packageSizeM2 = logistics ? parseFloat(String(logistics.package_size_m2)) : null;
+
+  // Ürün-thickness başına package_m2 öncelikli; yoksa logistics genel default'u.
+  // EPS vs taşyünü için aynı thickness'ta paket m² farklı → araç kapasiteleri yeniden hesaplanır.
+  // Wizard'daki mantığın aynısı (WizardCalculator.tsx:142-149).
+  const realPkgM2 = logistics
+    ? Number(activeThicknessPrice?.package_m2 ?? logistics.package_size_m2)
+    : null;
+  const lorryPackages = logistics ? Number(logistics.lorry_capacity_packages) : null;
+  const truckPackages = logistics ? Number(logistics.truck_capacity_packages) : null;
+
+  const packageSizeM2 = realPkgM2;
+  const lorryM2 =
+    lorryPackages != null && realPkgM2 != null && Number.isFinite(realPkgM2)
+      ? lorryPackages * realPkgM2
+      : null;
+  const truckM2 =
+    truckPackages != null && realPkgM2 != null && Number.isFinite(realPkgM2)
+      ? truckPackages * realPkgM2
+      : null;
 
   const discKamyon = zone ? parseFloat(String(zone.discount_kamyon)) : 0;
   const discTir = zone ? parseFloat(String(zone.discount_tir)) : 0;
-  const shippingCost = zone ? parseFloat(String(zone.base_shipping_cost)) : 0;
 
   const isk2 = (activeThicknessPrice?.discount_2 ?? 8) / 100;
   const kdvHaricListe = rawPrice !== null ? (isKdvIncluded ? rawPrice / 1.2 : rawPrice) : null;
@@ -81,9 +127,12 @@ export default function ProductPricePanel({
       ? kdvHaricListe / packageSizeM2
       : kdvHaricListe;
 
+  // Gösterilen birim fiyat = hesaplanan toplam / m²: ₺342,34 × 806 = ₺275.946.
+  // calcPrice çıktısı kuruşa yuvarlanır; tüm türev fiyatlar tutarlı.
   function calcPrice(isk1Pct: number): number | null {
     if (pricePerM2Base === null) return null;
-    return pricePerM2Base * (1 - isk1Pct / 100) * (1 - isk2) * (1 + PROFIT_MARGIN);
+    const raw = pricePerM2Base * (1 - isk1Pct / 100) * (1 - isk2) * (1 + PROFIT_MARGIN);
+    return Math.round(raw * 100) / 100;
   }
 
   const packageRefPrice = calcPrice(0);
@@ -94,236 +143,289 @@ export default function ProductPricePanel({
   const depotStock = activeThicknessPrice?.stock_tuzla ?? 0;
   const depotPrice = depotStock > 0 ? calcPrice(depotDiscountPct) : null;
 
-  const neededM2Num = neededM2 ? parseFloat(neededM2.replace(",", ".")) : 0;
-  const isLorryEligible = neededM2Num > 0 && lorryM2 !== null && neededM2Num >= lorryM2;
-  const isTruckEligible = neededM2Num > 0 && truckM2 !== null && neededM2Num >= truckM2;
-
-  const tiers: TierOption[] = [
-    ...(lorryM2
-      ? [
-          {
-            id: "lorry" as TierId,
-            label: "Kamyon",
-            capacity: lorryM2,
-            price: lorryPrice,
-            savings: packageRefPrice && lorryPrice ? packageRefPrice - lorryPrice : null,
-            shipping: shippingCost > 0 ? shippingCost * (1 - discKamyon / 100) : 0,
-            disabled: !isLorryEligible,
-            minM2Required: isLorryEligible ? undefined : lorryM2,
-          },
-        ]
-      : []),
-    ...(truckM2
-      ? [
-          {
-            id: "truck" as TierId,
-            label: "TIR",
-            capacity: truckM2,
-            price: truckPrice,
-            savings: packageRefPrice && truckPrice ? packageRefPrice - truckPrice : null,
-            shipping: shippingCost > 0 ? shippingCost * (1 - discTir / 100) : 0,
-            disabled: !isTruckEligible,
-            minM2Required: isTruckEligible ? undefined : truckM2,
-          },
-        ]
-      : []),
-    ...(depotStock > 0
-      ? [
-          {
-            id: "depot" as TierId,
-            label: "Hızlı Teslim",
-            capacity: product.depot_min_m2 ?? 300,
-            price: depotPrice,
-            savings: null,
-            shipping: null,
-            depotStock,
-          },
-        ]
-      : []),
-  ];
-
+  // Stoksuz kalınlıklarda metraj inputunu 1 kamyon kapasitesiyle prefill et.
+  // Kalınlık değişince lorryM2 değişir → effect yeniden tetiklenir (doğal sıfırlama).
+  // depotStock > 0 ise depo yolu aktif; prefill gereksiz.
   useEffect(() => {
-    if (neededM2Num <= 0) {
-      if (depotStock > 0) {
-        setSelectedTier("depot");
-      } else if (lorryM2) {
-        setSelectedTier("lorry");
-      } else if (truckM2) {
-        setSelectedTier("truck");
-      }
-      return;
+    if (lorryM2 !== null && depotStock === 0) {
+      const val = String(lorryM2);
+      setNeededM2(val);
+      setDebouncedM2(val);
+      setMetrajMode("lorry");
     }
+  }, [lorryM2, depotStock]);
 
-    if (isTruckEligible) {
-      setSelectedTier("truck");
-      return;
+  const neededM2Num = (() => {
+    const raw = debouncedM2 ? parseFloat(debouncedM2.replace(",", ".")) : 0;
+    return isNaN(raw) || raw < 0 ? 0 : raw;
+  })();
+
+  // Geçerlilik kontrolü direkt neededM2 üzerinden (anlık kırmızı border için)
+  const inputInvalid = neededM2 !== "" && (() => {
+    const raw = parseFloat(neededM2.replace(",", "."));
+    return isNaN(raw) || raw < 0;
+  })();
+
+  const minOrderM2 =
+    minimum_order.has_minimum && rules.minimum_order_type === "m2"
+      ? (rules.minimum_order_value ?? null)
+      : null;
+
+  // CTA label — senaryoya ve araç sayısına göre dinamik
+  const ctaLabel = (() => {
+    switch (sepetState.scenario) {
+      case 'below_minimum': return `Teklif için en az ${minOrderM2 ?? ""} m² giriniz`;
+      case 'depot_optimal': return "Anında Teklif Oluştur";
+      case 'lorry_optimal': return sepetState.kamyon === 1 ? "1 Kamyon İçin Teklif Oluştur" : `${sepetState.kamyon} Kamyon İçin Teklif Oluştur`;
+      case 'tir_optimal':   return sepetState.tir === 1    ? "1 TIR İçin Teklif Oluştur"    : `${sepetState.tir} TIR İçin Teklif Oluştur`;
+      case 'large_project': return "Büyük Metraj Teklifi Al";
+      default:              return "Anında Teklif Oluştur";
     }
+  })();
+  const isTyping = neededM2 !== debouncedM2;
+  const ctaDisabled = !isTyping && sepetState.scenario === 'below_minimum' && sepetState.totalM2 === 0;
 
-    if (isLorryEligible) {
-      setSelectedTier("lorry");
-      return;
-    }
+  // Hero fiyat mantığı:
+  // 1. Sepet dolu → blended effective (kamyon × lorryPrice + TIR × truckPrice / toplam m²)
+  // 2. Stok önerisi aktif → depotPrice (depo tek seçenek, TIR fiyatı yanıltıcı olur)
+  // 3. Boş sepet, metraj yok → TIR çıpa (SEO için en avantajlı fiyat)
+  const heroPrice =
+    sepetState.totalM2 > 0
+      ? sepetState.effectivePrice
+      : sepetState.stokOnerisi && depotPrice !== null
+        ? depotPrice
+        : truckPrice ?? lorryPrice;
 
-    if (depotStock > 0) {
-      setSelectedTier("depot");
-    }
-  }, [depotStock, isLorryEligible, isTruckEligible, lorryM2, neededM2Num, truckM2]);
-
-  const activeTier = tiers.find((tier) => tier.id === selectedTier) ?? tiers[0];
-  const displayPrice = activeTier?.price ?? null;
-
-  const showTiers = tiers.length > 0 && logistics !== null;
   const showTierPrice =
     rules.pricing_visibility_mode === "from_price" ||
     rules.pricing_visibility_mode === "exact_price";
 
+  const showSepet =
+    showTierPrice &&
+    logistics !== null &&
+    lorryM2 !== null &&
+    truckM2 !== null &&
+    (lorryPrice !== null || truckPrice !== null);
+
+  // Quote parametreleri sepet state'inden türetilir.
+  // SingleProductQuoteButton vehicleType: 'lorry' | 'truck' | 'depot' | null kabul eder.
+  // Karışık sepet (TIR + Kamyon) için "mixed" enum yok, CTA disable de edilmez.
+  // vehicleType = null geçmek yeterli: DB'ye null gider (yanıltıcı "truck" gitmez).
+  // PDF hesabı zaten doğru: blended heroPrice × totalM2 = gerçek toplam.
+  const quoteVehicleType: "lorry" | "truck" | null =
+    sepetState.tir > 0 && sepetState.kamyon === 0
+      ? "truck"
+      : sepetState.kamyon > 0 && sepetState.tir === 0
+        ? "lorry"
+        : null; // karışık veya boş → null
+
+  const quoteTierLabel =
+    sepetState.tir > 0 && sepetState.kamyon > 0
+      ? "TIR + Kamyon"
+      : sepetState.tir > 0
+        ? "TIR"
+        : sepetState.kamyon > 0
+          ? "Kamyon"
+          : "";
+
+  const quoteM2 = sepetState.totalM2 > 0 ? sepetState.totalM2 : neededM2Num;
+
+  // Depo uygunsa depot kartı ana kartın üstüne çıkar
+  const depotBlock = depotStock > 0 && depotPrice !== null ? (
+    <StokAlternatifSection
+      depotStock={depotStock}
+      depotPrice={depotPrice}
+      depotMinM2={product.depot_min_m2 ?? 300}
+      ihtiyac={neededM2Num}
+      packageRefPrice={packageRefPrice}
+    />
+  ) : null;
+
   return (
     <div className="space-y-3">
+      {/* Depo optimal → depot kartı en üstte */}
+      {sepetState.scenario === 'depot_optimal' && depotBlock}
+
       <div className="rounded-xl border border-fe-border bg-fe-raised/40 p-5">
-        <div className="mb-4">
-          {rules.pricing_visibility_mode === "hidden" && (
-            <p className="text-fe-muted text-sm italic">Fiyat görüntülenmez</p>
-          )}
 
-          {rules.pricing_visibility_mode === "quote_required" && (
-            <div>
-              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
-                Fiyat
-              </p>
-              <p className="text-base font-medium text-fe-text">Teklif ile belirlenir</p>
-            </div>
-          )}
+        {/* ─── Fiyat Görünürlük Kontrolleri ─── */}
+        {rules.pricing_visibility_mode === "hidden" && (
+          <p className="mb-4 text-fe-muted text-sm italic">Fiyat görüntülenmez</p>
+        )}
 
-          {showTierPrice && displayPrice !== null && (
-            <div>
-              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
-                m² Fiyatı
-              </p>
-              <p className="text-3xl font-bold leading-none text-white">
-                ₺
-                {displayPrice.toLocaleString("tr-TR", {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 2,
-                })}
-                <span className="ml-1 text-sm font-normal text-fe-muted">/ m²</span>
-              </p>
-              <p className="mt-1 text-[11px] text-fe-muted-strong">KDV hariç</p>
-              {(activeThickness || activeTier) && (
-                <p className="mt-1 text-xs text-fe-muted">
-                  {[activeThickness ? `${activeThickness} cm` : "", activeTier?.label]
-                    .filter(Boolean)
-                    .join("  •  ")}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-
-        {shippingZones.length > 0 && (
-          <div className="mb-4 border-b border-fe-border/60 pb-4">
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
-              Teslimat Şehri
+        {rules.pricing_visibility_mode === "quote_required" && (
+          <div className="mb-4">
+            <p className="mb-1 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
+              Fiyat
             </p>
-            <div className="relative">
-              <select
-                value={selectedCode}
-                onChange={(e) => setSelectedCode(Number(e.target.value))}
-                className="w-full appearance-none rounded-lg border border-fe-border bg-fe-surface px-3 py-2.5 pr-8 text-sm text-fe-text transition-colors hover:bg-fe-raised focus:outline-none focus:border-brand-500/60 [color-scheme:dark]"
-              >
-                {shippingZones.map((z) => (
-                  <option key={z.city_code} value={z.city_code} className="bg-fe-surface text-fe-text">
-                    {z.city_name}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-fe-muted" />
-            </div>
-            {zone && (
-              <p className="mt-1.5 text-[10px] text-fe-muted">
-                {zone.city_code === 34
-                  ? "📍 Depoya en yakın — en hızlı teslim"
-                  : [41, 16, 14, 54, 81].includes(zone.city_code)
-                    ? "📍 Bölgesel avantajlı teslim"
-                    : null}
-              </p>
+            <p className="text-base font-medium text-fe-text">Teklif ile belirlenir</p>
+          </div>
+        )}
+
+        {/* ─── Hero Fiyat (dinamik) ─── */}
+        {showTierPrice && heroPrice !== null && (
+          <div className="mb-5" aria-live="polite" aria-atomic="true">
+            <p className="mb-1 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
+              m² Fiyatı
+            </p>
+            <p className="text-3xl font-bold leading-none text-white">
+              ₺
+              {heroPrice.toLocaleString("tr-TR", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2,
+              })}
+              <span className="ml-1 text-sm font-normal text-fe-muted">/ m²</span>
+            </p>
+            <p className="mt-1 text-[11px] text-fe-muted-strong">KDV hariç</p>
+            {activeThickness && (
+              <p className="mt-1 text-xs text-fe-muted">{activeThickness} cm</p>
             )}
           </div>
         )}
 
-        {showTiers && showTierPrice && (
-          <div className="mb-4 border-b border-fe-border/60 pb-4">
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
-              Proje Metrajı (m²)
-            </p>
-            <div className="relative">
-              <input
-                type="text"
-                inputMode="decimal"
-                value={neededM2}
-                onChange={(e) => setNeededM2(e.target.value)}
-                placeholder="örn. 1200"
-                className="w-full rounded-lg border border-fe-border bg-fe-bg/80 px-3 py-2.5 pr-10 text-sm text-fe-text transition-colors placeholder:text-fe-muted focus:outline-none focus:border-brand-500/60"
-              />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-fe-muted">
-                m²
-              </span>
-            </div>
-
-            <AreaThresholdAssist
-              neededM2={neededM2Num}
-              lorryM2={lorryM2}
-              truckM2={truckM2}
-              lorryPrice={lorryPrice}
-              truckPrice={truckPrice}
-              packageRefPrice={packageRefPrice}
-              discKamyon={discKamyon}
-              discTir={discTir}
-              onJump={(targetM2) => setNeededM2(String(targetM2))}
-            />
-          </div>
-        )}
-
-        {showTiers && (
-          <div className="mb-4 border-b border-fe-border/60 pb-4">
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
-              Sipariş Büyüklüğü{activeThickness ? ` · ${activeThickness} cm` : ""}
-            </p>
-            <TransportTierRail
-              tiers={tiers}
-              selectedId={activeTier?.id ?? "depot"}
-              onSelect={setSelectedTier}
-              className="mt-3"
-            />
-
-            <div className="mt-[18px] space-y-2">
-              <SingleProductQuoteButton
-                product={product}
-                activeThickness={activeThickness ?? null}
-                pricePerM2KdvHaric={displayPrice ?? 0}
-                neededM2={neededM2Num}
-                cityCode={selectedCode}
-                cityName={zone?.city_name ?? ""}
-                tierLabel={activeTier?.label ?? ""}
-                isShippingIncluded={activeTier?.id !== "depot"}
-                vehicleType={activeTier?.id ?? null}
-              />
-              <p className="px-1 text-center text-[10px] leading-relaxed text-fe-muted">
-                Fiyat, şehir ve metraj bilginizle kişisel teklif oluşturulur, PDF olarak sunulur
+        {/* ─── Teslimat Şehri + Proje Metrajı (yan yana desktop) ─── */}
+        {shippingZones.length > 0 && (
+          <div className="mb-4 grid grid-cols-1 gap-3 border-b border-fe-border/60 pb-4 sm:grid-cols-2">
+            <div>
+              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
+                Teslimat Şehri
               </p>
-              <a
-                href="https://wa.me/905322041825"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block py-1 text-center text-xs text-fe-muted transition-colors hover:text-fe-muted"
-              >
-                Sormak istediğiniz mi var? → WhatsApp
-              </a>
+              <div className="relative">
+                <select
+                  value={selectedCode}
+                  onChange={(e) => setSelectedCode(Number(e.target.value))}
+                  className="w-full appearance-none rounded-lg border border-fe-border bg-fe-surface px-3 py-2.5 pr-8 text-sm text-fe-text transition-colors hover:bg-fe-raised focus:outline-none focus:border-brand-500/60 [color-scheme:dark]"
+                >
+                  {shippingZones.map((z) => (
+                    <option
+                      key={z.city_code}
+                      value={z.city_code}
+                      className="bg-fe-surface text-fe-text"
+                    >
+                      {z.city_name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-fe-muted" />
+              </div>
+              {zone && (
+                <p className="mt-1.5 text-[10px] text-fe-muted">
+                  {zone.city_code === 34
+                    ? "📍 Depoya en yakın — en hızlı teslim"
+                    : [41, 16, 14, 54, 81].includes(zone.city_code)
+                      ? "📍 Bölgesel avantajlı teslim"
+                      : null}
+                </p>
+              )}
             </div>
+
+            {showSepet && (
+              <div>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
+                  İhtiyaç Metrajı (m²)
+                </p>
+                <div className="relative">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={neededM2}
+                    onChange={(e) => { setNeededM2(e.target.value); setMetrajMode("custom"); }}
+                    placeholder="örn. 1200"
+                    className={`w-full rounded-lg border bg-fe-bg/80 px-3 py-2.5 pr-10 text-sm text-fe-text transition-colors placeholder:text-fe-muted focus:outline-none ${
+                      inputInvalid
+                        ? "border-red-500/60 focus:border-red-500/80"
+                        : "border-brand-500/40 focus:border-brand-500/70 focus:shadow-[0_0_0_2px_rgba(212,132,90,0.10)]"
+                    }`}
+                  />
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-fe-muted">
+                    m²
+                  </span>
+                </div>
+                {inputInvalid ? (
+                  <p className="mt-1.5 text-[10px] text-red-400">Geçerli m² giriniz</p>
+                ) : metrajMode === "lorry" ? (
+                  <p className="mt-1.5 text-[10px] text-fe-muted">
+                    Başlangıç önerisi: 1 Kamyon tam yükleme. İsterseniz kendi metrajınızı yazabilirsiniz.
+                  </p>
+                ) : metrajMode === "truck" ? (
+                  <p className="mt-1.5 text-[10px] text-fe-muted">
+                    1 TIR tam yükleme seçili. İsterseniz kendi metrajınızı yazabilirsiniz.
+                  </p>
+                ) : (
+                  <p className="mt-1.5 text-[10px] text-fe-muted">
+                    Kendi metrajınızı yazabilirsiniz. Ara metrajlarda sistem önce depo stoklarını kontrol eder.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
 
-        {showTierPrice && !showTiers && logistics === null && activeThickness && (
-          <div className="mb-3 rounded-lg border border-fe-border/50 bg-fe-raised/30 px-3 py-2.5">
+        {/* ─── Quick Selection Chips ─── */}
+        {showSepet && lorryM2 !== null && truckM2 !== null && (
+          <div className="mb-4 flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => { setNeededM2(""); setDebouncedM2(""); setMetrajMode("custom"); }}
+              className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                metrajMode === "custom"
+                  ? "border-brand-500/60 bg-brand-500/15 text-brand-300"
+                  : "border-fe-border bg-fe-raised/40 text-fe-muted hover:border-brand-500/40 hover:text-brand-200"
+              }`}
+            >
+              Kendi metrajım
+            </button>
+            <button
+              type="button"
+              onClick={() => { setNeededM2(String(lorryM2)); setDebouncedM2(String(lorryM2)); setMetrajMode("lorry"); }}
+              className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                metrajMode === "lorry"
+                  ? "border-brand-500/60 bg-brand-500/15 text-brand-300"
+                  : "border-fe-border bg-fe-raised/40 text-fe-muted hover:border-brand-500/40 hover:text-brand-200"
+              }`}
+            >
+              1 Kamyon · {Math.round(lorryM2).toLocaleString("tr-TR")} m²
+            </button>
+            <button
+              type="button"
+              onClick={() => { setNeededM2(String(truckM2)); setDebouncedM2(String(truckM2)); setMetrajMode("truck"); }}
+              className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                metrajMode === "truck"
+                  ? "border-brand-500/60 bg-brand-500/15 text-brand-300"
+                  : "border-fe-border bg-fe-raised/40 text-fe-muted hover:border-brand-500/40 hover:text-brand-200"
+              }`}
+            >
+              1 TIR · {Math.round(truckM2).toLocaleString("tr-TR")} m²
+            </button>
+          </div>
+        )}
+
+        {/* ─── SepetUI ─── */}
+        {showSepet && lorryM2 !== null && truckM2 !== null && (
+          <SepetUI
+            lorryM2={lorryM2}
+            truckM2={truckM2}
+            lorryPrice={lorryPrice}
+            truckPrice={truckPrice}
+            packageRefPrice={packageRefPrice}
+            depotStock={depotStock}
+            depotPrice={depotPrice}
+            depotMinM2={product.depot_min_m2 ?? 300}
+            minOrderM2={minOrderM2 ?? 0}
+            ihtiyac={neededM2Num}
+            onChange={handleSepetChange}
+            onSetIhtiyac={(m2) => {
+              setNeededM2(String(m2));
+              setDebouncedM2(String(m2));
+              setMetrajMode(m2 === lorryM2 ? "lorry" : m2 === truckM2 ? "truck" : "custom");
+            }}
+            hideMinWarning={isTyping}
+          />
+        )}
+
+        {/* Nakliye verisi yok uyarısı */}
+        {showTierPrice && logistics === null && activeThickness && (
+          <div className="mb-3 mt-3 rounded-lg border border-fe-border/50 bg-fe-raised/30 px-3 py-2.5">
             <p className="text-xs text-fe-muted">
               Bu kalınlık için nakliye verisi henüz girilmemiştir. Teklif formu veya WhatsApp
               üzerinden fiyat alabilirsiniz.
@@ -331,14 +433,67 @@ export default function ProductPricePanel({
           </div>
         )}
 
-        {minimum_order.has_minimum && minimum_order.label && (
-          <div className="flex items-center justify-between text-sm">
+        {/* Minimum Sipariş — stok olan kalınlıklarda geçerli (depo bazlı); stok yoksa
+            fabrika minimumu lorry/TIR olarak KararKutusu'nda gösterilir */}
+        {minimum_order.has_minimum && minimum_order.label
+          && sepetState.scenario !== 'below_minimum'
+          && depotStock > 0 && (
+          <div className="mt-3 flex items-center justify-between">
             <span className="text-xs text-fe-muted">Minimum sipariş</span>
-            <span className="text-xs font-medium text-amber-400">{minimum_order.label}</span>
+            <span className="text-xs font-medium text-brand-400">{minimum_order.label}</span>
+          </div>
+        )}
+
+        {/* ─── CTA ─── */}
+        {showSepet && (
+          <div className="mt-4 space-y-2">
+            {ctaDisabled ? (
+              <button
+                type="button"
+                disabled
+                className="w-full rounded-xl bg-fe-raised/60 px-4 py-3.5 text-sm font-semibold text-fe-muted border border-fe-border/50 cursor-not-allowed"
+              >
+                {ctaLabel}
+              </button>
+            ) : (
+              <SingleProductQuoteButton
+                product={product}
+                activeThickness={activeThickness ?? null}
+                pricePerM2KdvHaric={heroPrice ?? 0}
+                neededM2={quoteM2}
+                cityCode={selectedCode}
+                cityName={zone?.city_name ?? ""}
+                tierLabel={quoteTierLabel}
+                isShippingIncluded={true}
+                vehicleType={quoteVehicleType}
+                label={ctaLabel}
+              />
+            )}
+            <p className="px-1 text-center text-[10px] leading-relaxed text-fe-muted">
+              Fiyat, şehir ve metraj bilginizle kişisel teklif oluşturulur, PDF olarak sunulur
+            </p>
+            <a
+              href={`https://wa.me/${WHATSAPP_ORDER}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`block py-1 text-center text-xs transition-colors ${
+                sepetState.scenario === 'depot_optimal'
+                  ? "font-semibold text-green-400 hover:text-green-300"
+                  : "text-fe-muted hover:text-fe-muted"
+              }`}
+            >
+              {sepetState.scenario === 'depot_optimal'
+                ? "WhatsApp ile Hızlı Sipariş →"
+                : "Sormak istediğiniz mi var? → WhatsApp"}
+            </a>
           </div>
         )}
       </div>
 
+      {/* Depo optimal değilse normal pozisyonda göster */}
+      {sepetState.scenario !== 'depot_optimal' && depotBlock}
+
+      {/* ─── Sistem Teklifi ─── */}
       {(rules.requires_system_context || rules.sales_mode !== "single_only") && (
         <div className="rounded-xl border border-brand-500/30 bg-brand-950/20 p-5">
           <p className="mb-1 text-sm font-semibold leading-snug text-fe-text">
@@ -347,7 +502,6 @@ export default function ProductPricePanel({
           <p className="mb-4 text-xs text-fe-muted">
             Dübel · Sıva · File eklenince metrekare maliyeti düşer. Takım fiyatını hesapla.
           </p>
-
           <WizardLinkButton
             prefill={prefill}
             targetStep={decision.wizard_target_step}
@@ -362,9 +516,7 @@ export default function ProductPricePanel({
       {rules.requires_system_context && (
         <div className="flex items-start gap-2 rounded-lg border border-fe-border/50 bg-fe-raised/30 px-4 py-3">
           <Layers className="mt-0.5 h-3.5 w-3.5 shrink-0 text-fe-muted" />
-          <p className="text-xs text-fe-muted">
-            Bu ürün genellikle sistem halinde tercih edilir.
-          </p>
+          <p className="text-xs text-fe-muted">Bu ürün genellikle sistem halinde tercih edilir.</p>
         </div>
       )}
     </div>

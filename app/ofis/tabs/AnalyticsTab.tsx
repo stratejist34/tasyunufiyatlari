@@ -21,7 +21,7 @@ export function AnalyticsTab() {
         return (
             <div className="flex items-center justify-center py-24">
                 <div className="space-y-3 text-center">
-                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent mx-auto" />
+                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-500 border-t-transparent mx-auto" />
                     <p className="text-sm text-slate-500">Analiz verileri yükleniyor…</p>
                 </div>
             </div>
@@ -43,7 +43,7 @@ export function AnalyticsTab() {
     return (
         <div className="space-y-8">
             <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-cyan-300/80">Talep Analizi</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-300/80">Talep Analizi</p>
                 <h2 className="mt-2 text-2xl font-semibold text-slate-50">Marka & Kombinasyon Analizi</h2>
                 <p className="mt-1 text-sm text-slate-400">Son 7 günlük teklif verisinden türetilmiştir.</p>
             </div>
@@ -53,7 +53,7 @@ export function AnalyticsTab() {
                 {/* EPS Markaları */}
                 <div className="admin-nexus-panel p-5">
                     <div className="flex items-center gap-2 mb-3">
-                        <span className="w-2 h-2 rounded-full bg-cyan-400 flex-shrink-0" />
+                        <span className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
                         <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">EPS Markaları <span className="text-slate-600">(7g)</span></p>
                     </div>
                     {(metrics?.eps_brands_7d ?? []).length > 0 ? (
@@ -71,7 +71,7 @@ export function AnalyticsTab() {
                                         <span className="text-[10px] text-slate-600">{i + 1}</span>
                                         <span className="text-xs text-slate-200 font-medium truncate">{item.brand}</span>
                                         <span className="text-xs text-slate-300 text-right">{item.count}</span>
-                                        <span className="text-[11px] text-sky-400/80 text-right">{formatM2(item.area_m2 ?? 0)}</span>
+                                        <span className="text-[11px] text-amber-400/80 text-right">{formatM2(item.area_m2 ?? 0)}</span>
                                         <span className="text-[11px] text-amber-400/80 text-right">{formatAmount(item.amount ?? 0)}</span>
                                     </div>
                                 ))}
@@ -103,7 +103,7 @@ export function AnalyticsTab() {
                                         <span className="text-[10px] text-slate-600">{i + 1}</span>
                                         <span className="text-xs text-slate-200 font-medium truncate">{item.brand}</span>
                                         <span className="text-xs text-slate-300 text-right">{item.count}</span>
-                                        <span className="text-[11px] text-sky-400/80 text-right">{formatM2(item.area_m2 ?? 0)}</span>
+                                        <span className="text-[11px] text-amber-400/80 text-right">{formatM2(item.area_m2 ?? 0)}</span>
                                         <span className="text-[11px] text-amber-400/80 text-right">{formatAmount(item.amount ?? 0)}</span>
                                     </div>
                                 ))}
@@ -135,7 +135,7 @@ export function AnalyticsTab() {
                                         <span className="text-[10px] text-slate-600">{i + 1}</span>
                                         <span className="text-xs text-slate-200 font-medium truncate">{item.brand}</span>
                                         <span className="text-xs text-slate-300 text-right">{item.count}</span>
-                                        <span className="text-[11px] text-sky-400/80 text-right">{formatM2(item.area_m2 ?? 0)}</span>
+                                        <span className="text-[11px] text-amber-400/80 text-right">{formatM2(item.area_m2 ?? 0)}</span>
                                         <span className="text-[11px] text-amber-400/80 text-right">{formatAmount(item.amount ?? 0)}</span>
                                     </div>
                                 ))}
@@ -152,7 +152,7 @@ export function AnalyticsTab() {
                 {/* EPS Kombinasyonları */}
                 <div className="admin-nexus-panel p-6">
                     <div className="flex items-center gap-2 mb-4">
-                        <span className="flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">E</span>
+                        <span className="flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/20">E</span>
                         <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">EPS Kombinasyonları <span className="text-slate-600">(7g)</span></p>
                     </div>
                     <div className="space-y-2">
@@ -165,13 +165,13 @@ export function AnalyticsTab() {
                                             <span className="font-medium">{item.plate_brand}</span>
                                             {item.model !== "—" && <span className="text-slate-400"> {item.model}</span>}
                                             <span className="mx-1.5 text-slate-600">×</span>
-                                            <span className="text-cyan-300/80">{item.powder_brand}</span>
+                                            <span className="text-amber-300/80">{item.powder_brand}</span>
                                         </p>
                                     </div>
                                     <span className="flex-shrink-0 text-sm font-semibold text-slate-50">{item.count}</span>
                                 </div>
                                 <div className="mt-1 ml-6 flex gap-2 text-[11px]">
-                                    <span className="text-sky-400/80">{formatM2(item.area_m2 ?? 0)}</span>
+                                    <span className="text-amber-400/80">{formatM2(item.area_m2 ?? 0)}</span>
                                     <span className="text-slate-700">·</span>
                                     <span className="text-amber-400/80">{formatAmount(item.amount ?? 0)}</span>
                                 </div>
@@ -204,7 +204,7 @@ export function AnalyticsTab() {
                                     <span className="flex-shrink-0 text-sm font-semibold text-slate-50">{item.count}</span>
                                 </div>
                                 <div className="mt-1 ml-6 flex gap-2 text-[11px]">
-                                    <span className="text-sky-400/80">{formatM2(item.area_m2 ?? 0)}</span>
+                                    <span className="text-amber-400/80">{formatM2(item.area_m2 ?? 0)}</span>
                                     <span className="text-slate-700">·</span>
                                     <span className="text-amber-400/80">{formatAmount(item.amount ?? 0)}</span>
                                 </div>

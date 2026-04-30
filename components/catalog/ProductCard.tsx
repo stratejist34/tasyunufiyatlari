@@ -11,7 +11,7 @@ interface ProductCardProps {
 const SALES_MODE_BADGE: Record<string, { label: string; color: string }> = {
   single_only:      { label: 'Direkt Alım',   color: 'bg-green-900/50 text-green-400 border-green-800'  },
   single_or_quote:  { label: 'Alım / Teklif', color: 'bg-fe-raised/50 text-fe-muted border-fe-border'   },
-  quote_only:       { label: 'Teklif',         color: 'bg-amber-900/50 text-amber-400 border-amber-800' },
+  quote_only:       { label: 'Teklif',         color: 'bg-brand-900/50 text-brand-400 border-brand-800' },
   system_only:      { label: 'Sistem Ürünü',   color: 'bg-fe-raised text-fe-muted border-fe-border'   },
 };
 
@@ -75,7 +75,7 @@ export default function ProductCard({ product, kategori }: ProductCardProps) {
 
       {/* Minimum sipariş notu */}
       {product.minimum_order.has_minimum && product.minimum_order.label && (
-        <p className="text-xs text-amber-500/80 mt-1">{product.minimum_order.label}</p>
+        <p className="text-xs text-brand-500/80 mt-1">{product.minimum_order.label}</p>
       )}
       </div>
     </Link>

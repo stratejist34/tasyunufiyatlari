@@ -29,8 +29,9 @@ export const pdfOfferSchema = z.object({
 
   deliveryAddress: z
     .string()
-    .min(5, 'Adres çok kısa')
-    .max(500, 'En fazla 500 karakter'),
+    .max(500, 'En fazla 500 karakter')
+    .optional()
+    .or(z.literal('')),
 
   phone: z
     .string()
@@ -44,6 +45,10 @@ export const pdfOfferSchema = z.object({
     .trim()
     .optional()
     .or(z.literal('')),
+
+  kvkkConsent: z.boolean().refine(val => val === true, {
+    message: 'Devam etmek için KVKK onayı gereklidir',
+  }),
 });
 
 export type PdfOfferFormData = z.infer<typeof pdfOfferSchema>;

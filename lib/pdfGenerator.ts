@@ -1,6 +1,12 @@
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
 
+export interface QuotePDFResult {
+    blobUrl: string;
+    blob: Blob;
+    filename: string;
+}
+
 // --- Yardımcı Fonksiyonlar ---
 
 function escapeHtml(input: string): string {
@@ -92,17 +98,11 @@ function buildSafeFileName(data: PDFQuoteData): string {
         namePart = safeStr(data.relatedPerson);
     }
 
-    let locationPart = safeStr(data.city || data.cityName);
-    const district = safeStr(data.district || '');
-    if (district && locationPart && !locationPart.includes(district) && district.toLowerCase() !== 'merkez') {
-        locationPart = `${locationPart}-${district}`;
-    }
-
     const metrajPart = `${data.metraj}m2`;
-    const matType = safeStr(data.materialLongName || (data.materialType === 'tasyunu' ? 'Tas Yunu' : 'EPS'));
-    const productDetail = `${data.thickness}cm-${safeStr(data.plateBrandName)}-${matType}`;
+    const thicknessPart = `${data.thickness}cm`;
+    const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
 
-    return `${namePart}_${locationPart}_${metrajPart}_${productDetail}_TEKLIFI.pdf`;
+    return `TY-Teklif_${namePart}_${metrajPart}_${thicknessPart}_${datePart}.pdf`;
 }
 
 function addWrappedText(doc: jsPDF, text: string, x: number, y: number, maxWidth: number, lineHeight = 6): number {
@@ -111,7 +111,7 @@ function addWrappedText(doc: jsPDF, text: string, x: number, y: number, maxWidth
     return y + (lines.length * lineHeight);
 }
 
-function generateFallbackQuotePDF(data: PDFQuoteData): string {
+function generateFallbackQuotePDF(data: PDFQuoteData): QuotePDFResult {
     const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -124,7 +124,7 @@ function generateFallbackQuotePDF(data: PDFQuoteData): string {
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
-    doc.text('Fiyat Teklifi', 14, y);
+    doc.text('Mantolama Seti Fiyat Teklifi', 14, y);
     y += 10;
 
     doc.setFont('helvetica', 'normal');
@@ -192,14 +192,16 @@ function generateFallbackQuotePDF(data: PDFQuoteData): string {
     y += 7;
     doc.text(`m2 Fiyat: ${fmtMoney(data.pricePerM2)}`, 14, y);
 
-    const blobUrl = doc.output('bloburl') as unknown as string;
-    doc.save(buildSafeFileName(data));
-    return blobUrl;
+    const filename = buildSafeFileName(data);
+    const blob = doc.output('blob') as Blob;
+    const blobUrl = URL.createObjectURL(blob);
+    doc.save(filename);
+    return { blobUrl, blob, filename };
 }
 
 // --- Ana Fonksiyon ---
 
-export async function generateQuotePDF(data: PDFQuoteData): Promise<string> {
+export async function generateQuotePDF(data: PDFQuoteData): Promise<QuotePDFResult> {
     if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         const html2canvas = (await import('html2canvas')).default;
 
@@ -212,8 +214,8 @@ export async function generateQuotePDF(data: PDFQuoteData): Promise<string> {
             slate300: '#cbd5e1', // Açık gri border/metin
             slate100: '#f1f5f9', // Tablo zebra
             slate200: '#e2e8f0', // Hafif borderlar
-            orange600: '#ea580c', // Vurgu / CTA
-            orange100: '#ffedd5', // Vurgu zemin
+            orange600: '#a07a2c', // Vurgu / CTA — hub-gold
+            orange100: '#f8efd3', // Vurgu zemin — light gold
             green600: '#16a34a', // Başarı / Onay
             border: '#cbd5e1',   // Genel border (Açık Lacivert/Gri)
         };
@@ -331,11 +333,14 @@ export async function generateQuotePDF(data: PDFQuoteData): Promise<string> {
              </div>
         </div>
 
-        <!-- FİYAT TEKLİFİ Başlığı (Header Altında) -->
+        <!-- Başlık (Header Altında) -->
         <div style="margin-top:16px;padding-bottom:12px;border-bottom:1px solid ${COLORS.border};">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <h1 style="margin:0;font-size:24px;font-weight:800;color:${COLORS.slate900};letter-spacing:-0.5px;">FİYAT TEKLİFİ</h1>
-            <div style="font-size:11px;color:${COLORS.slate700};">Tarih: <b>${escapeHtml(today)}</b></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+              <h1 style="margin:0 0 2px 0;font-size:16px;font-weight:800;color:${COLORS.slate900};letter-spacing:-0.3px;">MANTOLAMA SETİ FİYAT TEKLİFİ</h1>
+              <div style="font-size:12px;font-weight:700;color:${COLORS.orange600};">Teklif No: ${escapeHtml(data.refCode)}</div>
+            </div>
+            <div style="font-size:11px;color:${COLORS.slate700};text-align:right;">Tarih: <b>${escapeHtml(today)}</b></div>
           </div>
         </div>
       </div>
@@ -421,7 +426,7 @@ export async function generateQuotePDF(data: PDFQuoteData): Promise<string> {
                     ⚠️ DİKKAT: FİYAT GEÇERLİLİK SÜRESİ
                 </div>
                 <div style="font-size:10px;color:${COLORS.slate700};margin-top:2px;">
-                    Sektörel dalgalanmalar nedeniyle bu teklif <strong>24 Saat (1 İş Günü)</strong> geçerlidir.
+                    Sektörel dalgalanmalar nedeniyle bu teklif <strong>${escapeHtml(data.validityDate)}</strong> tarihine kadar geçerlidir.
                 </div>
             </div>
 
@@ -565,9 +570,11 @@ export async function generateQuotePDF(data: PDFQuoteData): Promise<string> {
 
             doc.addImage(imgData, 'JPEG', 0, 0, finalWidth, finalHeight, undefined, 'FAST');
 
-            const blobUrl = doc.output('bloburl') as unknown as string;
-            doc.save(buildSafeFileName(data));
-            return blobUrl;
+            const filename = buildSafeFileName(data);
+            const blob = doc.output('blob') as Blob;
+            const blobUrl = URL.createObjectURL(blob);
+            doc.save(filename);
+            return { blobUrl, blob, filename };
         } catch (error) {
             console.error('Rich PDF render failed, falling back to basic PDF:', error);
             return generateFallbackQuotePDF(data);
@@ -575,5 +582,5 @@ export async function generateQuotePDF(data: PDFQuoteData): Promise<string> {
             container.remove();
         }
     }
-    return '';
+    return { blobUrl: '', blob: new Blob(), filename: '' };
 }

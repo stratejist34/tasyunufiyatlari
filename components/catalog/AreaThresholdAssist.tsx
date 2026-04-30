@@ -185,11 +185,11 @@ export default function AreaThresholdAssist({
       )}
 
       {currentLevel === "parsiyel" && (
-        <div className="rounded-lg border border-amber-700/20 bg-amber-950/20 px-3 py-2.5">
+        <div className="rounded-lg border border-brand-700/20 bg-brand-950/20 px-3 py-2.5">
           <div className="flex items-start gap-2.5">
             <span className="mt-0.5 text-[13px] leading-none">□</span>
             <div>
-              <p className="text-xs font-semibold leading-tight text-amber-300">
+              <p className="text-xs font-semibold leading-tight text-brand-300">
                 Parsiyel seviye aktif
               </p>
               <p className="mt-0.5 text-[11px] text-fe-muted">

@@ -45,13 +45,13 @@ export function PackageCard({
             }}
             whileHover={{ scale: 1.03 }}
             className={`relative rounded-2xl border-2 p-6 transition-all hover:shadow-xl backdrop-blur-md ${isPopular
-                ? 'border-orange-600 bg-slate-900/90 md:scale-105 shadow-lg shadow-orange-600/20'
-                : 'border-slate-800 bg-slate-900/80'
+                ? 'border-brand-600 bg-fe-bg/90 md:scale-105 shadow-lg shadow-brand-600/20'
+                : 'border-fe-border bg-fe-bg/80'
                 }`}
         >
             {/* Badge */}
             {pkg.definition.badge && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-600 text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
                     {pkg.definition.badge}
                 </div>
             )}
@@ -60,29 +60,42 @@ export function PackageCard({
             <h4 className="font-heading text-lg font-bold text-white mb-1 mt-2 tracking-tight">
                 {pkg.definition.name}
             </h4>
-            <p className="text-sm text-slate-400 mb-1">{pkg.definition.description}</p>
-            <p className="text-xs text-orange-500 mb-4 font-medium">
+            <p className="text-sm text-fe-muted mb-1">{pkg.definition.description}</p>
+            {(() => {
+                const sentences = [
+                    'Marka bütünlüğü isteyen projeler için.',
+                    'Fiyat/performans dengesi arayan projeler için.',
+                    'En düşük toplam maliyeti hedefleyen projeler için.',
+                ];
+                const s = sentences[index];
+                return s ? <p className="text-xs text-fe-muted italic mb-1">{s}</p> : null;
+            })()}
+            <p className="text-xs text-brand-500 mb-4 font-medium">
                 Levha: {pkg.plateBrandName} • Toz Grubu: {pkg.accessoryBrandName}
             </p>
 
             {/* FOMO: Geçerlilik Tarihi */}
-            <div className="mb-3 flex items-center gap-2 text-xs bg-yellow-900/30 border border-yellow-700/50 rounded-lg px-3 py-2">
-                <span className="text-yellow-500">⏰</span>
-                <span className="text-slate-300">
-                    Bu teklif <strong className="text-yellow-400">{getOfferValidityDate()}</strong> tarihine kadar geçerlidir
+            <div className="mb-3 flex items-center gap-2 text-xs bg-brand-900/30 border border-brand-700/50 rounded-lg px-3 py-2">
+                <span className="text-brand-500">⏰</span>
+                <span className="text-fe-text">
+                    Bu teklif <strong className="text-brand-400">{getOfferValidityDate()}</strong> tarihine kadar geçerlidir
                 </span>
             </div>
 
             {/* Fiyat */}
             <div className="mb-4">
+                <div className="text-xs text-fe-muted mb-0.5">Ödenecek Toplam</div>
                 <div className="font-heading text-3xl font-bold text-white tabular-nums">
                     {(pkg.grandTotal * 1.2).toLocaleString('tr-TR', { maximumFractionDigits: 0 })} ₺
                 </div>
-                <div className="text-sm text-slate-400">
-                    <span className={`${pkg.logistics?.isShippingIncluded ? 'text-orange-500' : 'text-slate-400'} font-bold`}>
-                        {pkg.logistics?.isShippingIncluded ? 'Nakliye Dahil m² Fiyatı:' : 'm² Fiyatı (Nakliye Hariç):'}
+                <div className="text-xs text-fe-muted mt-0.5 mb-2">
+                    KDV dahil{pkg.logistics?.isShippingIncluded ? ' · Nakliye dahil' : ''}
+                </div>
+                <div className="text-sm text-fe-muted">
+                    <span className={`${pkg.logistics?.isShippingIncluded ? 'text-brand-500' : 'text-fe-muted'} font-bold`}>
+                        {pkg.logistics?.isShippingIncluded ? 'KDV dahil m² maliyeti:' : 'm² maliyeti (Nakliye Hariç):'}
                     </span>{' '}
-                    <span className="font-heading tabular-nums">{(pkg.pricePerM2 * 1.2).toFixed(2)} ₺/m²</span>
+                    <span className="font-heading tabular-nums">{(pkg.pricePerM2 * 1.2).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺/m²</span>
                 </div>
 
                 {/* Nakliye Uyarısı */}
@@ -104,7 +117,7 @@ export function PackageCard({
                             <span className="text-red-500 text-sm">⚠️</span>
                             <div>
                                 <div className="text-sm font-semibold text-red-400 font-heading tabular-nums">
-                                    Düşük Metraj Lojistik Farkı: +
+                                    Düşük Metraj Nakliye Farkı: +
                                     {pkg.logistics.lowMetrageSurcharge.toLocaleString('tr-TR', {
                                         maximumFractionDigits: 0
                                     })}{' '}
@@ -121,7 +134,7 @@ export function PackageCard({
                                                     {(
                                                         pkg.logistics.packagesNeededForOptimal *
                                                         pkg.logistics.packageSizeM2
-                                                    ).toFixed(1)}{' '}
+                                                    ).toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}{' '}
                                                     m²
                                                 </strong>{' '}
                                                 artırırsanız bu ücret{' '}
@@ -134,11 +147,11 @@ export function PackageCard({
                     </div>
                 )}
 
-                <div className="text-xs text-slate-400 mt-2">
+                <div className="text-xs text-fe-muted mt-2">
                     KDV Hariç:{' '}
                     <span className="font-heading tabular-nums">{pkg.grandTotal.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} ₺</span>
                 </div>
-                <div className="text-xs text-slate-400">
+                <div className="text-xs text-fe-muted">
                     KDV (%20):{' '}
                     <span className="font-heading tabular-nums">{(pkg.grandTotal * 0.2).toLocaleString('tr-TR', {
                         maximumFractionDigits: 0
@@ -148,17 +161,21 @@ export function PackageCard({
             </div>
 
             {/* Garanti */}
-            <div className="flex items-center gap-2 mb-4 text-sm text-slate-300">
+            <div className="flex items-center gap-2 mb-4 text-sm text-fe-text">
                 <span className="text-green-500">✓</span>
-                <span>{pkg.definition.warranty_years || 2} Yıl Garanti</span>
+                <span>
+                    {pkg.plateBrandName?.includes('Dalmaçyalı') && pkg.accessoryBrandName?.includes('Dalmaçyalı')
+                        ? '10 yıl Dalmaçyalı sistem garanti koşulları geçerlidir'
+                        : 'Üretici ürün garanti koşulları geçerlidir'}
+                </span>
             </div>
 
             {/* GAMIFIED TRUCK METER */}
             {pkg.logistics && (
-                <div className="mb-4 p-4 bg-slate-800/50 rounded-xl border border-slate-700 shadow-sm">
+                <div className="mb-4 p-4 bg-fe-surface/50 rounded-xl border border-fe-border shadow-sm">
                     <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-bold text-white font-heading">📦 LOJİSTİK METRE</span>
-                        <span className="text-xs text-slate-400 font-heading tabular-nums">
+                        <span className="text-sm font-bold text-white font-heading">Nakliye &amp; Doluluk</span>
+                        <span className="text-xs text-fe-muted font-heading tabular-nums">
                             {pkg.logistics.packageCount} paket × {pkg.logistics.packageSizeM2} m²
                         </span>
                     </div>
@@ -166,17 +183,17 @@ export function PackageCard({
                     {/* Araç Durumu */}
                     <div className="text-xs font-medium mb-3 font-heading tabular-nums">
                         {pkg.logistics.vehicleType === 'lorry' && (
-                            <span className="text-slate-300">
+                            <span className="text-fe-text">
                                 🚚 Kamyon ({pkg.logistics.lorryFillPercentage.toFixed(0)}% Doluluk)
                             </span>
                         )}
                         {pkg.logistics.vehicleType === 'truck' && (
-                            <span className="text-slate-300">
+                            <span className="text-fe-text">
                                 🚛 Tır ({pkg.logistics.truckFillPercentage.toFixed(0)}% Doluluk)
                             </span>
                         )}
                         {pkg.logistics.vehicleType === 'multiple' && (
-                            <span className="text-orange-500 font-medium">
+                            <span className="text-brand-500 font-medium">
                                 🚛🚛 Birden fazla araç gerekli
                             </span>
                         )}
@@ -192,7 +209,7 @@ export function PackageCard({
 
                         return (
                             <div className="space-y-2">
-                                <div className="flex justify-between text-xs text-slate-300">
+                                <div className="flex justify-between text-xs text-fe-text">
                                     <span className="font-medium">
                                         {pkg.logistics.vehicleType === 'lorry' ? 'Kamyon' : 'Tır'}{' '}
                                         Kapasitesi
@@ -200,20 +217,20 @@ export function PackageCard({
                                     <span className="font-semibold font-heading tabular-nums">
                                         {(
                                             pkg.logistics.packageCount * pkg.logistics.packageSizeM2
-                                        ).toFixed(1)}{' '}
+                                        ).toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}{' '}
                                         /{' '}
                                         {(
                                             (pkg.logistics.vehicleType === 'lorry'
                                                 ? pkg.logistics.lorryCapacityPackages
                                                 : pkg.logistics.truckCapacityPackages) *
                                             pkg.logistics.packageSizeM2
-                                        ).toFixed(1)}{' '}
+                                        ).toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}{' '}
                                         m²
                                     </span>
                                 </div>
 
                                 {/* Animated Progress Bar */}
-                                <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden shadow-inner">
+                                <div className="w-full bg-fe-surface rounded-full h-3 overflow-hidden shadow-inner">
                                     <motion.div
                                         className={`h-full rounded-full ${barColor} shadow-md`}
                                         initial={{ width: 0 }}
@@ -232,7 +249,7 @@ export function PackageCard({
                                         <span className="text-green-500">✅ Tam Kapasite</span>
                                     )}
                                     {activeFill >= 41 && activeFill < 86 && (
-                                        <span className="text-yellow-500">⚡ Standart Sevkiyat</span>
+                                        <span className="text-brand-500">⚡ Standart Sevkiyat</span>
                                     )}
                                     {activeFill < 41 && (
                                         <span className="text-red-500">⚠️ Verimsiz Sevkiyat</span>
@@ -260,22 +277,22 @@ export function PackageCard({
                     })()}
 
                     {/* Paket Detayı */}
-                    <div className="text-xs text-slate-400 mt-3 pt-2 border-t border-slate-700">
+                    <div className="text-xs text-fe-muted mt-3 pt-2 border-t border-fe-border">
                         Her pakette {pkg.logistics.itemsPerPackage} adet levha (600×1000mm)
                     </div>
                 </div>
             )}
 
             {/* Ürün Listesi */}
-            <div className="border-t border-slate-700 pt-4 mb-4">
-                <p className="text-xs font-semibold text-slate-400 mb-2">PAKET İÇERİĞİ:</p>
+            <div className="border-t border-fe-border pt-4 mb-4">
+                <p className="text-xs font-semibold text-fe-muted mb-2">PAKET İÇERİĞİ:</p>
                 <div className="space-y-1.5 text-sm">
                     {visibleItems.map((item, i) => (
-                        <div key={i} className="flex justify-between text-slate-300">
+                        <div key={i} className="flex justify-between text-fe-text">
                             <span className="truncate pr-2" title={item.name}>
                                 {item.brandName} {item.shortName}
                             </span>
-                            <span className="text-slate-500 whitespace-nowrap">
+                            <span className="text-fe-muted whitespace-nowrap">
                                 {item.quantity % 1 === 0
                                     ? item.quantity
                                     : item.quantity.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} {item.unit}
@@ -288,7 +305,7 @@ export function PackageCard({
                 {hiddenCount > 0 && (
                     <button
                         onClick={() => onToggleExpand(pkg.definition.id)}
-                        className="mt-2 text-orange-500 hover:text-orange-400 text-xs font-medium flex items-center gap-1 transition-colors"
+                        className="mt-2 text-brand-500 hover:text-brand-400 text-xs font-medium flex items-center gap-1 transition-colors"
                     >
                         {isExpanded ? (
                             <>
@@ -330,18 +347,18 @@ export function PackageCard({
             </div>
 
             {/* Maliyet Detayı */}
-            <div className="border-t border-slate-700 pt-4 space-y-1 text-sm">
-                <div className="flex justify-between text-slate-300">
+            <div className="border-t border-fe-border pt-4 space-y-1 text-sm">
+                <div className="flex justify-between text-fe-text">
                     <span>Ürün Toplamı:</span>
                     <span className="font-heading tabular-nums">
                         {pkg.totalProductCost.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} ₺
                     </span>
                 </div>
-                <div className="flex justify-between text-slate-300">
+                <div className="flex justify-between text-fe-text">
                     <span>Nakliye:</span>
-                    <span className={`font-heading tabular-nums ${pkg.logistics?.isShippingIncluded ? 'text-green-500' : 'text-orange-400 font-bold'}`}>
+                    <span className={`font-heading tabular-nums ${pkg.logistics?.isShippingIncluded ? 'text-green-500' : 'text-brand-400 font-bold'}`}>
                         {pkg.logistics?.isShippingIncluded
-                            ? 'Ücretsiz'
+                            ? 'Fiyata dahil'
                             : 'Alıcıya Ait'}
                     </span>
                 </div>
@@ -360,13 +377,13 @@ export function PackageCard({
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                     </svg>
-                    <span>Siparişi Onayla (WhatsApp)</span>
+                    <span>WhatsApp ile Siparişi Başlat</span>
                 </button>
 
                 {/* Secondary: PDF Teklif İndir */}
                 <button
                     onClick={() => onDownloadPDF(pkg)}
-                    className="w-full py-3 rounded-xl font-bold text-sm transition-all border-2 border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 hover:border-slate-600 flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-xl font-bold text-sm transition-all border-2 border-fe-border bg-fe-surface text-fe-text hover:bg-fe-surface hover:border-fe-muted flex items-center justify-center gap-2"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path

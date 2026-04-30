@@ -1,12 +1,19 @@
 import type { CalculatedPackage } from '@/lib/types';
+import { WHATSAPP_ORDER } from '@/lib/config';
 
 /**
- * FOMO: Teklif geçerlilik tarihi (3 gün sonra)
+ * Teklif geçerlilik tarihi (24 saat sonra — PDF ile tutarlı)
  */
 export const getOfferValidityDate = (): string => {
     const date = new Date();
-    date.setDate(date.getDate() + 3);
-    return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+    date.setDate(date.getDate() + 1);
+    return date.toLocaleString('tr-TR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
 };
 
 /**
@@ -71,5 +78,5 @@ export const generateWhatsAppURL = (phoneNumber: string, message: string): strin
     const encodedMessage = encodeURIComponent(message);
     // return `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
     // Numara override edildi
-    return `https://wa.me/905426084887?text=${encodedMessage}`;
+    return `https://wa.me/${WHATSAPP_ORDER}?text=${encodedMessage}`;
 };

@@ -86,6 +86,8 @@ export const apiQuoteSchema = z.object({
 
   packageItems: z.record(z.string(), z.any()),
   quoteCode: z.string().optional().nullable(),
+  pdfUrl: z.string().url().optional().nullable(),
+  pdfStoragePath: z.string().optional().nullable(),
 })
 
 export type ApiQuoteData = z.infer<typeof apiQuoteSchema>

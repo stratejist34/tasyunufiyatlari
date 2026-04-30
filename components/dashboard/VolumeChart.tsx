@@ -9,8 +9,8 @@ export default function VolumeChart() {
         <AreaChart data={VOLUME_DATA}>
           <defs>
             <linearGradient id="colorM2" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#f97316" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#c69e54" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="#c69e54" stopOpacity={0}/>
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
@@ -18,12 +18,12 @@ export default function VolumeChart() {
           <YAxis stroke="#64748b" tickLine={false} axisLine={false} />
           <Tooltip 
             contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#fff' }}
-            itemStyle={{ color: '#f97316' }}
+            itemStyle={{ color: '#c69e54' }}
           />
           <Area 
             type="monotone" 
             dataKey="m2" 
-            stroke="#f97316" 
+            stroke="#c69e54" 
             strokeWidth={2}
             fillOpacity={1} 
             fill="url(#colorM2)" 

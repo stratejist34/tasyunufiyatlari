@@ -24,7 +24,7 @@ export default function ThicknessSelector({ thicknessOptions, popularThickness }
   const activeThickness  =
     currentThickness !== null && thicknessOptions.includes(currentThickness)
       ? currentThickness
-      : thicknessOptions[0];
+      : (popularThickness != null && thicknessOptions.includes(popularThickness) ? popularThickness : thicknessOptions[0]);
 
   function select(t: number) {
     const params = new URLSearchParams(searchParams.toString());
@@ -46,7 +46,9 @@ export default function ThicknessSelector({ thicknessOptions, popularThickness }
     <div className="flex flex-wrap gap-2">
       {thicknessOptions.map((t) => {
         const isActive  = t === activeThickness;
-        const isPopular = popularThickness != null && t === popularThickness;
+        // Badge yalnızca aktif chip = sistem önerisi olduğunda gösterilir.
+        // URL override ile ayrışınca (örn. ?kalinlik=3 ama popular=5) badge gizlenir.
+        const isPopular = popularThickness != null && t === popularThickness && t === activeThickness;
         return (
           <div key={t} className="flex flex-col items-center">
             <button

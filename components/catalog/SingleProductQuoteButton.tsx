@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { PdfOfferModal } from '@/components/modal/PdfOfferModal';
 import { generateQuotePDF } from '@/lib/pdfGenerator';
+import { uploadPdfToStorage } from '@/lib/uploadPdfToStorage';
 import type { PdfOfferFormData } from '@/lib/schemas/pdfOffer.schema';
 import type { CatalogProductView } from '@/lib/catalog/types';
+import { WHATSAPP_ORDER } from '@/lib/config';
 
 interface Props {
   product: CatalogProductView;
@@ -17,6 +19,7 @@ interface Props {
   tierLabel: string;             // Kamyon / TIR / Hızlı Teslim
   isShippingIncluded: boolean;
   vehicleType: 'lorry' | 'truck' | 'depot' | null;
+  label?: string;                // CTA buton metni (default: "Anında Teklif Oluştur")
 }
 
 interface SuccessState {
@@ -35,6 +38,7 @@ export default function SingleProductQuoteButton({
   tierLabel,
   isShippingIncluded,
   vehicleType,
+  label,
 }: Props) {
   const [showModal, setShowModal]       = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,7 +56,61 @@ export default function SingleProductQuoteButton({
       const matType: 'tasyunu' | 'eps' = product.material_type === 'eps' ? 'eps' : 'tasyunu';
       const refCode       = `TY${String(Date.now()).slice(-7)}`;
 
-      // 1. DB'ye kaydet
+      // 1. PDF üret (müşteri otomatik indirir)
+      const whatsappMsg = encodeURIComponent(
+        `Merhaba, ${refCode} no'lu teklif hakkında bilgi almak istiyorum.`
+      );
+      const pdfResult = await generateQuotePDF({
+        packageName:        product.name,
+        packageDescription: `${product.brand.name} ${product.name}`,
+        plateBrandName:     product.brand.name,
+        accessoryBrandName: '-',
+        metraj:             areaM2,
+        thickness,
+        materialType:       matType,
+        materialLongName:   matType === 'tasyunu' ? 'Taşyünü' : 'EPS',
+        cityName,
+        grandTotal,
+        pricePerM2,
+        totalProductCost:   totalKdvHaric,
+        shippingCost:       0,
+        priceWithoutVat:    totalKdvHaric,
+        vatAmount,
+        refCode,
+        validityDate:       new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleString('tr-TR'),
+        whatsappOrderLink:  `https://wa.me/${WHATSAPP_ORDER}?text=${whatsappMsg}`,
+        customerCompany:    formData.customerCompany || '',
+        relatedPerson:      formData.relatedPerson,
+        deliveryAddress:    formData.deliveryAddress || '',
+        phone:              formData.phone,
+        email:              formData.email || '',
+        city:               formData.city,
+        district:           formData.district,
+        systemDescription:  `${product.brand.name} ${product.name}${activeThickness ? ` — ${thickness} cm` : ''}`,
+        isShippingIncluded,
+        items: [
+          {
+            description:     `${product.brand.name} ${product.name}${activeThickness ? ` (${thickness} cm)` : ''}`,
+            quantity:        areaM2,
+            unit:            'm²',
+            consumptionRate: 1,
+            unitPrice:       pricePerM2,
+            totalPrice:      totalKdvHaric,
+            isPlate:         true,
+            packageCount:    0,
+          },
+        ],
+      });
+
+      // 2. Storage'a yükle
+      let storedPdfUrl: string | null = null;
+      let storedPdfPath: string | null = null;
+      try {
+        const uploaded = await uploadPdfToStorage(pdfResult.blob, `${refCode}.pdf`);
+        if (uploaded) { storedPdfUrl = uploaded.publicUrl; storedPdfPath = uploaded.storagePath; }
+      } catch { /* storage hatası akışı durdurmasın */ }
+
+      // 3. DB kaydet
       try {
         await fetch('/api/quotes', {
           method: 'POST',
@@ -95,70 +153,18 @@ export default function SingleProductQuoteButton({
             lorryFillPercentage:  null,
             truckFillPercentage:  null,
             packageItems:    { product: product.name, thickness: activeThickness, pricePerM2 },
+            quoteCode:       refCode,
+            pdfUrl:          storedPdfUrl,
+            pdfStoragePath:  storedPdfPath,
           }),
         });
-      } catch {
-        // DB kayıt hatası PDF üretimini engellemesin
-      }
+      } catch { /* DB hatası PDF'i engellemez */ }
 
-      // TODO: Gerçek ops bildirimi için server-side WhatsApp Business API (Twilio/360dialog)
-      // veya admin notification sistemi kurulacak. DB kaydı şimdilik yeterli.
-      // TODO (A/B): doc.save() ile otomatik indirme davranışı test edilecek.
-      // Seçenek A: mevcut — PDF hem yeni sekmede açılır hem otomatik indirilir.
-      // Seçenek B: doc.save() kaldırılır, kullanıcı "PDF İndir" butonuyla indirir.
-      // Dönüşüm verisi yeterliyse B'ye geçilebilir.
-
-      // 2. PDF oluştur, indir ve blob URL al
-      const whatsappMsg = encodeURIComponent(
-        `Merhaba, ${refCode} no'lu teklif hakkında bilgi almak istiyorum.`
-      );
-      const pdfUrl = await generateQuotePDF({
-        packageName:        product.name,
-        packageDescription: `${product.brand.name} ${product.name}`,
-        plateBrandName:     product.brand.name,
-        accessoryBrandName: '-',
-        metraj:             areaM2,
-        thickness,
-        materialType:       matType,
-        materialLongName:   matType === 'tasyunu' ? 'Taşyünü' : 'EPS',
-        cityName,
-        grandTotal,
-        pricePerM2,
-        totalProductCost:   totalKdvHaric,
-        shippingCost:       0,
-        priceWithoutVat:    totalKdvHaric,
-        vatAmount,
-        refCode,
-        validityDate:       new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleString('tr-TR'),
-        whatsappOrderLink:  `https://wa.me/905322041825?text=${whatsappMsg}`,
-        customerCompany:    formData.customerCompany || '',
-        relatedPerson:      formData.relatedPerson,
-        deliveryAddress:    formData.deliveryAddress,
-        phone:              formData.phone,
-        email:              formData.email || '',
-        city:               formData.city,
-        district:           formData.district,
-        systemDescription:  `${product.brand.name} ${product.name}${activeThickness ? ` — ${thickness} cm` : ''}`,
-        isShippingIncluded,
-        items: [
-          {
-            description:     `${product.brand.name} ${product.name}${activeThickness ? ` (${thickness} cm)` : ''}`,
-            quantity:        areaM2,
-            unit:            'm²',
-            consumptionRate: 1,
-            unitPrice:       pricePerM2,
-            totalPrice:      totalKdvHaric,
-            isPlate:         true,
-            packageCount:    0,
-          },
-        ],
-      });
-
-      // PDF yeni sekmede açmayı dene (async context'te popup blocker devreye girebilir)
-      try { window.open(pdfUrl, '_blank'); } catch { /* bloklanmış olabilir, success state'deki butonlar fallback */ }
+      // 4. Yeni sekmede aç
+      try { window.open(pdfResult.blobUrl, '_blank'); } catch { /* popup blocker */ }
 
       setShowModal(false);
-      setSuccessState({ refCode, pdfUrl, pdfFilename: `${refCode}_teklif.pdf` });
+      setSuccessState({ refCode, pdfUrl: pdfResult.blobUrl, pdfFilename: pdfResult.filename });
     } finally {
       setIsSubmitting(false);
     }
@@ -228,7 +234,7 @@ export default function SingleProductQuoteButton({
         onClick={() => setShowModal(true)}
         className="w-full py-3 bg-brand-600 hover:bg-brand-500 active:bg-brand-700 text-white rounded-xl font-bold text-sm transition-colors"
       >
-        Anında Teklif Oluştur
+        {label ?? "Anında Teklif Oluştur"}
       </button>
 
       {showModal && createPortal(

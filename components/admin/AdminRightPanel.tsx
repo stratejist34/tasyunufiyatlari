@@ -145,7 +145,7 @@ export function AdminRightPanel({ quotes = [], stats, onNavigate }: Props) {
 
 function SummaryRow({ label, value, color }: { label: string; value: number; color: string }) {
     const colors: Record<string, string> = {
-        cyan:  "text-cyan-300",
+        cyan:  "text-amber-300",
         amber: "text-amber-300",
         green: "text-green-300",
     };
@@ -160,8 +160,8 @@ function SummaryRow({ label, value, color }: { label: string; value: number; col
 function DbRow({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
     const pct = Math.min(100, Math.round((value / max) * 100));
     const barColors: Record<string, string> = {
-        cyan:   "from-cyan-500 to-blue-500",
-        blue:   "from-blue-500 to-indigo-500",
+        cyan:   "from-amber-500 to-orange-500",
+        blue:   "from-orange-500 to-indigo-500",
         purple: "from-purple-500 to-pink-500",
         green:  "from-green-500 to-emerald-500",
     };

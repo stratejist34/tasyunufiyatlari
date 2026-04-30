@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { generateQuotePDF } from "@/lib/pdfGenerator";
+import { WHATSAPP_ORDER } from "@/lib/config";
+import { uploadPdfToStorage } from "@/lib/uploadPdfToStorage";
 import { PackageCard } from "@/components/package/PackageCard";
 import { PdfOfferModal } from "@/components/modal/PdfOfferModal";
 import { WizardStep1 } from "@/components/wizard/WizardStep1";
@@ -241,17 +243,18 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         fetchData();
     }, []);
 
-    // Otomatik şehir seçimi
+    // Otomatik şehir seçimi: URL'den gelen şehir varsa onu kullan,
+    // yoksa varsayılan İstanbul. Kullanıcı manuel seçtikten sonra dokunma.
     useEffect(() => {
-        if (preSelectedCityName && shippingZones.length > 0) {
-            const matchedZone = shippingZones.find(
-                z => z.city_name.toLowerCase() === preSelectedCityName.toLowerCase()
-            );
-            if (matchedZone) {
-                setSelectedCityCode(matchedZone.city_code);
-            }
+        if (shippingZones.length === 0 || selectedCityCode != null) return;
+        const target = preSelectedCityName ?? 'İstanbul';
+        const matchedZone = shippingZones.find(
+            z => z.city_name.toLowerCase() === target.toLowerCase()
+        );
+        if (matchedZone) {
+            setSelectedCityCode(matchedZone.city_code);
         }
-    }, [preSelectedCityName, shippingZones]);
+    }, [preSelectedCityName, shippingZones, selectedCityCode]);
 
     // Marka veya Malzeme tipi değiştiğinde model seçimini sıfırla
     useEffect(() => {
@@ -325,7 +328,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
 
         const metrajNumber = Number(metraj) || 0;
         const waMessage = `Merhaba ${refCode} no lu teklif formunu sipariş etmek istiyorum`;
-        const whatsappOrderLink = generateWhatsAppURL("905426084887", waMessage);
+        const whatsappOrderLink = generateWhatsAppURL("", waMessage);
 
         const totalM2 =
             pkg.logistics?.packageCount && pkg.logistics?.packageSizeM2
@@ -421,12 +424,25 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                 quoteCode: refCode,
             });
 
+            // 1. PDF üret (müşteri otomatik indirir)
+            const pdfResult = await generateQuotePDF(buildPdfData(selectedPackageForPdf, data, refCode));
+
+            // 2. Storage'a yükle (paralel, bloklamaz)
+            let pdfUrl: string | null = null;
+            let pdfStoragePath: string | null = null;
+            try {
+                const uploaded = await uploadPdfToStorage(pdfResult.blob, `${refCode}.pdf`);
+                if (uploaded) {
+                    pdfUrl = uploaded.publicUrl;
+                    pdfStoragePath = uploaded.storagePath;
+                }
+            } catch { /* storage hatası akışı durdurmasın */ }
+
+            // 3. DB kaydet
             const quoteRes = await fetch('/api/quotes', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(quotePayload),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...quotePayload, pdfUrl, pdfStoragePath }),
             });
 
             const quoteResult = await quoteRes.json();
@@ -439,7 +455,8 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                 throw new Error(quoteResult.error || "Teklif kaydı oluşturulamadı.");
             }
 
-            await generateQuotePDF(buildPdfData(selectedPackageForPdf, data, refCode));
+            // 4. Yeni sekmede aç
+            try { window.open(pdfResult.blobUrl, '_blank'); } catch { /* popup blocker */ }
             setShowPdfOfferModal(false);
             setSelectedPackageForPdf(null);
         } catch (error) {
@@ -821,7 +838,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                 selectedCityCode ? shippingZones.find(z => z.city_code === selectedCityCode)?.city_name || "" : ""
             );
 
-            const whatsappUrl = `https://wa.me/905426084887?text=${encodeURIComponent(message)}`;
+            const whatsappUrl = `https://wa.me/${WHATSAPP_ORDER}?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
 
             setShowQuoteModal(false);
@@ -843,31 +860,49 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
     };
 
     return (
-        <div className="min-h-screen flex flex-col bg-fe-bg">
-            {/* HERO + WIZARD */}
+        <div className="flex flex-col bg-fe-bg">
+            {/* WIZARD — page-level hero zaten yukarıda; burada sadece form + sol bilgi paneli */}
             <section
-                className="relative bg-cover bg-center py-12 lg:py-16"
+                className="relative bg-cover bg-center py-10 lg:py-14"
                 style={{
-                    backgroundImage: `linear-gradient(to right, rgba(11, 11, 12, 0.96), rgba(11, 11, 12, 0.78)), url('/images/markalogolar/bina-dis-cephe-kaplama-4000x4000.png')`,
+                    backgroundImage: `linear-gradient(to right, rgba(11, 11, 12, 0.97), rgba(11, 11, 12, 0.88)), url('/images/markalogolar/bina-dis-cephe-kaplama-4000x4000.png')`,
                 }}
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-                        {/* Sol Taraf */}
+                    <div className="grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-8 lg:gap-12 items-start">
+                        {/* Sol Taraf — proof / önizleme modülü (hero'nun delili) */}
                         <div className="text-white">
-                            <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-6 tracking-tight">
-                                Mantolama Maliyetini
-                                <br />
-                                <span className="text-brand-400">Lojistik Dahil</span> Hesaplayın
-                            </h1>
-                            <p className="text-fe-text text-lg mb-6 max-w-lg">
-                                Marka seçin, m² girin, 3 farklı paket seçeneği ile karşılaştırın.
-                                Bölgenize özel iskonto oranları otomatik uygulanır.
+                            <div className="eyebrow text-hub-gold-soft mb-3">Canlı Hesap Önizlemesi</div>
+                            <h3 className="font-heading text-base sm:text-lg font-semibold leading-snug mb-2 tracking-tight text-white/90">
+                                <span className="hidden lg:inline">Sağdaki</span>
+                                <span className="lg:hidden">Aşağıdaki</span>{' '}
+                                formu deneyin — paket, nakliye ve iskonto eş zamanlı işler.
+                            </h3>
+                            <p className="text-fe-text/75 text-sm leading-relaxed mb-5 max-w-md">
+                                8 kalemli komple set + 3 paket alternatifi + bölge iskontosu, tek formdan PDF teklife.
                             </p>
 
-                            <div className="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/20">
-                                <h3 className="font-heading text-sm font-semibold mb-3 text-brand-400">📦 Paketlere Dahil:</h3>
-                                <div className="grid grid-cols-2 gap-2 text-sm text-fe-text">
+                            {/* Mini stat strip (eski hero altından taşındı) */}
+                            <div className="grid grid-cols-3 gap-3 sm:gap-5 mb-6 border-y border-white/10 py-5">
+                                {[
+                                    { value: '81', label: 'İl sevkiyat' },
+                                    { value: '8',  label: 'Kalem set' },
+                                    { value: '3',  label: 'Paket seçeneği' },
+                                ].map((s) => (
+                                    <div key={s.label}>
+                                        <div className="font-heading font-bold text-white text-2xl sm:text-3xl tracking-tight leading-none">
+                                            {s.value}
+                                        </div>
+                                        <div className="text-[10.5px] sm:text-xs text-fe-text/65 mt-1.5 uppercase tracking-[0.14em]">
+                                            {s.label}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="bg-white/[0.06] backdrop-blur rounded-xl p-4 border border-white/10">
+                                <h3 className="font-heading text-xs font-semibold mb-3 text-hub-gold-soft uppercase tracking-[0.14em]">8 Kalem Sete Dahil</h3>
+                                <div className="grid grid-cols-2 gap-2 text-sm text-fe-text/90">
                                     <span>✓ Yalıtım Levhası</span>
                                     <span>✓ Yapıştırıcı</span>
                                     <span>✓ Isı Yalıtım Sıvası</span>
@@ -877,11 +912,25 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                                     <span>✓ Mineral Kaplama</span>
                                     <span>✓ Fileli Köşe</span>
                                 </div>
+                                <p className="text-xs text-fe-text/60 mt-3 leading-relaxed">
+                                    Standart sarfiyat değerlerine göre. Paket miktarı metraja göre yukarı yuvarlanır.
+                                </p>
                             </div>
+
+                            {/* Tek ghost CTA: katalog linki (eski hero secondary CTA) */}
+                            <a
+                                href="/urunler"
+                                className="btn-ghost mt-5 !text-hub-gold-soft hover:!text-hub-gold"
+                            >
+                                Ürün kataloğunu gör →
+                            </a>
                         </div>
 
-                        {/* Sağ Taraf - Wizard */}
-                        <div className="bg-fe-surface/80 backdrop-blur-md border border-fe-border rounded-2xl p-6 sm:p-8">
+                        {/* Sağ Taraf - Wizard (CTA scroll target burası) */}
+                        <div
+                            id="mantolama-hesaplayici"
+                            className="bg-fe-surface/85 backdrop-blur-md border border-hub-gold-soft/25 rounded-2xl p-6 sm:p-8 shadow-[0_24px_60px_-30px_rgba(198,158,84,0.25)] scroll-mt-24"
+                        >
 
                             {/* Step Progress Bar */}
                             {(() => {
@@ -978,13 +1027,13 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                                         disabled={!isCurrentStepValid()}
                                         className="flex-1 py-3 rounded-xl font-bold text-base text-white bg-brand-600 hover:bg-brand-500 disabled:bg-fe-raised disabled:text-fe-muted disabled:cursor-not-allowed transition-all"
                                     >
-                                        İleri →
+                                        {(['Kalınlık Seçimine Geç', 'Konum Seçimine Geç', 'Metraj Gir'] as const)[activeStep - 1] ?? 'İleri →'}
                                     </button>
                                 ) : (
                                     <button
                                         onClick={handleShowPrices}
                                         disabled={isLoading || !isStepValid()}
-                                        className="flex-1 py-5 px-4 rounded-xl font-bold text-xl text-white bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 disabled:bg-fe-raised disabled:text-fe-muted disabled:cursor-not-allowed transition-all shadow-xl shadow-brand-600/40 hover:shadow-brand-600/60 hover:scale-[1.02] transform"
+                                        className="flex-1 py-5 px-4 rounded-xl font-bold text-xl text-white bg-brand-500 hover:bg-brand-600 disabled:bg-fe-raised disabled:text-fe-muted disabled:cursor-not-allowed transition-colors"
                                     >
                                         {isLoading ? (
                                             <span className="flex items-center justify-center gap-2">
@@ -995,7 +1044,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                                                 Hesaplanıyor...
                                             </span>
                                         ) : (
-                                            "💰 FİYATLARI GÖSTER"
+                                            "3 Teklifi Karşılaştır"
                                         )}
                                     </button>
                                 )}
@@ -1014,10 +1063,27 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                 <section ref={resultsRef} className="py-12 bg-fe-bg scroll-mt-20">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <h3 className="font-heading text-2xl font-bold text-white mb-2 text-center tracking-tight">
-                            <span className="font-heading tabular-nums text-brand-500">{metraj} m²</span> için Paket Seçenekleri
+                            <span className="font-heading tabular-nums text-brand-500">{Number(metraj).toLocaleString('tr-TR')} m²</span> talep için{' '}
+                            {(() => {
+                                const pkg0 = calculatedPackages[0];
+                                if (pkg0?.logistics?.packageCount && pkg0?.logistics?.packageSizeM2) {
+                                    const siparisM2 = (pkg0.logistics.packageCount * pkg0.logistics.packageSizeM2).toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+                                    return <span className="font-heading tabular-nums text-brand-500">{siparisM2} m²</span>;
+                                }
+                                return <span className="font-heading tabular-nums text-brand-500">{metraj} m²</span>;
+                            })()} sipariş hesaplandı
                         </h3>
+                        <p className="text-fe-muted text-center mb-2 text-sm">
+                            {(() => {
+                                const pkg0 = calculatedPackages[0];
+                                if (pkg0?.logistics?.packageCount && pkg0?.logistics?.packageSizeM2) {
+                                    return `${pkg0.logistics.packageCount} paket × ${pkg0.logistics.packageSizeM2} m² · sipariş miktarı paket metrajına göre yukarı yuvarlanmıştır`;
+                                }
+                                return null;
+                            })()}
+                        </p>
                         <p className="text-fe-muted text-center mb-10 max-w-2xl mx-auto">
-                            {shippingZones.find(z => z.city_code === selectedCityCode)?.city_name} bölgesine özel lojistik ve iskonto hesaplanmış anahtar teslim paket fiyatlarıdır.
+                            {shippingZones.find(z => z.city_code === selectedCityCode)?.city_name} bölgesine özel nakliye ve iskonto hesaplanmış mantolama seti fiyatlarıdır.
                         </p>
 
                         <div className="grid md:grid-cols-3 gap-6 lg:gap-8">

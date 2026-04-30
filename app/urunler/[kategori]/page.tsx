@@ -4,27 +4,9 @@ import { ChevronRight } from 'lucide-react';
 import type { Metadata } from 'next';
 import ProductCard from '@/components/catalog/ProductCard';
 import { getCatalogProducts } from '@/lib/catalog/server';
+import { KATEGORI_MAP } from '@/lib/catalog/categories';
 import SiteHeader from '@/components/shared/SiteHeader';
 import SiteFooter from '@/components/shared/SiteFooter';
-
-// Kategori slug → material query param eşlemesi
-const KATEGORI_MAP: Record<string, { material: string; title: string; desc: string }> = {
-  'tasyunu-levha': {
-    material: 'tasyunu',
-    title: 'Taşyünü Levha',
-    desc: 'Taşyünü ısı yalıtım levhası ürünleri — farklı marka, yoğunluk ve kalınlık seçenekleri.',
-  },
-  'eps-levha': {
-    material: 'eps',
-    title: 'EPS Levha',
-    desc: 'Genleştirilmiş polistiren (EPS) ısı yalıtım levhaları.',
-  },
-  aksesuar: {
-    material: 'aksesuar',
-    title: 'Aksesuar & Tamamlayıcı Ürünler',
-    desc: 'Yapıştırıcı, sıva, dübel, file ve mantolama sistemi tamamlayıcı ürünler.',
-  },
-};
 
 interface Props {
   params: Promise<{ kategori: string }>;
@@ -45,7 +27,10 @@ export default async function KategoriPage({ params }: Props) {
   const info = KATEGORI_MAP[kategori];
   if (!info) notFound();
 
-  const { products } = await getCatalogProducts(info.material);
+  const { products } = await getCatalogProducts(
+    info.material,
+    info.accessoryTypeSlug ? { accessoryTypeSlug: info.accessoryTypeSlug } : undefined
+  );
 
   return (
     <div className="min-h-screen bg-fe-bg flex flex-col">
@@ -72,12 +57,14 @@ export default async function KategoriPage({ params }: Props) {
       <div className="max-w-5xl mx-auto px-4 py-8">
         {products.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-fe-muted mb-4">Bu kategoride henüz ürün bulunmuyor.</p>
+            <p className="text-fe-muted mb-4">
+              {info.emptyHint ?? 'Bu kategoride henüz ürün bulunmuyor.'}
+            </p>
             <Link
-              href="/urunler"
+              href={info.emptyHint ? '/' : '/urunler'}
               className="text-brand-400 hover:text-brand-300 text-sm underline"
             >
-              Tüm kategorilere dön
+              {info.emptyHint ? 'Hesap Makinesine Git' : 'Tüm kategorilere dön'}
             </Link>
           </div>
         ) : (

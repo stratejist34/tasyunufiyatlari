@@ -85,7 +85,7 @@ export function WizardStep1({
 
             {/* Marka */}
             <div className="mb-5">
-                <label className="block text-sm font-semibold text-white mb-3">Marka</label>
+                <label className="block text-sm font-semibold text-white mb-3">Levha Markası</label>
                 <div className="grid grid-cols-3 gap-3">
                     {brands
                         .filter(b => ['Dalmaçyalı', 'Expert', 'Optimix'].includes(b.name))
@@ -117,7 +117,7 @@ export function WizardStep1({
             <div className="min-h-[72px]">
                 {filteredModels.length >= 1 && (
                     <div>
-                        <label className="block text-sm font-semibold text-white mb-3">Model</label>
+                        <label className="block text-sm font-semibold text-white mb-3">Levha Modeli</label>
                         <div className="grid grid-cols-3 gap-2">
                             {filteredModels.map(model => (
                                 <button

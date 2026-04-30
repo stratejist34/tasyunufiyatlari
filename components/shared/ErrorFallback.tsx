@@ -7,7 +7,7 @@ interface ErrorFallbackProps {
 
 export function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-red-50 to-orange-50">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-red-50 to-brand-50">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full border-2 border-red-200">
         <div className="text-center">
           {/* Icon */}

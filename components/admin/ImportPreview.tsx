@@ -15,14 +15,14 @@ import type {
 
 const STATUS_CONFIG: Record<MatchStatus, { label: string; badgeClass: string }> = {
     matched:         { label: 'Eşleşti',       badgeClass: 'bg-green-500/15  text-green-400  border-green-500/30'  },
-    new_product:     { label: 'Yeni Ürün',      badgeClass: 'bg-blue-500/15   text-blue-400   border-blue-500/30'   },
+    new_product:     { label: 'Yeni Ürün',      badgeClass: 'bg-orange-500/15   text-orange-400   border-orange-500/30'   },
     variant_missing: { label: 'Varyant Eksik',  badgeClass: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30' },
     ambiguous:       { label: 'Belirsiz',       badgeClass: 'bg-orange-500/15 text-orange-400 border-orange-500/30' },
     unmatched:       { label: 'Eşleşmedi',      badgeClass: 'bg-red-500/15    text-red-400    border-red-500/30'    },
 };
 
 const SEVERITY_ICON: Record<ImportSeverity, ReactNode> = {
-    info:    <Info          className="w-3.5 h-3.5 text-blue-400   flex-shrink-0" />,
+    info:    <Info          className="w-3.5 h-3.5 text-orange-400   flex-shrink-0" />,
     warning: <AlertTriangle className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />,
     error:   <XCircle       className="w-3.5 h-3.5 text-red-400    flex-shrink-0" />,
 };
@@ -73,7 +73,7 @@ function SummaryCard({
 function LoadingState() {
     return (
         <div className="bg-slate-900/80 backdrop-blur-md rounded-xl border border-slate-800/50 p-16 flex flex-col items-center gap-4">
-            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
             <p className="text-slate-400 text-sm">Import analizi çalışıyor...</p>
         </div>
     );
@@ -132,8 +132,8 @@ export function ImportPreview({ summary, rows, isLoading = false }: ImportPrevie
                     <SummaryCard
                         label="Yeni Ürün"
                         value={summary.newProductCount}
-                        colorClass="text-blue-400"
-                        icon={<Plus className="w-4 h-4 text-blue-500" />}
+                        colorClass="text-orange-400"
+                        icon={<Plus className="w-4 h-4 text-orange-500" />}
                     />
                     <SummaryCard
                         label="Varyant Eksik"
@@ -170,14 +170,14 @@ export function ImportPreview({ summary, rows, isLoading = false }: ImportPrevie
 
             {/* Yeni ürün uyarısı — kritik */}
             {newProductRows.length > 0 && (
-                <div className="bg-blue-950/40 border border-blue-500/50 rounded-xl p-4">
+                <div className="bg-blue-950/40 border border-orange-500/50 rounded-xl p-4">
                     <div className="flex items-start gap-3 mb-3">
-                        <Plus className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                        <Plus className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
                         <div>
                             <p className="text-blue-300 font-semibold text-sm">
                                 {newProductRows.length} yeni ürün DB&apos;de bulunamadı — apply edilmez
                             </p>
-                            <p className="text-blue-400/70 text-xs mt-1">
+                            <p className="text-orange-400/70 text-xs mt-1">
                                 Bu ürünler <strong className="text-blue-300">plates</strong> veya <strong className="text-blue-300">accessories</strong> tablosunda mevcut değil.
                                 Önce Admin → Ürün tablosuna manuel ekleyin, ardından bu Excel dosyasını tekrar import edin.
                             </p>
@@ -191,12 +191,12 @@ export function ImportPreview({ summary, rows, isLoading = false }: ImportPrevie
                                         {row.raw.rawProductName}
                                     </span>
                                     {row.debug.thicknessCm !== null && (
-                                        <span className="text-[10px] text-blue-400/60 flex-shrink-0">
+                                        <span className="text-[10px] text-orange-400/60 flex-shrink-0">
                                             {row.debug.thicknessCm} cm
                                         </span>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-3 flex-shrink-0 text-[11px] text-blue-400/60">
+                                <div className="flex items-center gap-3 flex-shrink-0 text-[11px] text-orange-400/60">
                                     <span>{row.debug.productType === 'plate' ? 'Levha' : row.debug.productType === 'accessory' ? 'Aksesuar' : '?'}</span>
                                     <span>{row.debug.materialType === 'eps' ? 'EPS' : row.debug.materialType === 'tasyunu' ? 'Taşyünü' : '?'}</span>
                                 </div>
@@ -293,7 +293,7 @@ export function ImportPreview({ summary, rows, isLoading = false }: ImportPrevie
                                             {/* Tip */}
                                             <td className="px-4 py-3">
                                                 <span className={
-                                                    debug.productType === 'plate'     ? 'text-blue-400' :
+                                                    debug.productType === 'plate'     ? 'text-orange-400' :
                                                     debug.productType === 'accessory' ? 'text-green-400' :
                                                     'text-slate-500 italic'
                                                 }>
@@ -306,7 +306,7 @@ export function ImportPreview({ summary, rows, isLoading = false }: ImportPrevie
                                             <td className="px-4 py-3">
                                                 <span className={
                                                     debug.materialType === 'eps'     ? 'text-orange-400' :
-                                                    debug.materialType === 'tasyunu' ? 'text-cyan-400'   :
+                                                    debug.materialType === 'tasyunu' ? 'text-amber-400'   :
                                                     'text-slate-500 italic'
                                                 }>
                                                     {debug.materialType === 'eps'     ? 'EPS'      :

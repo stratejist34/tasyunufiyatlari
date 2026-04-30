@@ -10,8 +10,8 @@ const COLOR_MAP: Record<ColorVariant, {
     badge: string;
     glow: string;
 }> = {
-    cyan:   { icon: "from-cyan-500/20 to-blue-500/20",     value: "text-cyan-300",   badge: "bg-cyan-500/10 text-cyan-300 border-cyan-500/20",   glow: "shadow-[0_0_20px_rgba(23,208,255,0.12)]" },
-    blue:   { icon: "from-blue-500/20 to-indigo-500/20",   value: "text-blue-300",   badge: "bg-blue-500/10 text-blue-300 border-blue-500/20",   glow: "shadow-[0_0_20px_rgba(51,136,255,0.12)]" },
+    cyan:   { icon: "from-amber-500/20 to-orange-500/20",     value: "text-amber-300",   badge: "bg-amber-500/10 text-amber-300 border-amber-500/20",   glow: "shadow-[0_0_20px_rgba(23,208,255,0.12)]" },
+    blue:   { icon: "from-orange-500/20 to-indigo-500/20",   value: "text-blue-300",   badge: "bg-orange-500/10 text-blue-300 border-orange-500/20",   glow: "shadow-[0_0_20px_rgba(51,136,255,0.12)]" },
     purple: { icon: "from-purple-500/20 to-pink-500/20",   value: "text-purple-300", badge: "bg-purple-500/10 text-purple-300 border-purple-500/20", glow: "shadow-[0_0_20px_rgba(168,85,247,0.12)]" },
     green:  { icon: "from-green-500/20 to-emerald-500/20", value: "text-green-300",  badge: "bg-green-500/10 text-green-300 border-green-500/20",  glow: "shadow-[0_0_20px_rgba(34,197,94,0.12)]" },
     amber:  { icon: "from-amber-500/20 to-orange-500/20",  value: "text-amber-300",  badge: "bg-amber-500/10 text-amber-300 border-amber-500/20",  glow: "shadow-[0_0_20px_rgba(245,158,11,0.12)]" },

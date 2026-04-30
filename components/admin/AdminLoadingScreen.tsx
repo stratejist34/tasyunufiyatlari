@@ -23,12 +23,12 @@ export function AdminLoadingScreen() {
             <div className="relative flex items-center justify-center" style={{ width: 160, height: 160 }}>
                 {/* Outermost: ping pulse */}
                 <span
-                    className="absolute inline-flex rounded-full border-2 border-cyan-400/30"
+                    className="absolute inline-flex rounded-full border-2 border-amber-400/30"
                     style={{ width: 160, height: 160, animation: "nx-pulse-ring 2s ease-in-out infinite" }}
                 />
                 {/* Ring 1 */}
                 <span
-                    className="absolute rounded-full border-2 border-transparent border-t-cyan-400"
+                    className="absolute rounded-full border-2 border-transparent border-t-amber-400"
                     style={{ width: 136, height: 136, animation: "spin-slow 3s linear infinite" }}
                 />
                 {/* Ring 2 */}
@@ -38,21 +38,21 @@ export function AdminLoadingScreen() {
                 />
                 {/* Ring 3 */}
                 <span
-                    className="absolute rounded-full border-2 border-transparent border-b-blue-400"
+                    className="absolute rounded-full border-2 border-transparent border-b-orange-400"
                     style={{ width: 88, height: 88, animation: "spin-slower 6s linear infinite" }}
                 />
                 {/* Ring 4 */}
                 <span
-                    className="absolute rounded-full border border-transparent border-l-cyan-300/60"
+                    className="absolute rounded-full border border-transparent border-l-amber-300/60"
                     style={{ width: 64, height: 64, animation: "spin-slow 1.5s linear infinite" }}
                 />
                 {/* Center dot */}
-                <span className="w-4 h-4 rounded-full bg-cyan-400 shadow-[0_0_16px_4px_rgba(23,208,255,0.6)]" />
+                <span className="w-4 h-4 rounded-full bg-amber-400 shadow-[0_0_16px_4px_rgba(23,208,255,0.6)]" />
             </div>
 
             {/* Text */}
             <div className="mt-10 text-center space-y-2">
-                <p className="font-mono text-sm tracking-[0.35em] text-cyan-400 uppercase">
+                <p className="font-mono text-sm tracking-[0.35em] text-amber-400 uppercase">
                     Sistem Başlatılıyor
                 </p>
                 <p className="font-mono text-xs text-slate-600 tracking-[0.2em]">

@@ -1,42 +1,121 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
-export default function SiteFooter() {
+type Tone = 'dark' | 'warm';
+
+interface SiteFooterProps {
+  tone?: Tone;
+}
+
+const GROUPS = [
+  {
+    eyebrow: 'Ürünler',
+    links: [
+      { href: '/', label: 'Hesap Makinesi' },
+      { href: '/urunler', label: 'Ürün Kataloğu' },
+      { href: '/urunler/tasyunu-levha', label: 'Taşyünü Levha' },
+      { href: '/urunler/eps-levha', label: 'EPS Levha' },
+    ],
+  },
+  {
+    eyebrow: 'Kurumsal',
+    links: [
+      { href: '/hakkimizda', label: 'Hakkımızda' },
+      { href: '/depomuz', label: 'Depomuz' },
+      { href: '/marka/dalmacyali', label: 'Markalar' },
+    ],
+  },
+  {
+    eyebrow: 'İletişim',
+    links: [
+      { href: '/iletisim', label: 'Telefon · WhatsApp · E-posta' },
+      { href: 'https://wa.me/905322041825', label: 'WhatsApp Destek', external: true },
+      { href: 'mailto:bilgi@tasyunufiyatlari.com', label: 'E-posta Yaz' },
+    ],
+  },
+  {
+    eyebrow: 'Yasal',
+    links: [
+      { href: '/iletisim', label: 'KVKK Aydınlatma' },
+      { href: '/iletisim', label: 'Çerez Politikası' },
+      { href: '/iletisim', label: 'Kullanım Koşulları' },
+    ],
+  },
+];
+
+export default function SiteFooter({ tone = 'dark' }: SiteFooterProps) {
+  // Footer hem dark hem warm sayfalarda KOYU kalır (kimlik tutarlılığı, logo yutulmasın).
+  // tone prop'u şimdilik geriye-uyumluluk için duruyor; warm = dark ile aynı koyu zemin.
+  void tone;
+
+  const surface    = 'bg-hub-dark border-t border-hub-rule-strong';
+  const eyebrow    = 'text-hub-warm/55';
+  const linkText   = 'text-hub-warm/75 hover:text-hub-gold-soft';
+  const sloganText = 'text-hub-warm/60';
+  const ruleSoft   = 'border-hub-rule-strong/60';
+  const copyText   = 'text-hub-warm/55';
+
   return (
-    <footer className="bg-fe-surface border-t border-fe-border mt-16">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-10">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          {/* Logo + slogan */}
-          <div>
-            <div className="flex items-center gap-2.5 mb-2">
-              <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center shrink-0">
-                <span className="text-white font-bold text-sm">TY</span>
-              </div>
-              <span className="text-white font-bold text-base">TaşYünü Fiyatları</span>
-            </div>
-            <p className="text-fe-muted text-xs max-w-xs">
+    <footer className={`${surface} mt-16`}>
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-14 sm:py-20">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-x-8 gap-y-10">
+          {/* Logo + slogan — 2 kolon */}
+          <div className="col-span-2 md:col-span-1">
+            <Image
+              src="/tasyunu-logo.webp"
+              alt="TaşYünü Fiyatları"
+              width={260}
+              height={54}
+              className="h-7 w-auto mb-4"
+            />
+            <p className={`${sloganText} text-sm leading-relaxed max-w-xs`}>
               Türkiye geneli taşyünü ve EPS fiyatları. Lojistik dahil mantolama maliyetinizi hesaplayın.
             </p>
           </div>
 
-          {/* Nav links */}
-          <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-            <Link href="/" className="text-fe-muted hover:text-brand-400 transition-colors">
-              Hesap Makinesi
-            </Link>
-            <Link href="/urunler" className="text-fe-muted hover:text-brand-400 transition-colors">
-              Ürün Kataloğu
-            </Link>
-            <Link href="/urunler/tasyunu-levha" className="text-fe-muted hover:text-brand-400 transition-colors">
-              Taşyünü Levha
-            </Link>
-            <Link href="/urunler/eps-levha" className="text-fe-muted hover:text-brand-400 transition-colors">
-              EPS Levha
-            </Link>
-          </nav>
+          {/* 4 grup */}
+          {GROUPS.map((group) => (
+            <div key={group.eyebrow}>
+              <div
+                className={`eyebrow ${eyebrow} mb-4`}
+                style={{ color: 'currentColor' }}
+              >
+                {group.eyebrow}
+              </div>
+              <ul className="space-y-2.5">
+                {group.links.map((link) => (
+                  <li key={`${group.eyebrow}-${link.label}`}>
+                    {('external' in link && link.external) ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`${linkText} text-sm transition-colors`}
+                      >
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link
+                        href={link.href}
+                        className={`${linkText} text-sm transition-colors`}
+                      >
+                        {link.label}
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
-        <div className="mt-8 pt-6 border-t border-fe-border/60 text-xs text-fe-muted text-center">
-          © {new Date().getFullYear()} TaşYünü Fiyatları. Tüm hakları saklıdır.
+        <div className={`mt-12 pt-6 border-t ${ruleSoft} flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3`}>
+          <p className={`${copyText} text-xs`}>
+            © {new Date().getFullYear()} TaşYünü Fiyatları. Tüm hakları saklıdır.
+          </p>
+          <p className={`${copyText} text-xs`}>
+            Fabrika çıkışlı satış · İstanbul / Tuzla &amp; Gebze depo
+          </p>
         </div>
       </div>
     </footer>

@@ -3,6 +3,7 @@ import { ZodError } from 'zod'
 
 import { apiQuoteSchema } from '@/lib/schemas/quote.schema'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { sendNotification, type LeadEventType } from '@/lib/notifications'
 
 function mapQuotePayload(payload: ReturnType<typeof apiQuoteSchema.parse>) {
   return {
@@ -44,6 +45,8 @@ function mapQuotePayload(payload: ReturnType<typeof apiQuoteSchema.parse>) {
     source_channel: payload.sourceChannel,
     status: payload.submissionType === 'pdf_quote' ? 'quoted' : 'pending',
     quote_code: payload.quoteCode || null,
+    pdf_url: payload.pdfUrl || null,
+    pdf_storage_path: payload.pdfStoragePath || null,
   }
 }
 
@@ -131,6 +134,24 @@ export async function POST(req: NextRequest) {
     if (analyticsError) {
       console.warn('Quote analytics insert skipped:', analyticsError.message)
     }
+
+    // WhatsApp bildirimi — hata fırlatmaz, DB kaydını engellemez
+    const eventType: LeadEventType =
+      payload.submissionType === 'pdf_quote'
+        ? (payload.sourceChannel === 'catalog' ? 'single_product_pdf' : 'package_pdf_quote')
+        : (payload.sourceChannel === 'catalog' ? 'single_product_whatsapp' : 'package_whatsapp_order');
+
+    sendNotification(eventType, {
+      refCode:       insertPayload.quote_code ?? undefined,
+      customerName:  insertPayload.customer_name,
+      customerPhone: insertPayload.customer_phone,
+      productName:   insertPayload.package_name || insertPayload.brand_name,
+      thicknessCm:   insertPayload.thickness_cm,
+      areaM2:        insertPayload.area_m2,
+      cityName:      insertPayload.city_name,
+      totalPrice:    insertPayload.total_price,
+      pdfUrl:        insertPayload.pdf_url ?? undefined,
+    }).catch(() => {});
 
     return NextResponse.json({
       ok: true,

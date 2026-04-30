@@ -43,7 +43,7 @@ export function SettingsTab() {
                 </div>
                 <div className="pt-4 border-t border-slate-800/50">
                     <button onClick={handleSave} disabled={saving}
-                        className="rounded-xl bg-gradient-to-r from-cyan-500/90 to-blue-500/90 px-6 py-2 text-sm font-semibold text-slate-950 transition-all shadow-[0_16px_34px_rgba(23,208,255,0.24)] hover:from-cyan-400 hover:to-blue-400 disabled:opacity-50">
+                        className="rounded-xl bg-gradient-to-r from-amber-500/90 to-orange-500/90 px-6 py-2 text-sm font-semibold text-slate-950 transition-all shadow-[0_16px_34px_rgba(23,208,255,0.24)] hover:from-amber-400 hover:to-orange-400 disabled:opacity-50">
                         {saving ? "Kaydediliyor..." : "Ayarları Kaydet"}
                     </button>
                     {saveMessage && <p className="text-sm text-green-400 mt-2">{saveMessage}</p>}

@@ -105,29 +105,29 @@ export function ExcelImportTab() {
         <div className="space-y-6">
             <div className="admin-nexus-panel p-8">
                 <div className="flex items-center gap-4 mb-8">
-                    <div className="w-12 h-12 bg-blue-600/20 rounded-xl flex items-center justify-center border border-blue-500/30">
-                        <FileSpreadsheet className="text-blue-400 w-6 h-6" />
+                    <div className="w-12 h-12 bg-blue-600/20 rounded-xl flex items-center justify-center border border-orange-500/30">
+                        <FileSpreadsheet className="text-orange-400 w-6 h-6" />
                     </div>
                     <div>
                         <h2 className="text-xl font-bold text-white">Excel'den Fiyat Güncelle</h2>
                         <p className="text-sm text-slate-400">Güncel fiyat listesini (.xlsx) yükleyerek sistemi senkronize edin.</p>
                         <div className="mt-2 flex gap-4 text-[10px] text-slate-500 uppercase tracking-widest font-bold">
-                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500" /> Kalem Bazında (KDV DAHİL)</span>
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-500" /> Kalem Bazında (KDV DAHİL)</span>
                             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-500" /> Taşyünü Listesi (KDV HARİÇ)</span>
                             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" /> Optimix Sayfası (KDV DAHİL)</span>
                         </div>
                     </div>
                 </div>
 
-                <div className={`relative flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-12 transition-all ${isBusy ? 'border-slate-700/30 bg-slate-900/35 opacity-60' : 'border-cyan-400/20 bg-slate-900/28 hover:border-cyan-400/45 hover:bg-cyan-400/[0.04]'}`}>
+                <div className={`relative flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-12 transition-all ${isBusy ? 'border-slate-700/30 bg-slate-900/35 opacity-60' : 'border-amber-400/20 bg-slate-900/28 hover:border-amber-400/45 hover:bg-amber-400/[0.04]'}`}>
                     <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileChange} disabled={isBusy} className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed" />
-                    <Upload className={`w-12 h-12 mb-4 ${isUploading ? 'text-blue-400 animate-pulse' : 'text-slate-500'}`} />
+                    <Upload className={`w-12 h-12 mb-4 ${isUploading ? 'text-orange-400 animate-pulse' : 'text-slate-500'}`} />
                     <p className="text-slate-300 font-medium">{isUploading ? 'Analiz ediliyor...' : fileName || 'Excel dosyasını buraya sürükleyin veya tıklayın'}</p>
                     <p className="text-slate-500 text-xs mt-2">Maximum dosya boyutu: 10MB</p>
                 </div>
 
                 {statusMsg && (
-                    <div className={`mt-6 p-4 rounded-xl flex items-center gap-3 border ${statusMsg.type === 'error' ? 'bg-red-500/10 border-red-500/30 text-red-400' : statusMsg.type === 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-blue-500/10 border-blue-500/30 text-blue-400'}`}>
+                    <div className={`mt-6 p-4 rounded-xl flex items-center gap-3 border ${statusMsg.type === 'error' ? 'bg-red-500/10 border-red-500/30 text-red-400' : statusMsg.type === 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-orange-500/10 border-orange-500/30 text-orange-400'}`}>
                         {statusMsg.type === 'error' ? <AlertTriangle className="w-5 h-5 flex-shrink-0" /> : <CheckCircle className="w-5 h-5 flex-shrink-0" />}
                         <span className="text-sm font-medium">{statusMsg.msg}</span>
                     </div>
@@ -135,7 +135,7 @@ export function ExcelImportTab() {
 
                 {fileId && (
                     <div className="mt-6 flex items-center gap-3 flex-wrap">
-                        <button onClick={handleApply} disabled={isBusy || fileStatus === 'applied'} className="px-6 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white transition-colors">
+                        <button onClick={handleApply} disabled={isBusy || fileStatus === 'applied'} className="px-6 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 bg-blue-600 hover:bg-orange-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white transition-colors">
                             <Database className="w-4 h-4" />
                             {isApplying ? 'Uygulanıyor...' : fileStatus === 'applied' ? 'Uygulandı ✓' : 'Fiyatları Uygula'}
                         </button>

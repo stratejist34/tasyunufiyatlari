@@ -18,6 +18,14 @@
   to   { opacity: 1; }
 }
 
+/* ─── Faz 7 — Reveal-up scroll animation ─────────────────────────
+   IntersectionObserver ile data-revealed='true' set edilince animate.
+   prefers-reduced-motion ile otomatik kapanır. */
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @theme inline {
   --animate-spin-slow: spin-slow 3s linear infinite;
   --animate-spin-slower: spin-slower 6s linear infinite;
@@ -29,7 +37,7 @@
   --background: #ffffff;
   --foreground: #171717;
   --primary: #0f172a;
-  --brand: #d4845a;   /* Bakır — frontend CTA (eskiden #f97316 turuncu) */
+  --brand: #c69e54;   /* Muted gold — hub-gold-soft (eskiden bakır #d4845a) */
 
   /* ─── Admin: Antrasit + Altın ───────────────────────────────────────
      Altın (#c9a84c) YALNIZCA: aktif nav, kritik metric highlight,
@@ -76,25 +84,39 @@
   --nx-glow-cyan:     0 0 20px rgba(201, 168, 76, 0.12);  /* backward-compat */
   --nx-glow-purple:   0 0 20px rgba(168, 85, 247, 0.15);
 
-  /* ─── Frontend: Grafit + Bakır ─────────────────────────────────────
-     Gercek grafit — mavi-bias temizlendi (B-R ≤ 6).
-     Bakir (#d4845a) CTA ana rengi.
-     Onceki degerler (mavi-bias yuksek):
-       bg #0c1117 (B-R=11), surface #131a23 (B-R=16),
-       raised #181f2b (B-R=19), border rgba(30,42,56) (B-R=26),
-       muted #6b7a8d (B-R=34) — hepsi navy gorunuyordu.
+  /* ─── Frontend (fe-*) — koyu tema, gold accent ─────────────────────
+     Saf iki dünya: /urunler hub krem, geri kalan her sayfa koyu.
+     fe-* surface/text token'ları orijinal grafit değerlerinde kalır.
+     Yalnızca accent (CTA, glow) muted gold'a hizalandı.
   ─────────────────────────────────────────────────────────────────── */
-  --fe-bg:             #0b0b0c;          /* sayfa zemini — near-black, B-R=1 */
-  --fe-surface:        #131315;          /* header, footer, section — dark gray, B-R=2 */
-  --fe-surface-raised: #1c1c21;          /* kart yüzeyi — slight metallic, B-R=5 */
-  --fe-border:         rgba(46, 46, 52, 0.65);   /* neutral border, B-R=6 */
+  --fe-bg:             #0b0b0c;                           /* sayfa zemini — near-black */
+  --fe-surface:        #131315;                           /* header, footer, section */
+  --fe-surface-raised: #1c1c21;                           /* kart yüzeyi */
+  --fe-border:         rgba(46, 46, 52, 0.65);            /* neutral border */
   --fe-border-subtle:  rgba(46, 46, 52, 0.35);
-  --fe-text:           #d6d6de;          /* light gray text, B-R=8 */
+  --fe-text:           #d6d6de;                           /* light gray text */
   --fe-muted:          #6f6f78;
-  --fe-muted-strong:   #9a9aa3;          /* neutral muted — artik steel-blue degil, B-R=9 */
-  --fe-accent:         #d4845a;          /* Bakır CTA */
-  --fe-accent-hover:   #c46d3f;
-  --fe-glow:           0 0 20px rgba(212, 132, 90, 0.15);
+  --fe-muted-strong:   #9a9aa3;
+  --fe-accent:         var(--hub-gold-soft);              /* muted gold CTA */
+  --fe-accent-hover:   var(--hub-gold);
+  --fe-glow:           0 0 20px rgba(198, 158, 84, 0.18); /* gold-soft glow */
+
+  /* ─── Hub: Sıcak Beyaz + Bakır (frontend evolved) ──────────────────
+     /urunler hub sayfası için izole token seti.
+     Sıcak kırık beyaz zemin + bakır accent + neredeyse-siyah ink.
+     fe-* (grafit) ve admin-* (antrasit+altın) ile karıştırılmaz.
+  ──────────────────────────────────────────────────────────────────── */
+  --hub-bg-warm:        #f5f1e8;          /* ana zemin */
+  --hub-bg-card:        #ffffff;          /* beyaz kart */
+  --hub-bg-card-2:      #faf6ed;          /* alternatif kart, hover/secondary */
+  --hub-bg-dark:        #161410;          /* koyu zemin: özel paket, footer, hero overlay */
+  --hub-ink:            #0f0d0a;          /* ana metin */
+  --hub-ink-2:          #2e2a23;          /* ikincil metin */
+  --hub-muted:          #6b6557;          /* üçüncül metin, eyebrow */
+  --hub-rule:           #d8d3c4;          /* açık zemin sert çizgi */
+  --hub-rule-strong:    #161410;          /* kalın siyah ayırıcı */
+  --hub-gold:           #a07a2c;          /* muted gold accent — link, num, eyebrow */
+  --hub-gold-soft:      #c69e54;          /* hover state, koyu zemin üzerinde accent */
 }
 
 @theme inline {
@@ -106,33 +128,82 @@
   --font-heading: var(--font-barlow);
   --font-mono: var(--font-geist-mono);
 
-  /* ─── Grafit frontend yüzey sınıfları (dogrudan hex — var() calismiyor) */
-  --color-fe-bg:      #0b0b0c;
-  --color-fe-surface: #131315;
-  --color-fe-raised:  #1c1c21;
-  --color-fe-border:  rgba(46, 46, 52, 0.65);
-  --color-fe-text:    #d6d6de;
-  --color-fe-muted:   #6f6f78;
+  /* ─── fe-* Tailwind utility köprüsü (koyu grafit, var() çalışmıyor) */
+  --color-fe-bg:           #0b0b0c;
+  --color-fe-surface:      #131315;
+  --color-fe-raised:       #1c1c21;
+  --color-fe-border:       rgba(46, 46, 52, 0.65);
+  --color-fe-text:         #d6d6de;
+  --color-fe-muted:        #6f6f78;
   --color-fe-muted-strong: #9a9aa3;
 
-  /* ─── Bakır brand skalası (orange-* → brand-* geçişi) ───────────── */
-  --color-brand-50:   #fdf5ef;
-  --color-brand-100:  #fae6d2;
-  --color-brand-200:  #f4c9a0;
-  --color-brand-300:  #eca56c;
-  --color-brand-400:  #d4845a;
-  --color-brand-500:  #c46d3f;
-  --color-brand-600:  #a85432;
-  --color-brand-700:  #8a3f27;
-  --color-brand-800:  #6e3221;
-  --color-brand-900:  #58291c;
-  --color-brand-950:  #2e130d;
+  /* ─── Brand skalası — gold (hub-gold-soft / hub-gold ekseninde) ─── */
+  --color-brand-50:   #fdf9ee;
+  --color-brand-100:  #f8efd3;
+  --color-brand-200:  #ecdba4;
+  --color-brand-300:  #ddc279;
+  --color-brand-400:  #d4b878;
+  --color-brand-500:  #c69e54;   /* hub-gold-soft */
+  --color-brand-600:  #a07a2c;   /* hub-gold */
+  --color-brand-700:  #7d5e22;
+  --color-brand-800:  #5e471a;
+  --color-brand-900:  #463514;
+  --color-brand-950:  #261c0a;
+
+  /* ─── Hub utility köprüsü (Tailwind: bg-hub-warm, text-hub-ink, vb) */
+  --color-hub-warm:        #f5f1e8;
+  --color-hub-card:        #ffffff;
+  --color-hub-card-2:      #faf6ed;
+  --color-hub-dark:        #161410;
+  --color-hub-ink:         #0f0d0a;
+  --color-hub-ink-2:       #2e2a23;
+  --color-hub-muted:       #6b6557;
+  --color-hub-rule:        #d8d3c4;
+  --color-hub-rule-strong: #161410;
+  --color-hub-gold:        #a07a2c;
+  --color-hub-gold-soft:   #c69e54;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* ─── Faz 1 — Foundation Type Scale & Section Rhythm ──────────────────
+   Barlow için optimize edilmiş clamp() boyutları, tracking ve line-height.
+   Yeni font yüklenmez; mevcut Barlow weights (400/600/700/800) kullanılır.
+─────────────────────────────────────────────────────────────────────── */
+:root {
+  --t-display: clamp(2.5rem, 4.5vw + 0.5rem, 4.75rem);
+  --t-h1:      clamp(2rem, 3vw + 0.5rem, 3.25rem);
+  --t-h2:      clamp(1.5rem, 1.6vw + 0.75rem, 2.25rem);
+  --t-h3:      clamp(1.125rem, 0.6vw + 0.9rem, 1.5rem);
+  --t-body:    1rem;
+  --t-meta:    0.75rem;
+
+  --tracking-display: -0.02em;
+  --tracking-h1:      -0.015em;
+  --tracking-h2:      -0.01em;
+  --tracking-eyebrow:  0.18em;
+
+  --leading-display: 1.02;
+  --leading-h1:      1.05;
+  --leading-h2:      1.15;
+  --leading-h3:      1.3;
+  --leading-body:    1.6;
+
+  --section-pad-sm:  3rem;
+  --section-pad-md:  5rem;
+  --section-pad-lg:  7.5rem;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --section-pad-sm:  4rem;
+    --section-pad-md:  6.5rem;
+    --section-pad-lg:  10rem;
+  }
 }
 
 @layer components {
@@ -169,25 +240,53 @@ body {
   }
 
   .admin-nexus-panel {
-    background: linear-gradient(180deg, rgba(28, 26, 24, 0.94), rgba(22, 20, 18, 0.88));
-    border: 1px solid var(--admin-border);
-    box-shadow: var(--admin-glow);
-    backdrop-filter: blur(18px);
-    border-radius: 1.25rem;
+    position: relative;
+    background: linear-gradient(180deg, rgba(30, 28, 24, 0.72) 0%, rgba(20, 18, 16, 0.62) 100%);
+    border: 1px solid rgba(72, 65, 52, 0.28);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.42);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border-radius: 1.5rem;
+  }
+
+  .admin-nexus-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.28), transparent);
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+    pointer-events: none;
   }
 
   .admin-nexus-card {
-    background: linear-gradient(180deg, var(--admin-card-2), var(--admin-card));
-    border: 1px solid var(--admin-border);
-    box-shadow: 0 12px 32px rgba(4, 3, 2, 0.38);
-    border-radius: 1rem;
-    backdrop-filter: blur(12px);
+    position: relative;
+    background: linear-gradient(180deg, rgba(32, 30, 26, 0.68) 0%, rgba(22, 20, 18, 0.58) 100%);
+    border: 1px solid rgba(72, 65, 52, 0.26);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.38);
+    border-radius: 1.25rem;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .admin-nexus-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.22), transparent);
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+    pointer-events: none;
   }
 
   .admin-nexus-subtle {
-    background: linear-gradient(180deg, rgba(28, 26, 24, 0.72), rgba(24, 22, 20, 0.56));
-    border: 1px solid rgba(72, 65, 52, 0.18);
-    border-radius: 0.875rem;
+    background: linear-gradient(180deg, rgba(28, 26, 22, 0.56) 0%, rgba(22, 20, 18, 0.44) 100%);
+    border: 1px solid rgba(72, 65, 52, 0.22);
+    border-radius: 1rem;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 
   .admin-nexus-tab-active {
@@ -291,7 +390,11 @@ body {
   /* ─── Nexus Layout Shell ─────────────────────────────────────────── */
   .nx-shell {
     min-height: 100vh;
-    background: linear-gradient(135deg, #111111 0%, #1a1a1a 50%, #0d0b08 100%);
+    background:
+      radial-gradient(ellipse 900px 600px at 12% 85%, rgba(201, 168, 76, 0.12), transparent 60%),
+      radial-gradient(ellipse 900px 700px at 88% 15%, rgba(184, 115, 51, 0.10), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 50% 50%, rgba(80, 55, 30, 0.08), transparent 70%),
+      linear-gradient(135deg, #141210 0%, #1a1714 45%, #0d0b08 100%);
     color: var(--nx-text);
     position: relative;
     overflow-x: hidden;
@@ -303,34 +406,67 @@ body {
     left: 0;
     height: 100vh;
     width: 240px;
-    background: linear-gradient(180deg, rgba(22, 22, 22, 0.98), rgba(16, 16, 14, 0.96));
-    border-right: 1px solid var(--nx-border);
-    backdrop-filter: blur(20px);
+    background: linear-gradient(180deg, rgba(22, 20, 18, 0.82) 0%, rgba(16, 14, 12, 0.72) 100%);
+    border-right: 1px solid rgba(72, 65, 52, 0.22);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     display: flex;
     flex-direction: column;
     z-index: 40;
     overflow-y: auto;
   }
 
+  .nx-sidebar::after {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0; right: 0;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, rgba(201, 168, 76, 0.18), transparent);
+    pointer-events: none;
+  }
+
   .nx-topbar {
     position: sticky;
     top: 0;
     z-index: 30;
-    height: 56px;
-    background: linear-gradient(180deg, rgba(18, 18, 18, 0.96), rgba(16, 16, 14, 0.88));
-    border-bottom: 1px solid var(--nx-border);
-    backdrop-filter: blur(20px);
+    height: 64px;
+    background: linear-gradient(180deg, rgba(20, 18, 16, 0.78) 0%, rgba(16, 14, 12, 0.68) 100%);
+    border-bottom: 1px solid rgba(72, 65, 52, 0.22);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     display: flex;
     align-items: center;
     padding: 0 1.5rem;
     gap: 1rem;
   }
 
+  .nx-topbar::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.22), transparent);
+    pointer-events: none;
+  }
+
   .nx-card {
+    position: relative;
     background: var(--nx-card);
     border: 1px solid var(--nx-border);
-    backdrop-filter: blur(12px);
-    border-radius: 0.75rem;
+    backdrop-filter: blur(16px);
+    border-radius: 1.25rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.32);
+  }
+
+  .nx-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.28), transparent);
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+    pointer-events: none;
   }
 
   .nx-card-glow-cyan {
@@ -399,6 +535,447 @@ body {
   .animate-spin-slower { animation: spin-slower  6s linear infinite; }
   .animate-nx-pulse    { animation: nx-pulse-ring 2s ease-in-out infinite; }
   .animate-nx-fade-in  { animation: nx-fade-in   0.4s ease-out both; }
+
+  /* ─── Aurea-inspired blob backdrop ───────────────────────────────── */
+  .nx-blobs {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .nx-blobs::before,
+  .nx-blobs::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(110px);
+    opacity: 0.55;
+  }
+
+  .nx-blobs::before {
+    width: 640px;
+    height: 640px;
+    left: -160px;
+    bottom: -220px;
+    background: radial-gradient(circle, rgba(201, 168, 76, 0.70) 0%, rgba(201, 168, 76, 0.22) 45%, transparent 70%);
+  }
+
+  .nx-blobs::after {
+    width: 720px;
+    height: 720px;
+    right: -180px;
+    top: -220px;
+    background: radial-gradient(circle, rgba(184, 115, 51, 0.60) 0%, rgba(120, 70, 30, 0.22) 45%, transparent 70%);
+  }
+
+  .nx-blob-mid {
+    position: absolute;
+    top: 28%;
+    left: 42%;
+    width: 460px;
+    height: 460px;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.35;
+    background: radial-gradient(circle, rgba(110, 70, 30, 0.55) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ─── Hero card (large illustrated panel) ────────────────────────── */
+  .nx-hero-card {
+    position: relative;
+    border-radius: 1.75rem;
+    padding: 1.5rem;
+    background:
+      linear-gradient(135deg, rgba(38, 34, 26, 0.78) 0%, rgba(26, 22, 16, 0.68) 100%);
+    border: 1px solid rgba(201, 168, 76, 0.16);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+  }
+
+  .nx-hero-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.45), transparent);
+    pointer-events: none;
+  }
+
+  .nx-hero-card::after {
+    content: "";
+    position: absolute;
+    right: -80px;
+    bottom: -80px;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(201, 168, 76, 0.22) 0%, transparent 70%);
+    filter: blur(40px);
+    pointer-events: none;
+  }
+
+  /* ─── KPI tile (top strip, compact) ──────────────────────────────── */
+  .nx-kpi-tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem 1.1rem;
+    background: linear-gradient(180deg, rgba(30, 28, 22, 0.70) 0%, rgba(22, 20, 16, 0.60) 100%);
+    border: 1px solid rgba(72, 65, 52, 0.28);
+    border-radius: 1.25rem;
+    backdrop-filter: blur(14px);
+    transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+    overflow: hidden;
+  }
+
+  .nx-kpi-tile:hover {
+    border-color: rgba(201, 168, 76, 0.30);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.32);
+  }
+
+  .nx-kpi-tile__label {
+    font-size: 0.72rem;
+    color: var(--nx-text-soft);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .nx-kpi-tile__value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--nx-text);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .nx-kpi-tile__trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+  }
+
+  .nx-kpi-tile__trend.up   { color: var(--nx-green); background: rgba(34, 197, 94, 0.12); }
+  .nx-kpi-tile__trend.down { color: var(--nx-red);   background: rgba(239, 68, 68, 0.12); }
+  .nx-kpi-tile__trend.flat { color: var(--nx-text-soft); background: rgba(140, 136, 128, 0.10); }
+
+  .nx-kpi-tile__icon {
+    position: absolute;
+    right: 0.9rem;
+    top: 0.9rem;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 0.75rem;
+    background: rgba(201, 168, 76, 0.10);
+    color: var(--nx-gold);
+  }
+
+  /* ─── Sparkline (inline mini-chart) ──────────────────────────────── */
+  .nx-sparkline {
+    display: block;
+    width: 100%;
+    height: 38px;
+  }
+
+  .nx-sparkline path.line {
+    fill: none;
+    stroke: var(--nx-gold);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nx-sparkline path.fill {
+    fill: url(#nx-sparkline-grad);
+    stroke: none;
+    opacity: 0.55;
+  }
+
+  /* ─── Gauge (semi-circle ring) ───────────────────────────────────── */
+  .nx-gauge {
+    position: relative;
+    width: 100%;
+    max-width: 220px;
+    aspect-ratio: 2 / 1.1;
+  }
+
+  .nx-gauge svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .nx-gauge__track {
+    fill: none;
+    stroke: rgba(72, 65, 52, 0.35);
+    stroke-width: 14;
+    stroke-linecap: round;
+  }
+
+  .nx-gauge__value {
+    fill: none;
+    stroke: var(--nx-gold);
+    stroke-width: 14;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 6px rgba(201, 168, 76, 0.45));
+    transition: stroke-dashoffset 600ms ease;
+  }
+
+  .nx-gauge__center {
+    position: absolute;
+    left: 50%;
+    bottom: 12%;
+    transform: translateX(-50%);
+    text-align: center;
+  }
+
+  .nx-gauge__center .num {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--nx-text);
+    letter-spacing: -0.02em;
+  }
+
+  .nx-gauge__center .label {
+    font-size: 0.72rem;
+    color: var(--nx-text-soft);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* ─── Faz 1 — CTA Hierarchy ──────────────────────────────────
+     Birincil: dolu altın · İkincil: outline altın · Üçüncül: metin link.
+     hub-gold-soft / hub-gold tokenları üzerinden çalışır.
+  ───────────────────────────────────────────────────────────── */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.875rem 1.75rem;
+    font-family: var(--font-barlow), Arial, sans-serif;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    letter-spacing: 0.02em;
+    color: #0b0b0c;
+    background: var(--hub-gold-soft);
+    border: 1px solid var(--hub-gold-soft);
+    border-radius: 0.5rem;
+    transition: transform 200ms ease, background 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.10), 0 6px 18px rgba(198, 158, 84, 0.18);
+    cursor: pointer;
+  }
+  .btn-primary:hover {
+    background: var(--hub-gold);
+    border-color: var(--hub-gold);
+    transform: translateY(-1px);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.10), 0 10px 26px rgba(198, 158, 84, 0.32);
+  }
+  .btn-primary:focus-visible {
+    outline: 2px solid var(--hub-gold);
+    outline-offset: 2px;
+  }
+  .btn-primary:disabled,
+  .btn-primary[aria-disabled="true"] {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  .btn-primary .btn-arrow {
+    transition: transform 200ms ease;
+  }
+  .btn-primary:hover .btn-arrow {
+    transform: translateX(3px);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.875rem 1.75rem;
+    font-family: var(--font-barlow), Arial, sans-serif;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    letter-spacing: 0.02em;
+    color: var(--hub-gold-soft);
+    background: transparent;
+    border: 1px solid var(--hub-gold-soft);
+    border-radius: 0.5rem;
+    transition: background 200ms ease, border-color 200ms ease, color 200ms ease, transform 200ms ease;
+    cursor: pointer;
+  }
+  .btn-secondary:hover {
+    background: rgba(198, 158, 84, 0.08);
+    border-color: var(--hub-gold);
+    color: var(--hub-gold);
+    transform: translateY(-1px);
+  }
+  .btn-secondary:focus-visible {
+    outline: 2px solid var(--hub-gold);
+    outline-offset: 2px;
+  }
+  .btn-secondary .btn-arrow {
+    transition: transform 200ms ease;
+  }
+  .btn-secondary:hover .btn-arrow {
+    transform: translateX(3px);
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    /* Mobile tap target: min 44px height (Apple HIG / WCAG 2.5.5) */
+    min-height: 44px;
+    padding: 0.625rem 0.25rem;
+    font-family: var(--font-barlow), Arial, sans-serif;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    letter-spacing: 0.01em;
+    color: var(--hub-gold-soft);
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    transition: color 200ms ease, border-color 200ms ease;
+    cursor: pointer;
+  }
+  .btn-ghost:hover {
+    color: var(--hub-gold);
+    border-bottom-color: var(--hub-gold);
+  }
+  .btn-ghost:focus-visible {
+    outline: 2px solid var(--hub-gold);
+    outline-offset: 4px;
+  }
+  .btn-ghost .btn-arrow {
+    transition: transform 200ms ease;
+  }
+  .btn-ghost:hover .btn-arrow {
+    transform: translateX(2px);
+  }
+
+  /* ─── Faz 1 — Eyebrow (Hub'dan shared) ──────────────────────── */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--hub-gold-soft);
+  }
+  .eyebrow::before {
+    content: "";
+    width: 1.75rem;
+    height: 1px;
+    background: currentColor;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+
+  /* ─── Faz 1 — Section Vertical Rhythm ───────────────────────── */
+  .section-pad-sm {
+    padding-top: var(--section-pad-sm);
+    padding-bottom: var(--section-pad-sm);
+  }
+  .section-pad-md {
+    padding-top: var(--section-pad-md);
+    padding-bottom: var(--section-pad-md);
+  }
+  .section-pad-lg {
+    padding-top: var(--section-pad-lg);
+    padding-bottom: var(--section-pad-lg);
+  }
+
+  /* ─── Faz 1 — Type Scale Utility Classes ────────────────────── */
+  .t-display {
+    font-size: var(--t-display);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+    font-weight: 800;
+    font-family: var(--font-barlow), Arial, sans-serif;
+  }
+  .t-h1 {
+    font-size: var(--t-h1);
+    line-height: var(--leading-h1);
+    letter-spacing: var(--tracking-h1);
+    font-weight: 700;
+    font-family: var(--font-barlow), Arial, sans-serif;
+  }
+  .t-h2 {
+    font-size: var(--t-h2);
+    line-height: var(--leading-h2);
+    letter-spacing: var(--tracking-h2);
+    font-weight: 700;
+    font-family: var(--font-barlow), Arial, sans-serif;
+  }
+  .t-h3 {
+    font-size: var(--t-h3);
+    line-height: var(--leading-h3);
+    font-weight: 600;
+    font-family: var(--font-barlow), Arial, sans-serif;
+  }
+  .t-body {
+    font-size: var(--t-body);
+    line-height: var(--leading-body);
+  }
+  .t-meta {
+    font-size: var(--t-meta);
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+  }
+
+  /* ─── Faz 7 — Reveal-on-Scroll utility ───────────────────────
+     Default: opacity 0 + translateY. data-revealed='true' eklenince animate.
+     RevealOnScroll component IntersectionObserver ile attribute'u set eder.
+  ───────────────────────────────────────────────────────────── */
+  .reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1),
+                transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+  .reveal-on-scroll[data-revealed="true"] {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── Reduced motion: otomatik kapat ─────────────────────── */
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-on-scroll,
+    .reveal-on-scroll[data-revealed="true"] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+    .btn-primary,
+    .btn-secondary,
+    .btn-ghost,
+    .btn-primary .btn-arrow,
+    .btn-secondary .btn-arrow,
+    .btn-ghost .btn-arrow {
+      transition: none;
+      transform: none !important;
+    }
+  }
 
 }
 

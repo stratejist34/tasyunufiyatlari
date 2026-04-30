@@ -2,7 +2,9 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { ClipboardText } from '@phosphor-icons/react';
 import { quoteSchema, type QuoteFormData } from '@/lib/schemas/quote.schema';
+import { ICON_WEIGHT } from '@/lib/design/tokens';
 
 interface QuoteModalProps {
     isOpen: boolean;
@@ -57,11 +59,11 @@ export function QuoteModal({
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
                 {/* Modal Header */}
-                <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 rounded-t-2xl">
+                <div className="sticky top-0 bg-gradient-to-r from-brand-500 to-brand-600 text-white p-6 rounded-t-2xl">
                     <div className="flex justify-between items-start">
                         <div>
                             <h3 className="text-2xl font-bold mb-2">Teklif Talebi</h3>
-                            <p className="text-orange-100 text-sm">
+                            <p className="text-brand-100 text-sm">
                                 {selectedPackage.definition.name} • {metraj} m²
                             </p>
                         </div>
@@ -79,9 +81,9 @@ export function QuoteModal({
                 {/* Modal Body */}
                 <div className="p-6">
                     {/* Sipariş Özeti */}
-                    <div className="bg-orange-50 rounded-xl p-4 mb-6 border border-orange-200">
+                    <div className="bg-brand-50 rounded-xl p-4 mb-6 border border-brand-200">
                         <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                            <span>📋</span> Sipariş Özeti
+                            <ClipboardText weight={ICON_WEIGHT} size={18} /> Sipariş Özeti
                         </h4>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                             <div>
@@ -100,7 +102,7 @@ export function QuoteModal({
                             </div>
                             <div>
                                 <span className="text-gray-600">Toplam Fiyat:</span>
-                                <div className="font-bold text-orange-600">
+                                <div className="font-bold text-brand-600">
                                     {selectedPackage.grandTotal.toLocaleString("tr-TR")} ₺
                                 </div>
                             </div>
@@ -130,7 +132,7 @@ export function QuoteModal({
                                 {...register('customerName')}
                                 type="text"
                                 placeholder="Örn: Ahmet Yılmaz"
-                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none ${
+                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none ${
                                     errors.customerName ? 'border-red-500' : 'border-gray-300'
                                 }`}
                             />
@@ -148,7 +150,7 @@ export function QuoteModal({
                                 {...register('customerEmail')}
                                 type="email"
                                 placeholder="Örn: ahmet@example.com"
-                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none ${
+                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none ${
                                     errors.customerEmail ? 'border-red-500' : 'border-gray-300'
                                 }`}
                             />
@@ -166,7 +168,7 @@ export function QuoteModal({
                                 {...register('customerPhone')}
                                 type="tel"
                                 placeholder="Örn: 05321234567"
-                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none ${
+                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none ${
                                     errors.customerPhone ? 'border-red-500' : 'border-gray-300'
                                 }`}
                             />
@@ -184,7 +186,7 @@ export function QuoteModal({
                                 {...register('customerCompany')}
                                 type="text"
                                 placeholder="Örn: ABC İnşaat Ltd. Şti."
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none"
                             />
                         </div>
 
@@ -197,7 +199,7 @@ export function QuoteModal({
                                 {...register('customerAddress')}
                                 placeholder="Tam adresinizi giriniz..."
                                 rows={3}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none resize-none"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none resize-none"
                             />
                         </div>
 
@@ -221,7 +223,7 @@ export function QuoteModal({
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex-1 px-6 py-3 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-xl font-semibold hover:from-brand-600 hover:to-brand-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting ? "Gönderiliyor..." : "Teklif Gönder"}
                             </button>
