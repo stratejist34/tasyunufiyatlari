@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    // Supabase Storage'a yüklenen görseller zaten optimize boyut/format'ta
+    // (WebP, doğru en-boy oranı). Vercel'in image optimization katmanı bu
+    // durumda gereksiz transformasyon üretiyor — Hobby tier 5K/ay limit hızla
+    // dolardı. unoptimized:true → orijinal URL'ler direkt servis edilir,
+    // transformation sayılmaz.
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
