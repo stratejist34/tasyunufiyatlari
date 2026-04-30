@@ -36,7 +36,7 @@ const GROUPS = [
   {
     eyebrow: 'Yasal',
     links: [
-      { href: '/iletisim', label: 'KVKK Aydınlatma' },
+      { href: '/kvkk', label: 'KVKK Aydınlatma' },
       { href: '/iletisim', label: 'Çerez Politikası' },
       { href: '/iletisim', label: 'Kullanım Koşulları' },
     ],
@@ -63,7 +63,7 @@ export default function SiteFooter({ tone = 'dark' }: SiteFooterProps) {
           <div className="col-span-2 md:col-span-1">
             <Image
               src="/tasyunu-logo.webp"
-              alt="TaşYünü Fiyatları"
+              alt="Taşyünü Fiyatları"
               width={260}
               height={54}
               className="h-7 w-auto mb-4"
@@ -111,7 +111,7 @@ export default function SiteFooter({ tone = 'dark' }: SiteFooterProps) {
 
         <div className={`mt-12 pt-6 border-t ${ruleSoft} flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3`}>
           <p className={`${copyText} text-xs`}>
-            © {new Date().getFullYear()} TaşYünü Fiyatları. Tüm hakları saklıdır.
+            © {new Date().getFullYear()} Taşyünü Fiyatları. Tüm hakları saklıdır.
           </p>
           <p className={`${copyText} text-xs`}>
             Fabrika çıkışlı satış · İstanbul / Tuzla &amp; Gebze depo

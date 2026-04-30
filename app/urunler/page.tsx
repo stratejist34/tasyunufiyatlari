@@ -12,7 +12,7 @@ import HubFooterCta  from '@/components/urunler-hub/HubFooterCta';
 import { getUrunlerHubData } from '@/lib/catalog/hub';
 
 export const metadata: Metadata = {
-  title: 'Ürün Kataloğu — TaşYünü Fiyatları',
+  title: 'Ürün Kataloğu',
   description:
     'Taşyünü levha, EPS levha, dübel, yapıştırıcı, sıva, file, profil, astar, kaplama. Fabrika çıkışlı fiyat hesaplayıcı veya teklif al.',
 };

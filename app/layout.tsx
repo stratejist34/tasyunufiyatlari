@@ -21,8 +21,29 @@ const barlow = Barlow({
 });
 
 export const metadata: Metadata = {
-  title: "TaşYünü Fiyatları - Mantolama Maliyeti Hesaplama",
-  description: "Türkiye geneli taşyünü ve EPS fiyatları. Lojistik dahil mantolama maliyetinizi hesaplayın.",
+  metadataBase: new URL("https://tasyunufiyatlari.com"),
+  applicationName: "Taşyünü Fiyatları",
+  title: {
+    default: "Taşyünü Fiyatları — Mantolama Maliyeti Hesaplama",
+    template: "%s | Taşyünü Fiyatları",
+  },
+  description:
+    "Türkiye geneli taşyünü ve EPS fiyatları. Lojistik dahil mantolama maliyetinizi hesaplayın.",
+  openGraph: {
+    siteName: "Taşyünü Fiyatları",
+    type: "website",
+    locale: "tr_TR",
+    url: "https://tasyunufiyatlari.com",
+    title: "Taşyünü Fiyatları — Mantolama Maliyeti Hesaplama",
+    description:
+      "Türkiye geneli taşyünü ve EPS fiyatları. Lojistik dahil mantolama maliyetinizi hesaplayın.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Taşyünü Fiyatları — Mantolama Maliyeti Hesaplama",
+    description:
+      "Türkiye geneli taşyünü ve EPS fiyatları. Lojistik dahil mantolama maliyetinizi hesaplayın.",
+  },
 };
 
 export default function RootLayout({

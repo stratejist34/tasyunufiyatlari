@@ -41,7 +41,7 @@ const faqItems = [
 const jsonLdOrg = {
     "@context": "https://schema.org",
     "@type": ["Organization", "LocalBusiness"],
-    name: "TaşYünü Fiyatları — ÖZERGRUP YALITIM ve İZOLASYON AŞ.",
+    name: "Taşyünü Fiyatları — ÖZERGRUP YALITIM ve İZOLASYON AŞ.",
     url: "https://tasyunufiyatlari.com",
     telephone: "+905322041825",
     address: {

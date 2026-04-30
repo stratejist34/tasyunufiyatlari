@@ -88,7 +88,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return { title: 'Ürün Bulunamadı' };
   const { product } = data;
   return {
-    title:       product.meta_title       ?? `${product.name} — TaşYünü Fiyatları`,
+    title:       product.meta_title       ?? product.name,
     description: product.meta_description ?? product.catalog_description ?? undefined,
   };
 }

@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const catInfo = KATEGORI_MAP[kategori];
   if (!brandInfo || !catInfo) return {};
   return {
-    title: `${brandInfo.displayName} ${catInfo.title} — TaşYünü Fiyatları`,
+    title: `${brandInfo.displayName} ${catInfo.title}`,
     description: `${brandInfo.displayName} ${catInfo.title.toLowerCase()} ürünleri. ${catInfo.desc}`,
   };
 }

@@ -1,8 +1,9 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ClipboardText } from '@phosphor-icons/react';
+import { ClipboardText, X } from '@phosphor-icons/react';
 import { quoteSchema, type QuoteFormData } from '@/lib/schemas/quote.schema';
 import { ICON_WEIGHT } from '@/lib/design/tokens';
 
@@ -43,6 +44,24 @@ export function QuoteModal({
         }
     });
 
+    // Body scroll lock
+    useEffect(() => {
+        if (!isOpen) return;
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = prev; };
+    }, [isOpen]);
+
+    // ESC ile kapat
+    useEffect(() => {
+        if (!isOpen) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && !isSubmitting) onClose();
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [isOpen, isSubmitting, onClose]);
+
     const onSubmitForm = async (data: QuoteFormData) => {
         try {
             await onSubmit(data);
@@ -56,30 +75,39 @@ export function QuoteModal({
     if (!isOpen || !selectedPackage) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-                {/* Modal Header */}
-                <div className="sticky top-0 bg-gradient-to-r from-brand-500 to-brand-600 text-white p-6 rounded-t-2xl">
-                    <div className="flex justify-between items-start">
+        <div
+            className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+            onClick={onClose}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Teklif Talebi"
+        >
+            <div
+                className="bg-white w-full sm:max-w-2xl shadow-2xl flex flex-col rounded-t-2xl sm:rounded-2xl max-h-[100dvh] sm:max-h-[90dvh]"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* HEADER — sticky top */}
+                <div className="shrink-0 bg-gradient-to-r from-brand-500 to-brand-600 text-white px-6 py-5 rounded-t-2xl">
+                    <div className="flex justify-between items-start gap-3">
                         <div>
-                            <h3 className="text-2xl font-bold mb-2">Teklif Talebi</h3>
+                            <h3 className="text-xl sm:text-2xl font-bold mb-1">Teklif Talebi</h3>
                             <p className="text-brand-100 text-sm">
                                 {selectedPackage.definition.name} • {metraj} m²
                             </p>
                         </div>
                         <button
+                            type="button"
                             onClick={onClose}
-                            className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all"
+                            className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-white hover:bg-white/20 transition-colors shrink-0"
+                            aria-label="Kapat"
                         >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            <X weight={ICON_WEIGHT} size={20} />
                         </button>
                     </div>
                 </div>
 
-                {/* Modal Body */}
-                <div className="p-6">
+                {/* SCROLL BODY */}
+                <div className="flex-1 overflow-y-auto px-6 py-5">
                     {/* Sipariş Özeti */}
                     <div className="bg-brand-50 rounded-xl p-4 mb-6 border border-brand-200">
                         <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
@@ -120,10 +148,13 @@ export function QuoteModal({
                     </div>
 
                     {/* İletişim Formu */}
-                    <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4">
-                        <h4 className="font-semibold text-gray-800 mb-4">İletişim Bilgileriniz</h4>
+                    <form
+                        id="quote-form"
+                        onSubmit={handleSubmit(onSubmitForm)}
+                        className="space-y-4"
+                    >
+                        <h4 className="font-semibold text-gray-800 mb-2">İletişim Bilgileriniz</h4>
 
-                        {/* Ad Soyad */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Ad Soyad <span className="text-red-500">*</span>
@@ -141,7 +172,6 @@ export function QuoteModal({
                             )}
                         </div>
 
-                        {/* E-posta */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 E-posta <span className="text-red-500">*</span>
@@ -159,7 +189,6 @@ export function QuoteModal({
                             )}
                         </div>
 
-                        {/* Telefon */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Telefon <span className="text-red-500">*</span>
@@ -177,7 +206,6 @@ export function QuoteModal({
                             )}
                         </div>
 
-                        {/* Firma (Opsiyonel) */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Firma Adı <span className="text-gray-400 text-xs">(Opsiyonel)</span>
@@ -190,7 +218,6 @@ export function QuoteModal({
                             />
                         </div>
 
-                        {/* Adres (Opsiyonel) */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Teslimat Adresi <span className="text-gray-400 text-xs">(Opsiyonel)</span>
@@ -203,32 +230,33 @@ export function QuoteModal({
                             />
                         </div>
 
-                        {/* Bilgilendirme */}
                         <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
                             <p className="text-sm text-blue-800">
-                                <span className="font-semibold">ℹ️ Bilgi:</span> Teklifiniz gönderildikten sonra en kısa sürede size dönüş yapılacaktır. Fiyat ve teslimat detayları için sizinle iletişime geçilecektir.
+                                <span className="font-semibold">Bilgi:</span> Teklifiniz gönderildikten sonra en kısa sürede size dönüş yapılacaktır.
+                                Fiyat ve teslimat detayları için sizinle iletişime geçilecektir.
                             </p>
                         </div>
-
-                        {/* Modal Footer - Butonlar */}
-                        <div className="flex gap-3">
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-all"
-                                disabled={isSubmitting}
-                            >
-                                İptal
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="flex-1 px-6 py-3 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-xl font-semibold hover:from-brand-600 hover:to-brand-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isSubmitting ? "Gönderiliyor..." : "Teklif Gönder"}
-                            </button>
-                        </div>
                     </form>
+                </div>
+
+                {/* FOOTER — sticky bottom */}
+                <div className="shrink-0 px-6 py-4 border-t border-gray-200 bg-white rounded-b-2xl flex gap-3">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-all min-h-[48px]"
+                        disabled={isSubmitting}
+                    >
+                        İptal
+                    </button>
+                    <button
+                        type="submit"
+                        form="quote-form"
+                        disabled={isSubmitting}
+                        className="flex-1 px-6 py-3 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-xl font-semibold hover:from-brand-600 hover:to-brand-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
+                    >
+                        {isSubmitting ? "Gönderiliyor..." : "Teklif Gönder"}
+                    </button>
                 </div>
             </div>
         </div>

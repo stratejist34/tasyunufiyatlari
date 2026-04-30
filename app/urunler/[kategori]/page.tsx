@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const info = KATEGORI_MAP[kategori];
   if (!info) return {};
   return {
-    title: `${info.title} — TaşYünü Fiyatları`,
+    title: info.title,
     description: info.desc,
   };
 }

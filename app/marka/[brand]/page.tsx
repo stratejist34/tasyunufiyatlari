@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const info = BRAND_MAP[brand];
   if (!info) return {};
   return {
-    title: `${info.displayName} Ürünleri — TaşYünü Fiyatları`,
+    title: `${info.displayName} Ürünleri`,
     description: info.description,
   };
 }

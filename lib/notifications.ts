@@ -61,7 +61,17 @@ function buildMessage(event: LeadEventType, data: NotificationData): string {
 
 async function callCallMeBot(phone: string, apiKey: string, message: string): Promise<void> {
   const url = `https://api.callmebot.com/whatsapp.php?phone=${phone}&text=${encodeURIComponent(message)}&apikey=${apiKey}`;
-  await fetch(url, { method: 'GET' });
+  try {
+    const res = await fetch(url, { method: 'GET' });
+    const body = await res.text();
+    if (!res.ok) {
+      console.warn(`[CallMeBot ${phone}] HTTP ${res.status}: ${body.slice(0, 200)}`);
+    } else {
+      console.log(`[CallMeBot ${phone}] OK ${res.status}`);
+    }
+  } catch (err) {
+    console.error(`[CallMeBot ${phone}] fetch error:`, err);
+  }
 }
 
 export async function sendNotification(
@@ -73,13 +83,25 @@ export async function sendNotification(
   const phone2  = process.env.CALLMEBOT_PHONE_2;
   const apiKey2 = process.env.CALLMEBOT_APIKEY_2;
 
-  if (!phone1 && !phone2) return;
+  // Tanılama: env okunmuyor mu, hangi alıcı aktif?
+  console.log('[sendNotification] event=%s phone1=%s phone2=%s apikey1=%s apikey2=%s',
+    event,
+    phone1 ? phone1 : '(yok)',
+    phone2 ? phone2 : '(yok)',
+    apiKey1 ? 'set' : '(yok)',
+    apiKey2 ? 'set' : '(yok)',
+  );
+
+  if (!phone1 && !phone2) {
+    console.warn('[sendNotification] No phone configured — env CALLMEBOT_PHONE_1/2 missing');
+    return;
+  }
 
   const message = buildMessage(event, data);
 
   const sends: Promise<void>[] = [];
-  if (phone1 && apiKey1) sends.push(callCallMeBot(phone1, apiKey1, message).catch(() => {}));
-  if (phone2 && apiKey2) sends.push(callCallMeBot(phone2, apiKey2, message).catch(() => {}));
+  if (phone1 && apiKey1) sends.push(callCallMeBot(phone1, apiKey1, message));
+  if (phone2 && apiKey2) sends.push(callCallMeBot(phone2, apiKey2, message));
 
   await Promise.all(sends);
 }

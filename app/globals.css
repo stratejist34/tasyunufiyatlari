@@ -170,6 +170,29 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+/* ─── Browser autofill override (Chrome/Safari mobile) ────────────────
+   Mobil tarayıcılar autofill input'larına kendi krem/beyaz zeminini
+   bastırıyor. :-webkit-autofill spesifikliği yüksek olduğu için
+   Tailwind bg-* class'ları ezilmiyor. Inset shadow hilesi ile dark zemini geri al.
+─────────────────────────────────────────────────────────────────────── */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--fe-text) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--fe-surface) inset !important;
+  box-shadow: 0 0 0 1000px var(--fe-surface) inset !important;
+  caret-color: var(--fe-text) !important;
+  /* Yellow/cream flash'ı önlemek için sonsuz transition */
+  transition: background-color 9999s ease-in-out 0s, color 9999s ease-in-out 0s;
+}
+
 /* ─── Faz 1 — Foundation Type Scale & Section Rhythm ──────────────────
    Barlow için optimize edilmiş clamp() boyutları, tracking ve line-height.
    Yeni font yüklenmez; mevcut Barlow weights (400/600/700/800) kullanılır.
@@ -773,15 +796,15 @@ body {
     background: var(--hub-gold-soft);
     border: 1px solid var(--hub-gold-soft);
     border-radius: 0.5rem;
-    transition: transform 200ms ease, background 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
-    box-shadow: 0 1px 0 rgba(0,0,0,0.10), 0 6px 18px rgba(198, 158, 84, 0.18);
+    transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+    box-shadow: none;
     cursor: pointer;
   }
   .btn-primary:hover {
     background: var(--hub-gold);
-    border-color: var(--hub-gold);
+    border-color: #d4b966;
     transform: translateY(-1px);
-    box-shadow: 0 1px 0 rgba(0,0,0,0.10), 0 10px 26px rgba(198, 158, 84, 0.32);
+    box-shadow: none;
   }
   .btn-primary:focus-visible {
     outline: 2px solid var(--hub-gold);

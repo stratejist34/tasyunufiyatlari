@@ -12,7 +12,7 @@ import { ICON_WEIGHT } from '@/lib/design/tokens';
 const PHONE_TEL = '+905322041825';
 
 export const metadata: Metadata = {
-  title: 'Hakkımızda — ÖzerGrup Yalıtım | TaşYünü Fiyatları',
+  title: 'Hakkımızda — ÖzerGrup Yalıtım',
   description:
     "2006'dan beri yalıtım sektöründe. 20 yıllık tecrübe, 81 il sevkiyat, Filli Boya / Fawori / Dalmaçyalı resmi bayilik. ÖzerGrup Yalıtım ve İzolasyon A.Ş.",
   alternates: { canonical: '/hakkimizda' },
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 const orgJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'TaşYünü Fiyatları',
+  name: 'Taşyünü Fiyatları',
   legalName: 'ÖzerGrup Yalıtım ve İzolasyon A.Ş.',
   foundingDate: '2006',
   founder: { '@type': 'Person', name: 'Muhammet Öztürk' },

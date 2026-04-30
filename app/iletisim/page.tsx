@@ -29,7 +29,7 @@ const MAPS_DIRECTIONS_URL =
   'https://www.google.com/maps/dir/?api=1&destination=40.8933583,29.3547698';
 
 export const metadata: Metadata = {
-  title: 'İletişim | TaşYünü Fiyatları',
+  title: 'İletişim',
   description:
     'Soru, teklif ve bayilik için bize ulaşın. Telefon, WhatsApp, e-posta. Mesai içinde 30 dk dönüş garantisi.',
   alternates: { canonical: '/iletisim' },
@@ -38,11 +38,11 @@ export const metadata: Metadata = {
 const contactPageJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ContactPage',
-  name: 'İletişim — TaşYünü Fiyatları',
+  name: 'İletişim — Taşyünü Fiyatları',
   url: 'https://tasyunufiyatlari.com/iletisim',
   mainEntity: {
     '@type': 'Organization',
-    name: 'TaşYünü Fiyatları',
+    name: 'Taşyünü Fiyatları',
     legalName: 'ÖzerGrup Yalıtım ve İzolasyon A.Ş.',
     telephone: PHONE_TEL,
     email: EMAIL,

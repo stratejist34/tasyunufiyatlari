@@ -17,7 +17,7 @@ const ADDRESS_LINE = 'Orhanlı Mescit Mh. Demokrasi Cd. No:5';
 const ADDRESS_CITY = 'Tuzla / İstanbul';
 
 export const metadata: Metadata = {
-  title: 'Depomuz Tuzla Tepeören | TaşYünü Fiyatları',
+  title: 'Depomuz Tuzla Tepeören',
   description:
     "İstanbul Tuzla Tepeören depomuzdan Türkiye'nin 81 iline yalıtım malzemesi sevkiyatı. Orhanlı Nakliyeciler Sitesine 2 km. Adres, harita, iletişim.",
   alternates: { canonical: '/depomuz' },
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 const localBusinessJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
-  name: 'TaşYünü Fiyatları — Tuzla Tepeören Deposu',
+  name: 'Taşyünü Fiyatları — Tuzla Tepeören Deposu',
   legalName: 'ÖzerGrup Yalıtım ve İzolasyon A.Ş.',
   telephone: PHONE_TEL,
   url: 'https://tasyunufiyatlari.com/depomuz',
