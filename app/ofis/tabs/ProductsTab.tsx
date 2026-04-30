@@ -40,6 +40,7 @@ export function ProductsTab() {
     const [shippingZones, setShippingZones] = useState<any[]>([]);
     const [logisticsData, setLogisticsData] = useState<any[]>([]);
     const [editingPlate, setEditingPlate] = useState<any | null>(null);
+    const [editingAccessory, setEditingAccessory] = useState<any | null>(null);
     const [editSaving, setEditSaving] = useState(false);
     const [editError, setEditError] = useState<string | null>(null);
 
@@ -56,6 +57,28 @@ export function ProductsTab() {
             if (!res.ok) { setEditError(json.error ?? 'Kayıt başarısız'); return false; }
             setPlates((prev) => prev.map((p) => (p.id === id ? { ...p, ...fields } : p)));
             setEditingPlate(null);
+            return true;
+        } catch {
+            setEditError('Bağlantı hatası');
+            return false;
+        } finally {
+            setEditSaving(false);
+        }
+    }
+
+    async function saveAccessoryRules(id: number, fields: Record<string, unknown>) {
+        setEditSaving(true);
+        setEditError(null);
+        try {
+            const res = await fetch(`/api/admin/accessories/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(fields),
+            });
+            const json = await res.json();
+            if (!res.ok) { setEditError(json.error ?? 'Kayıt başarısız'); return false; }
+            setAccessories((prev) => prev.map((a) => (a.id === id ? { ...a, ...fields } : a)));
+            setEditingAccessory(null);
             return true;
         } catch {
             setEditError('Bağlantı hatası');
@@ -440,6 +463,7 @@ export function ProductsTab() {
                                                             <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase" style={{ width: '150px' }}>Satış Fiyatı</th>
                                                             <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase" style={{ width: '120px' }}>Paket</th>
                                                             <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase" style={{ width: '100px' }}>Durum</th>
+                                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase" style={{ width: '60px' }}>Katalog</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -495,6 +519,11 @@ export function ProductsTab() {
                                                                         ) : (
                                                                             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-slate-600/30 text-slate-400 border border-slate-600/50"><XCircle className="w-3 h-3" />Pasif</span>
                                                                         )}
+                                                                    </td>
+                                                                    <td className="px-3 py-3 text-sm">
+                                                                        <button type="button" onClick={() => setEditingAccessory({ ...acc })} title="Katalog kurallarını düzenle" className="p-1.5 rounded text-slate-500 hover:text-orange-400 hover:bg-slate-700/50 transition-colors">
+                                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                                                        </button>
                                                                     </td>
                                                                 </tr>
                                                             );
@@ -626,6 +655,98 @@ export function ProductsTab() {
                                 meta_title: editingPlate.meta_title || null, meta_description: editingPlate.meta_description || null,
                                 depot_discount: editingPlate.depot_discount ?? 0, depot_min_m2: editingPlate.depot_min_m2 ?? 300,
                                 plate_prices_depot: (editingPlate._depotStocks ?? []).map((r: any) => ({ id: r.id, stock_tuzla: r.stock_tuzla })),
+                            })} className="px-5 py-2 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
+                                {editSaving ? 'Kaydediliyor…' : 'Kaydet'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            , document.body)}
+
+            {/* Aksesuar Katalog Kural Düzenleme Modal */}
+            {editingAccessory && createPortal(
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                    <div className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-y-auto max-h-[90vh]">
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
+                            <div>
+                                <h2 className="text-base font-semibold text-white">Aksesuar Katalog Kuralları</h2>
+                                <p className="text-xs text-slate-400 mt-0.5">{editingAccessory.name} — {(editingAccessory.brands as any)?.name}</p>
+                            </div>
+                            <button type="button" onClick={() => { setEditingAccessory(null); setEditError(null); }} className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
+                                <XCircle className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="p-5 space-y-6">
+                            <fieldset className="space-y-3">
+                                <legend className="text-xs font-semibold text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-700 w-full">Satış Ayarları</legend>
+                                <div>
+                                    <label className="block text-xs text-slate-400 mb-1">Satış Modu</label>
+                                    <select value={editingAccessory.sales_mode ?? 'system_only'} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, sales_mode: e.target.value }))} className="w-full bg-slate-800 border border-slate-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500">
+                                        <option value="system_only">Sistem Ürünü</option>
+                                        <option value="single_or_quote">Alım veya Teklif</option>
+                                        <option value="single_only">Direkt Alım</option>
+                                        <option value="quote_only">Sadece Teklif</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-slate-400 mb-1">Fiyat Görünürlüğü</label>
+                                    <select value={editingAccessory.pricing_visibility_mode ?? 'quote_required'} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, pricing_visibility_mode: e.target.value }))} className="w-full bg-slate-800 border border-slate-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500">
+                                        <option value="quote_required">Teklif ile belirlenir</option>
+                                        <option value="from_price">Başlangıç fiyatı göster</option>
+                                        <option value="exact_price">Tam fiyat göster</option>
+                                        <option value="hidden">Fiyat gizle</option>
+                                    </select>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs text-slate-400 mb-1">Min. Sipariş Tipi</label>
+                                        <select value={editingAccessory.minimum_order_type ?? 'none'} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, minimum_order_type: e.target.value }))} className="w-full bg-slate-800 border border-slate-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500">
+                                            <option value="none">Yok</option><option value="m2">m²</option><option value="package">Paket</option><option value="pallet">Palet</option><option value="quantity">Adet</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-slate-400 mb-1">Min. Değer</label>
+                                        <input type="number" value={editingAccessory.minimum_order_value ?? ''} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, minimum_order_value: e.target.value ? Number(e.target.value) : null }))} disabled={(editingAccessory.minimum_order_type ?? 'none') === 'none'} placeholder="örn. 10" className="w-full bg-slate-800 border border-slate-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500 disabled:opacity-40" />
+                                    </div>
+                                </div>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" checked={editingAccessory.requires_system_context ?? true} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, requires_system_context: e.target.checked }))} className="rounded border-slate-600 bg-slate-800" />
+                                    <span className="text-sm text-slate-300">Sistem ürünü (kombinasyon gerekli)</span>
+                                </label>
+                            </fieldset>
+                            <fieldset className="space-y-3">
+                                <legend className="text-xs font-semibold text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-700 w-full">Katalog Bilgileri</legend>
+                                <div>
+                                    <label className="block text-xs text-slate-400 mb-1">Slug (URL)</label>
+                                    <input type="text" value={editingAccessory.slug ?? ''} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, slug: e.target.value }))} placeholder="ornek-aksesuar" className="w-full bg-slate-800 border border-slate-600 text-white text-sm rounded-lg px-3 py-2 font-mono focus:outline-none focus:border-orange-500" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-slate-400 mb-1">Katalog Açıklaması</label>
+                                    <textarea value={editingAccessory.catalog_description ?? ''} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, catalog_description: e.target.value }))} rows={3} className="w-full bg-slate-800 border border-slate-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500 resize-none" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-slate-400 mb-1">Meta Başlık</label>
+                                    <input type="text" value={editingAccessory.meta_title ?? ''} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, meta_title: e.target.value }))} className="w-full bg-slate-800 border border-slate-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-slate-400 mb-1">Meta Açıklaması</label>
+                                    <textarea value={editingAccessory.meta_description ?? ''} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, meta_description: e.target.value }))} rows={2} className="w-full bg-slate-800 border border-slate-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500 resize-none" />
+                                </div>
+                            </fieldset>
+                            {editError && <p className="text-sm text-red-400 bg-red-900/20 border border-red-800 rounded-lg px-3 py-2">{editError}</p>}
+                        </div>
+                        <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-slate-700">
+                            <button type="button" onClick={() => { setEditingAccessory(null); setEditError(null); }} className="px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors">İptal</button>
+                            <button type="button" disabled={editSaving} onClick={() => saveAccessoryRules(editingAccessory.id, {
+                                sales_mode: editingAccessory.sales_mode,
+                                pricing_visibility_mode: editingAccessory.pricing_visibility_mode,
+                                minimum_order_type: editingAccessory.minimum_order_type,
+                                minimum_order_value: editingAccessory.minimum_order_value,
+                                requires_system_context: editingAccessory.requires_system_context,
+                                slug: editingAccessory.slug || null,
+                                catalog_description: editingAccessory.catalog_description || null,
+                                meta_title: editingAccessory.meta_title || null,
+                                meta_description: editingAccessory.meta_description || null,
                             })} className="px-5 py-2 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
                                 {editSaving ? 'Kaydediliyor…' : 'Kaydet'}
                             </button>

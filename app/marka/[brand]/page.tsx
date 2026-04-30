@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import ProductCard from '@/components/catalog/ProductCard';
 import { getCatalogProductsByBrand } from '@/lib/catalog/server';
 import { KATEGORI_LIST } from '@/lib/catalog/categories';
+import { buildMetadata } from '@/lib/seo/buildMetadata';
 import SiteHeader from '@/components/shared/SiteHeader';
 import SiteFooter from '@/components/shared/SiteFooter';
 
@@ -49,10 +50,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { brand } = await params;
   const info = BRAND_MAP[brand];
   if (!info) return {};
-  return {
+  return buildMetadata({
     title: `${info.displayName} Ürünleri`,
     description: info.description,
-  };
+    path: `/marka/${brand}`,
+  });
 }
 
 export default async function MarkaPage({ params }: Props) {

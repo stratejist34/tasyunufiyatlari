@@ -7,6 +7,7 @@ import ProductImage     from '@/components/catalog/ProductImage';
 import ThicknessSelector from '@/components/catalog/ThicknessSelector';
 import ProductPricePanel from '@/components/catalog/ProductPricePanel';
 import { getCatalogProduct } from '@/lib/catalog/server';
+import { buildMetadata } from '@/lib/seo/buildMetadata';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { unstable_cache } from 'next/cache';
 import SiteHeader from '@/components/shared/SiteHeader';
@@ -83,14 +84,17 @@ interface Props {
 // ─── Metadata ───────────────────────────────────────────────
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, kategori } = await params;
   const data = await getCatalogProduct(slug);
   if (!data) return { title: 'Ürün Bulunamadı' };
   const { product } = data;
-  return {
+  return buildMetadata({
     title:       product.meta_title       ?? product.name,
-    description: product.meta_description ?? product.catalog_description ?? undefined,
-  };
+    description: product.meta_description ?? product.catalog_description ?? `${product.brand.name} ${product.name} ürün detayları, fiyat ve teklif.`,
+    path:        `/urunler/${kategori}/${slug}`,
+    image:       product.image_cover,
+    type:        'product',
+  });
 }
 
 // ─── Page ────────────────────────────────────────────────────

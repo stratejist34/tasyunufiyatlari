@@ -10,12 +10,14 @@ import FilterBar     from '@/components/urunler-hub/FilterBar';
 import CategoryCards from '@/components/urunler-hub/CategoryCards';
 import HubFooterCta  from '@/components/urunler-hub/HubFooterCta';
 import { getUrunlerHubData } from '@/lib/catalog/hub';
+import { buildMetadata } from '@/lib/seo/buildMetadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Ürün Kataloğu',
   description:
     'Taşyünü levha, EPS levha, dübel, yapıştırıcı, sıva, file, profil, astar, kaplama. Fabrika çıkışlı fiyat hesaplayıcı veya teklif al.',
-};
+  path: '/urunler',
+});
 
 export default async function UrunlerPage() {
   const data = await getUrunlerHubData();

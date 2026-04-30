@@ -34,7 +34,8 @@ export async function getCatalogProducts(
         sales_mode, pricing_visibility_mode,
         minimum_order_type, minimum_order_value,
         requires_system_context, recommended_bundle_family,
-        catalog_description, image_cover, brand_id,
+        catalog_description, meta_title, meta_description,
+        image_cover, brand_id,
         brands ( id, name, tier ),
         accessory_types ( id, name, slug )
       `)
@@ -71,8 +72,8 @@ export async function getCatalogProducts(
         rules,
         minimum_order,
         catalog_description: row.catalog_description ?? null,
-        meta_title: null,
-        meta_description: null,
+        meta_title:          row.meta_title          ?? null,
+        meta_description:    row.meta_description    ?? null,
         image_cover: row.image_cover ?? null,
         image_gallery: null,
         wizard_prefill: null,
@@ -197,7 +198,8 @@ export async function getCatalogProduct(
         sales_mode, pricing_visibility_mode,
         minimum_order_type, minimum_order_value,
         requires_system_context, recommended_bundle_family,
-        catalog_description, image_cover,
+        catalog_description, meta_title, meta_description,
+        image_cover,
         brands ( id, name, tier ),
         accessory_types ( id, name, slug )
       `)
@@ -235,8 +237,8 @@ export async function getCatalogProduct(
         rules,
         minimum_order,
         catalog_description: row.catalog_description ?? null,
-        meta_title: null,
-        meta_description: null,
+        meta_title:          row.meta_title          ?? null,
+        meta_description:    row.meta_description    ?? null,
         image_cover: row.image_cover ?? null,
         image_gallery: null,
         wizard_prefill: null,

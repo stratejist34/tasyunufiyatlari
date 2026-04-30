@@ -1,0 +1,69 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
+
+export const dynamic = 'force-dynamic';
+
+const ALLOWED_FIELDS = [
+  'slug',
+  'sales_mode',
+  'pricing_visibility_mode',
+  'minimum_order_type',
+  'minimum_order_value',
+  'requires_system_context',
+  'recommended_bundle_family',
+  'catalog_description',
+  'meta_title',
+  'meta_description',
+] as const;
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id: rawId } = await params;
+  const id = parseInt(rawId, 10);
+  if (isNaN(id)) {
+    return NextResponse.json({ error: 'Geçersiz ID' }, { status: 400 });
+  }
+
+  const body = await req.json();
+
+  const update: Record<string, unknown> = {};
+  for (const field of ALLOWED_FIELDS) {
+    if (field in body) {
+      update[field] = body[field];
+    }
+  }
+
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ error: 'Güncellenecek alan yok' }, { status: 400 });
+  }
+
+  const supabase = createServerSupabaseClient();
+
+  if (update.slug) {
+    const { data: existing } = await supabase
+      .from('accessories')
+      .select('id')
+      .eq('slug', update.slug)
+      .neq('id', id)
+      .single();
+
+    if (existing) {
+      return NextResponse.json({ error: 'Bu slug zaten kullanılıyor' }, { status: 409 });
+    }
+  }
+
+  const { data, error } = await supabase
+    .from('accessories')
+    .update(update)
+    .eq('id', id)
+    .select('id, slug, sales_mode, pricing_visibility_mode')
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true, accessory: data });
+}

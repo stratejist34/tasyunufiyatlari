@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import ProductCard from '@/components/catalog/ProductCard';
 import { getCatalogProducts } from '@/lib/catalog/server';
 import { KATEGORI_MAP } from '@/lib/catalog/categories';
+import { buildMetadata } from '@/lib/seo/buildMetadata';
 import SiteHeader from '@/components/shared/SiteHeader';
 import SiteFooter from '@/components/shared/SiteFooter';
 
@@ -16,10 +17,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { kategori } = await params;
   const info = KATEGORI_MAP[kategori];
   if (!info) return {};
-  return {
+  return buildMetadata({
     title: info.title,
     description: info.desc,
-  };
+    path: `/urunler/${kategori}`,
+  });
 }
 
 export default async function KategoriPage({ params }: Props) {
