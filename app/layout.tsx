@@ -3,6 +3,9 @@ import { Geist, Geist_Mono, Barlow } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { ErrorBoundaryWrapper } from "@/components/shared/ErrorBoundaryWrapper";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || "G-VCHRKVJCEN";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -53,6 +56,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr">
+      <head>
+        {/* GA4 — Production-only, Consent Mode v2 default deny */}
+        {process.env.NODE_ENV === "production" && (
+          <GoogleAnalytics measurementId={GA_MEASUREMENT_ID} />
+        )}
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${barlow.variable} antialiased`}
       >
