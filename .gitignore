@@ -73,3 +73,7 @@ nexusstyle-tasyunufiyatlari.png
 
 # Reference project (visual only)
 Nexus/
+
+# Dev artefacts (not deployed)
+_temp/
+scripts/generated/AUDITSFINAL/
