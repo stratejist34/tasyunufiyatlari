@@ -135,23 +135,29 @@ export async function POST(req: NextRequest) {
       console.warn('Quote analytics insert skipped:', analyticsError.message)
     }
 
-    // WhatsApp bildirimi — hata fırlatmaz, DB kaydını engellemez
+    // WhatsApp bildirimi — hata fırlatmaz, DB kaydını engellemez.
+    // AWAIT zorunlu: Vercel serverless function response döndüğünde
+    // bekleyen Promise'leri sonlandırır → fire-and-forget fetch kaybolur.
     const eventType: LeadEventType =
       payload.submissionType === 'pdf_quote'
         ? (payload.sourceChannel === 'catalog' ? 'single_product_pdf' : 'package_pdf_quote')
         : (payload.sourceChannel === 'catalog' ? 'single_product_whatsapp' : 'package_whatsapp_order');
 
-    sendNotification(eventType, {
-      refCode:       insertPayload.quote_code ?? undefined,
-      customerName:  insertPayload.customer_name,
-      customerPhone: insertPayload.customer_phone,
-      productName:   insertPayload.package_name || insertPayload.brand_name,
-      thicknessCm:   insertPayload.thickness_cm,
-      areaM2:        insertPayload.area_m2,
-      cityName:      insertPayload.city_name,
-      totalPrice:    insertPayload.total_price,
-      pdfUrl:        insertPayload.pdf_url ?? undefined,
-    }).catch(() => {});
+    try {
+      await sendNotification(eventType, {
+        refCode:       insertPayload.quote_code ?? undefined,
+        customerName:  insertPayload.customer_name,
+        customerPhone: insertPayload.customer_phone,
+        productName:   insertPayload.package_name || insertPayload.brand_name,
+        thicknessCm:   insertPayload.thickness_cm,
+        areaM2:        insertPayload.area_m2,
+        cityName:      insertPayload.city_name,
+        totalPrice:    insertPayload.total_price,
+        pdfUrl:        insertPayload.pdf_url ?? undefined,
+      });
+    } catch (notifyErr) {
+      console.warn('[notify] sendNotification failed (non-fatal):', notifyErr);
+    }
 
     return NextResponse.json({
       ok: true,
