@@ -3,6 +3,7 @@ import Link from 'next/link';
 import SiteHeader from '@/components/shared/SiteHeader';
 import SiteFooter from '@/components/shared/SiteFooter';
 import Eyebrow from '@/components/shared/Eyebrow';
+import PhoneCallLink from '@/components/shared/PhoneCallLink';
 import { ArrowRight, EnvelopeSimple, Phone, MapPin } from '@phosphor-icons/react/dist/ssr';
 import { ICON_WEIGHT } from '@/lib/design/tokens';
 
@@ -223,6 +224,16 @@ function ContactCard({
   );
 
   if (!href) return content;
+
+  // Telefon linkleri için GA4 "Telefon_Aramalari" event'ini tetikle
+  if (href.startsWith('tel:')) {
+    return (
+      <PhoneCallLink href={href} source="kvkk_phone" className="block hover:opacity-90 transition-opacity">
+        {content}
+      </PhoneCallLink>
+    );
+  }
+
   return (
     <a href={href} className="block hover:opacity-90 transition-opacity">
       {content}

@@ -1,8 +1,11 @@
-// WhatsApp tıklama niyetini sunucuya bildir.
+// WhatsApp tıklama niyetini sunucuya bildir + GA4 event yolla.
 // Tarayıcı sayfa değiştirse bile fetch tamamlansın diye `keepalive: true`.
 // Hata sessiz: WA linkinin çalışmasını engellemez.
 
-import type { WhatsappIntentPayload } from './analytics/whatsappSource';
+import {
+  GA_EVENT_WHATSAPP,
+  type WhatsappIntentPayload,
+} from './analytics/whatsappSource';
 
 export function notifyWhatsappIntent(payload: WhatsappIntentPayload): void {
   if (typeof window === 'undefined') return;
@@ -12,6 +15,7 @@ export function notifyWhatsappIntent(payload: WhatsappIntentPayload): void {
     page: payload.page ?? window.location.pathname,
   };
 
+  // 1) Sunucuya bildirim (CallMeBot zinciri tetiklenir)
   try {
     fetch('/api/whatsapp-intent', {
       method: 'POST',
@@ -20,11 +24,10 @@ export function notifyWhatsappIntent(payload: WhatsappIntentPayload): void {
       keepalive: true,
     }).catch(() => {});
   } catch {
-    // Fetch fail olursa kullanıcı akışı bozulmasın — sessiz yut
+    /* sessiz */
   }
 
-  // GA4 paralel event (gtag yüklendiğinde paralel akış)
-  // gtag global'i yoksa hiçbir şey yapma.
+  // 2) GA4 event — Türkçe isim "Whatsapp_Yazanlar"
   type GtagWindow = Window & {
     gtag?: (
       command: 'event',
@@ -34,7 +37,7 @@ export function notifyWhatsappIntent(payload: WhatsappIntentPayload): void {
   };
   const w = window as GtagWindow;
   if (typeof w.gtag === 'function') {
-    w.gtag('event', 'whatsapp_intent', {
+    w.gtag('event', GA_EVENT_WHATSAPP, {
       source: fullPayload.source,
       page_path: fullPayload.page,
       product_name: fullPayload.productName,

@@ -6,6 +6,7 @@ import SiteFooter from '@/components/shared/SiteFooter';
 import Eyebrow from '@/components/shared/Eyebrow';
 import RevealOnScroll from '@/components/shared/RevealOnScroll';
 import WhatsappLink from '@/components/shared/WhatsappLink';
+import PhoneCallLink from '@/components/shared/PhoneCallLink';
 import {
   Phone,
   WhatsappLogo,
@@ -99,20 +100,25 @@ export default function IletisimPage() {
                     Telefon
                   </div>
                 </div>
-                <a
+                <PhoneCallLink
                   href={`tel:${PHONE_TEL}`}
+                  source="iletisim_phone"
                   className="font-heading font-bold text-hub-ink tracking-tight leading-none hover:text-hub-gold transition-colors text-[clamp(2rem,3.6vw,3.25rem)] mb-3"
                 >
                   {PHONE}
-                </a>
+                </PhoneCallLink>
                 <p className="text-hub-ink-2 text-base leading-relaxed mb-6 max-w-md">
                   Ortalama yanıt süresi 30 dakika. Hızlı fiyat sorularında en doğrudan kanal.
                 </p>
                 <div className="mt-auto flex flex-wrap items-center gap-3">
-                  <a href={`tel:${PHONE_TEL}`} className="btn-primary">
+                  <PhoneCallLink
+                    href={`tel:${PHONE_TEL}`}
+                    source="iletisim_phone"
+                    className="btn-primary"
+                  >
                     Hemen Ara
                     <ArrowRight weight={ICON_WEIGHT} size={18} className="btn-arrow" />
-                  </a>
+                  </PhoneCallLink>
                   <span className="text-hub-ink-2/70 text-sm">Pzt–Cmt 08:00–18:00</span>
                 </div>
               </div>

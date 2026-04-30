@@ -5,6 +5,7 @@ import { ChatCircle } from '@phosphor-icons/react/dist/ssr';
 import SiteHeader from '@/components/shared/SiteHeader';
 import SiteFooter from '@/components/shared/SiteFooter';
 import WhatsappLink from '@/components/shared/WhatsappLink';
+import PhoneCallLink from '@/components/shared/PhoneCallLink';
 import { ICON_WEIGHT } from '@/lib/design/tokens';
 
 const PHONE = '0 532 204 18 25';
@@ -119,12 +120,13 @@ export default function DepomuzPage() {
                 </h2>
                 <dl className="space-y-4 text-sm">
                   <Row label="Telefon">
-                    <a
+                    <PhoneCallLink
                       href={`tel:${PHONE_TEL}`}
+                      source="depomuz_phone"
                       className="font-mono text-brand-400 hover:text-brand-300 transition-colors text-base"
                     >
                       {PHONE}
-                    </a>
+                    </PhoneCallLink>
                   </Row>
                   <Row label="Çalışma Saatleri">
                     <span className="text-fe-text">Pzt–Cts 08:00–18:00 · Pazar Kapalı</span>

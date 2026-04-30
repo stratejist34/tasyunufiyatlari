@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { List, X, Phone, WhatsappLogo, ArrowRight } from '@phosphor-icons/react';
 import { ICON_WEIGHT } from '@/lib/design/tokens';
 import { notifyWhatsappIntent } from '@/lib/notifyWhatsappIntent';
+import { notifyPhoneCall } from '@/lib/notifyPhoneCall';
 
 type Tone = 'dark' | 'warm';
 
@@ -247,6 +248,7 @@ export default function SiteHeader({ tone, theme }: SiteHeaderProps) {
           <div className="grid grid-cols-2 gap-3">
             <a
               href={`tel:${PHONE_TEL}`}
+              onClick={() => notifyPhoneCall({ source: 'header_mobile' })}
               className="inline-flex items-center justify-center gap-2 px-3 py-3 rounded-lg border border-fe-border text-fe-text/90 hover:text-hub-gold-soft hover:border-hub-gold-soft/50 text-sm font-medium transition-colors min-h-[44px]"
             >
               <Phone weight={ICON_WEIGHT} size={16} /> Ara
