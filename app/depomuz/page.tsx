@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ChatCircle } from '@phosphor-icons/react/dist/ssr';
 import SiteHeader from '@/components/shared/SiteHeader';
 import SiteFooter from '@/components/shared/SiteFooter';
+import WhatsappLink from '@/components/shared/WhatsappLink';
 import { ICON_WEIGHT } from '@/lib/design/tokens';
 
 const PHONE = '0 532 204 18 25';
@@ -138,14 +139,13 @@ export default function DepomuzPage() {
                   </Row>
                 </dl>
 
-                <a
+                <WhatsappLink
                   href={WHATSAPP_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  source="depomuz_cta"
                   className="mt-6 w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm transition-colors"
                 >
                   <ChatCircle weight={ICON_WEIGHT} size={18} /> WhatsApp ile Yazışın
-                </a>
+                </WhatsappLink>
               </div>
 
               {/* Konum */}

@@ -25,6 +25,10 @@ export interface NotificationData {
   cityName?: string;
   totalPrice?: number;
   pdfUrl?: string;
+  /** WhatsApp niyet bildirimleri için kaynak (header_mobile, footer_link, ...) */
+  source?: string;
+  /** WhatsApp niyet bildirimleri için sayfa yolu */
+  page?: string;
 }
 
 function buildMessage(event: LeadEventType, data: NotificationData): string {
@@ -54,6 +58,12 @@ function buildMessage(event: LeadEventType, data: NotificationData): string {
   }
   if (data.pdfUrl) {
     lines.push(`PDF: ${data.pdfUrl}`);
+  }
+  if (data.source) {
+    lines.push(`Kaynak: ${data.source}`);
+  }
+  if (data.page) {
+    lines.push(`Sayfa: ${data.page}`);
   }
 
   return lines.join('\n');

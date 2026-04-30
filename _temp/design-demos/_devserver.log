@@ -1,0 +1,31 @@
+
+> tasyunu-front@0.1.0 dev
+> next dev
+
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\Emrah\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\Emrah\Desktop\Tasyunufİyatlari\tasyunu-front\package-lock.json
+
+▲ Next.js 16.1.7 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.100:3000
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 1056ms
+○ Compiling / ...
+ GET / 200 in 4.2s (compile: 3.7s, render: 510ms)
+ GET /hakkimizda 200 in 450ms (compile: 344ms, render: 106ms)
+ GET /depomuz 200 in 330ms (compile: 255ms, render: 75ms)
+ GET /iletisim 200 in 340ms (compile: 270ms, render: 70ms)
+ GET /hakkimizda 200 in 293ms (compile: 7ms, render: 287ms)
+ GET /depomuz 200 in 766ms (compile: 26ms, render: 741ms)
+ GET /iletisim 200 in 157ms (compile: 93ms, render: 64ms)
+ GET /hakkimizda 200 in 126ms (compile: 53ms, render: 73ms)
+ GET /depomuz 200 in 73ms (compile: 4ms, render: 69ms)
+ GET /iletisim 200 in 67ms (compile: 3ms, render: 64ms)
+ GET /urunler 200 in 1885ms (compile: 662ms, render: 1223ms)
+ GET /hakkimizda 200 in 27ms (compile: 3ms, render: 25ms)

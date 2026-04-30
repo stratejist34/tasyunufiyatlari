@@ -5,6 +5,7 @@ import SiteHeader from '@/components/shared/SiteHeader';
 import SiteFooter from '@/components/shared/SiteFooter';
 import Eyebrow from '@/components/shared/Eyebrow';
 import RevealOnScroll from '@/components/shared/RevealOnScroll';
+import WhatsappLink from '@/components/shared/WhatsappLink';
 import {
   Phone,
   WhatsappLogo,
@@ -147,15 +148,14 @@ export default function IletisimPage() {
                     Anlık fiyat, stok ve teklif sorularınız için en hızlı kanal. Ortalama 5–10 dk dönüş.
                   </p>
 
-                  <a
+                  <WhatsappLink
                     href={WHATSAPP_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    source="iletisim_card"
                     className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-[#25D366] hover:bg-[#1faa54] text-[#0a3d2c] font-bold text-sm transition-colors"
                   >
                     <ChatCircleDots weight={ICON_WEIGHT} size={18} />
                     Yazışmayı Başlat
-                  </a>
+                  </WhatsappLink>
                 </div>
               </div>
 

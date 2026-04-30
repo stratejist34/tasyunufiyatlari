@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { WHATSAPP_ORDER } from "@/lib/config";
 import { ChevronDown, Layers, Package } from "lucide-react";
+import { notifyWhatsappIntent } from "@/lib/notifyWhatsappIntent";
 
 import type { CatalogProductView, DecisionContext, WizardPrefill } from "@/lib/catalog/types";
 import SepetUI, { type SepetState, type SepetScenario } from "./SepetUI";
@@ -476,6 +477,10 @@ export default function ProductPricePanel({
               href={`https://wa.me/${WHATSAPP_ORDER}`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => notifyWhatsappIntent({
+                source: 'product_detail_cta',
+                productName: product.name,
+              })}
               className={`block py-1 text-center text-xs transition-colors ${
                 sepetState.scenario === 'depot_optimal'
                   ? "font-semibold text-green-400 hover:text-green-300"

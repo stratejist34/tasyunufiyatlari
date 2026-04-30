@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import WhatsappLink from './WhatsappLink';
 
 type Tone = 'dark' | 'warm';
 
@@ -86,14 +87,24 @@ export default function SiteFooter({ tone = 'dark' }: SiteFooterProps) {
                 {group.links.map((link) => (
                   <li key={`${group.eyebrow}-${link.label}`}>
                     {('external' in link && link.external) ? (
-                      <a
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`${linkText} text-sm transition-colors`}
-                      >
-                        {link.label}
-                      </a>
+                      link.href.startsWith('https://wa.me/') ? (
+                        <WhatsappLink
+                          href={link.href}
+                          source="footer_link"
+                          className={`${linkText} text-sm transition-colors`}
+                        >
+                          {link.label}
+                        </WhatsappLink>
+                      ) : (
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`${linkText} text-sm transition-colors`}
+                        >
+                          {link.label}
+                        </a>
+                      )
                     ) : (
                       <Link
                         href={link.href}

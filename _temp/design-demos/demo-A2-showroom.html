@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Yön A · Showroom — Apple × B&O × Dyson Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#fafaf7;
+    --ink:#0a0a09;
+    --ink-2:#3a3a37;
+    --muted:#7a7770;
+    --rule:#e5e3dd;
+    --rule-2:#cdc9bf;
+    --copper:#b87333;
+    --copper-deep:#8a4d2a;
+    --warn:#a86a1c;
+    --shadow-sm:0 1px 2px rgba(10,10,9,.04);
+    --shadow-md:0 8px 32px rgba(10,10,9,.08), 0 2px 6px rgba(10,10,9,.04);
+    --shadow-lg:0 24px 80px rgba(10,10,9,.12), 0 4px 12px rgba(10,10,9,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter Tight',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-feature-settings:"ss01","cv11","tnum";
+    text-wrap:pretty;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.4;
+  }
+  .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-feature-settings:"tnum"}
+  .wrap{max-width:1440px;margin:0 auto;padding:0 56px}
+
+  /* ═══ TRUST STRIP ════════════════════════════════ */
+  .strip{
+    background:var(--ink);
+    color:rgba(255,255,255,.85);
+    font-size:11.5px;
+    letter-spacing:.02em;
+    padding:11px 0;
+  }
+  .strip .wrap{display:flex;justify-content:space-between;align-items:center;gap:24px}
+  .strip .left{display:flex;gap:32px;align-items:center}
+  .strip .left span+span::before{content:"";display:inline-block;width:3px;height:3px;background:rgba(255,255,255,.35);border-radius:50%;vertical-align:middle;margin-right:32px;margin-top:-2px}
+  .strip em{color:#e8b673;font-style:normal;font-weight:500}
+  .strip .right{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:rgba(255,255,255,.55);letter-spacing:.06em}
+  .strip .right .dot{display:inline-block;width:6px;height:6px;background:#22c55e;border-radius:50%;box-shadow:0 0 0 2px rgba(34,197,94,.18);margin-right:8px;vertical-align:middle}
+
+  /* ═══ HEADER ════════════════════════════════════ */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:rgba(250,250,247,.78);
+    backdrop-filter:saturate(160%) blur(12px);
+    -webkit-backdrop-filter:saturate(160%) blur(12px);
+    border-bottom:1px solid var(--rule);
+    padding:16px 0;
+  }
+  header .wrap{display:flex;justify-content:space-between;align-items:center}
+  .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink)}
+  .brand .logo{
+    width:36px;height:36px;
+    background:var(--ink);color:var(--paper);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:14px;letter-spacing:-.05em;
+    border-radius:8px;line-height:1;
+  }
+  .brand .nm{font-size:15px;font-weight:600;letter-spacing:-.015em;line-height:1.2}
+  .brand .nm small{display:block;font-size:10.5px;font-weight:400;color:var(--muted);letter-spacing:.04em;margin-top:2px}
+  nav{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:500}
+  nav a{color:var(--ink-2);text-decoration:none;padding:9px 14px;border-radius:7px;transition:background .15s}
+  nav a:hover{background:rgba(10,10,9,.05)}
+  nav a.active{color:var(--ink);font-weight:600}
+  nav a.cta{
+    background:var(--ink);color:var(--paper);
+    padding:9px 18px;font-weight:600;
+    margin-left:8px;
+    transition:transform .15s, background .15s;
+  }
+  nav a.cta:hover{background:var(--copper-deep);transform:translateY(-1px)}
+  nav a.cta::after{content:" →";opacity:.6;margin-left:2px}
+
+  /* ═══ HERO ═════════════════════════════════════ */
+  .hero{
+    position:relative;
+    height:78vh;min-height:620px;max-height:780px;
+    background:linear-gradient(180deg,#0f0f0e 0%,#1a1815 100%);
+    color:var(--paper);
+    overflow:hidden;
+  }
+  .hero .img{
+    position:absolute;inset:0;
+    background:url('https://latlzskzemmdnotzpscc.supabase.co/storage/v1/object/public/product-images/expert-hd150-tasyunu.webp') center/cover no-repeat;
+    opacity:.86;
+    filter:contrast(1.05) saturate(1.1);
+  }
+  .hero::after{
+    content:"";
+    position:absolute;inset:0;
+    background:linear-gradient(135deg,rgba(15,15,14,.55) 0%,rgba(15,15,14,.10) 45%,transparent 70%),
+               linear-gradient(0deg,rgba(15,15,14,.65) 0%,transparent 50%);
+    pointer-events:none;
+  }
+  .hero .wrap{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:space-between;padding-top:48px;padding-bottom:48px}
+  .hero .top{display:flex;justify-content:space-between;align-items:flex-start;gap:48px}
+  .hero .top .meta{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:rgba(255,255,255,.7);
+    border:1px solid rgba(255,255,255,.20);
+    padding:9px 14px;border-radius:6px;
+    backdrop-filter:blur(8px);
+  }
+  .hero .top .meta b{color:#e8b673;font-weight:500}
+  .hero .top .specs{display:flex;gap:32px;align-items:flex-start}
+  .hero .top .specs .col{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.10em;color:rgba(255,255,255,.62);
+    text-transform:uppercase;
+    text-align:right;
+  }
+  .hero .top .specs .col .v{
+    display:block;
+    font-family:'Inter Tight',sans-serif;font-weight:600;
+    font-size:18px;letter-spacing:-.01em;text-transform:none;
+    color:var(--paper);margin-bottom:3px;
+  }
+
+  .hero .bottom{max-width:880px}
+  .hero .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;letter-spacing:.20em;text-transform:uppercase;
+    color:#e8b673;font-weight:500;
+    margin-bottom:24px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .hero .eyebrow::before{content:"";width:42px;height:1px;background:#e8b673}
+  .hero h1{
+    font-size:108px;line-height:.92;font-weight:800;letter-spacing:-.045em;
+    color:var(--paper);
+    margin-bottom:28px;
+  }
+  .hero h1 .em{color:#e8b673;font-weight:500;font-style:normal}
+  .hero p{
+    font-size:18px;line-height:1.55;color:rgba(255,255,255,.82);
+    max-width:54ch;font-weight:400;
+  }
+
+  /* ═══ FEATURED PAIR ═════════════════════════════ */
+  .featured{padding:96px 0 64px}
+  .sec-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:48px;gap:32px}
+  .sec-head .l h2{font-size:42px;font-weight:700;letter-spacing:-.025em;line-height:1.05;margin-bottom:10px}
+  .sec-head .l p{color:var(--muted);font-size:14.5px;max-width:48ch;line-height:1.5}
+  .sec-head .r{
+    font-family:'JetBrains Mono',monospace;font-size:11px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+    padding-bottom:6px;
+  }
+  .sec-head .r b{color:var(--ink);font-weight:600}
+
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .duo .card{
+    background:#fff;
+    border:1px solid var(--rule);
+    border-radius:18px;
+    overflow:hidden;
+    cursor:pointer;
+    transition:transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s, border-color .25s;
+    display:flex;flex-direction:column;
+  }
+  .duo .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--rule-2)}
+  .duo .card .img{
+    aspect-ratio:16/10;
+    background:#f0eee8 center/cover no-repeat;
+    position:relative;
+    overflow:hidden;
+  }
+  .duo .card .img::before{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(0,0,0,0) 60%,rgba(0,0,0,.04) 100%);
+    pointer-events:none;
+  }
+  .duo .card .img.tasyunu{background-image:url('https://latlzskzemmdnotzpscc.supabase.co/storage/v1/object/public/product-images/dalmacyali-sw035-tasyunu-v2.webp')}
+  .duo .card .img.eps{background-image:url('https://latlzskzemmdnotzpscc.supabase.co/storage/v1/object/public/product-images/expert-eps-karbonlu-eps-v2.webp');background-color:#1a1715}
+  .duo .card .body{padding:32px 36px 36px;flex:1;display:flex;flex-direction:column}
+  .duo .card .row1{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+  .duo .card .num{
+    font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;
+    letter-spacing:.14em;color:var(--copper);
+  }
+  .duo .card .badge{
+    font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:500;
+    letter-spacing:.14em;text-transform:uppercase;
+    color:#1a6f3f;background:rgba(26,111,63,.10);
+    padding:4px 9px;border-radius:4px;
+  }
+  .duo .card h3{
+    font-size:38px;font-weight:700;letter-spacing:-.03em;line-height:1.0;
+    margin-bottom:12px;
+  }
+  .duo .card .desc{
+    font-size:14.5px;line-height:1.55;color:var(--ink-2);
+    max-width:42ch;margin-bottom:24px;
+  }
+  .duo .card .specs{
+    display:grid;grid-template-columns:repeat(4,auto);gap:32px;
+    border-top:1px solid var(--rule);padding-top:18px;margin-top:auto;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .duo .card .specs .s{font-size:10.5px;letter-spacing:.10em;color:var(--muted);text-transform:uppercase}
+  .duo .card .specs .s b{
+    display:block;font-family:'Inter Tight',sans-serif;font-weight:600;
+    font-size:18px;color:var(--ink);letter-spacing:-.015em;
+    text-transform:none;margin-bottom:3px;
+  }
+  .duo .card .arr{
+    align-self:flex-end;margin-top:0;
+    width:36px;height:36px;border-radius:50%;
+    background:var(--ink);color:var(--paper);
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;
+    transition:transform .25s;
+  }
+  .duo .card:hover .arr{transform:translateX(4px)}
+  .duo .card .row2{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+
+  /* ═══ ACCESSORY GRID ════════════════════════════ */
+  .access{padding:32px 0 96px}
+  .grid7{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:18px;
+  }
+  .grid7 .c:nth-child(5),.grid7 .c:nth-child(6),.grid7 .c:nth-child(7){grid-column:span 1}
+  .grid7 .c:nth-child(8){
+    grid-column:span 1;
+    background:var(--ink);color:var(--paper);
+    border:none;
+  }
+  .grid7 .c:nth-child(8) .img{display:none}
+  .grid7 .c:nth-child(8) .body{padding:32px 28px}
+  .grid7 .c:nth-child(8) h4{color:var(--paper);font-size:24px}
+  .grid7 .c:nth-child(8) .desc{color:rgba(255,255,255,.72)}
+  .grid7 .c:nth-child(8) .num{color:#e8b673}
+  .grid7 .c:nth-child(8) .arrcir{background:var(--paper);color:var(--ink)}
+
+  .grid7 .c{
+    background:#fff;
+    border:1px solid var(--rule);
+    border-radius:14px;
+    overflow:hidden;
+    cursor:pointer;
+    display:flex;flex-direction:column;
+    transition:transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s, border-color .25s;
+  }
+  .grid7 .c:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:var(--rule-2)}
+  .grid7 .c .img{
+    aspect-ratio:1/1;
+    background:#f4f2ec center/contain no-repeat;
+    position:relative;
+  }
+  .grid7 .c .img.yapistirici{background-image:url('https://latlzskzemmdnotzpscc.supabase.co/storage/v1/object/public/product-images/dalmacyali-yapistirici.webp');background-size:78% auto}
+  .grid7 .c .img.siva{background-image:url('https://latlzskzemmdnotzpscc.supabase.co/storage/v1/object/public/product-images/dalmacyali-tasyunu-siva.webp');background-size:80% auto}
+  .grid7 .c .img.dubel{background-image:url('https://latlzskzemmdnotzpscc.supabase.co/storage/v1/object/public/product-images/dalmacyali-celik-dubel-115mm.webp');background-size:75% auto;background-color:#ecebe5}
+  .grid7 .c .img.file{background-image:url('https://latlzskzemmdnotzpscc.supabase.co/storage/v1/object/public/product-images/expert-file-f160.webp');background-size:75% auto}
+  .grid7 .c .img.kose{background-image:url('https://latlzskzemmdnotzpscc.supabase.co/storage/v1/object/public/product-images/expert-fileli-kose.webp');background-size:78% auto}
+  .grid7 .c .img.astar{background-image:url('https://latlzskzemmdnotzpscc.supabase.co/storage/v1/object/public/product-images/dalmacyali-astar.webp');background-size:78% auto}
+  .grid7 .c .img.kaplama{background-image:url('https://latlzskzemmdnotzpscc.supabase.co/storage/v1/object/public/product-images/dalmacyali-mineral-kaplama.webp');background-size:80% auto}
+  .grid7 .c .body{padding:22px 24px 24px;flex:1;display:flex;flex-direction:column;gap:8px}
+  .grid7 .c .num{
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;
+    letter-spacing:.14em;color:var(--copper);
+  }
+  .grid7 .c h4{font-size:20px;font-weight:600;letter-spacing:-.02em;line-height:1.1;margin-top:2px}
+  .grid7 .c .desc{font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:auto}
+  .grid7 .c .row2{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--rule)}
+  .grid7 .c .tag{
+    font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:500;
+    letter-spacing:.10em;text-transform:uppercase;
+    color:var(--muted);
+  }
+  .grid7 .c .tag.solo b{color:#1a6f3f}
+  .grid7 .c .tag.sys b{color:var(--warn)}
+  .grid7 .c .arrcir{
+    width:26px;height:26px;border-radius:50%;
+    border:1px solid var(--rule-2);
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;color:var(--ink);
+    transition:all .2s;
+  }
+  .grid7 .c:hover .arrcir{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+  /* ═══ BRAND BAR ════════════════════════════════ */
+  .brands{
+    padding:48px 0;
+    border-top:1px solid var(--rule);
+    border-bottom:1px solid var(--rule);
+    background:#f4f2ec;
+  }
+  .brands .wrap{display:flex;align-items:center;gap:48px}
+  .brands .lbl{
+    font-family:'JetBrains Mono',monospace;font-size:11px;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--muted);
+    flex-shrink:0;
+  }
+  .brands ul{
+    list-style:none;display:flex;gap:0;flex:1;
+    border-left:1px solid var(--rule-2);
+  }
+  .brands ul li{
+    flex:1;
+    padding:14px 24px;
+    border-right:1px solid var(--rule-2);
+    cursor:pointer;
+    display:flex;flex-direction:column;gap:4px;
+    transition:background .15s;
+  }
+  .brands ul li:hover{background:rgba(10,10,9,.04)}
+  .brands ul li .n{font-size:18px;font-weight:600;letter-spacing:-.018em}
+  .brands ul li .c{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);letter-spacing:.06em}
+  .brands ul li .c b{color:var(--ink);font-weight:500}
+
+  /* ═══ FOOT CTA ════════════════════════════════ */
+  .foot{
+    padding:96px 0 120px;
+    background:var(--ink);color:var(--paper);
+  }
+  .foot .wrap{display:grid;grid-template-columns:1fr auto;gap:64px;align-items:center}
+  .foot h3{
+    font-size:64px;font-weight:700;letter-spacing:-.035em;line-height:1;
+    margin-bottom:18px;
+  }
+  .foot h3 .em{color:#e8b673;font-style:normal}
+  .foot p{font-size:16px;color:rgba(255,255,255,.62);max-width:48ch;line-height:1.55}
+  .foot a{
+    display:inline-flex;align-items:center;gap:18px;
+    background:#e8b673;color:var(--ink);
+    padding:22px 32px;border-radius:12px;
+    font-size:16px;font-weight:600;letter-spacing:-.005em;
+    text-decoration:none;
+    white-space:nowrap;
+    transition:transform .2s, background .2s;
+  }
+  .foot a:hover{background:#fff;transform:translateY(-2px)}
+  .foot a .arr{
+    width:32px;height:32px;border-radius:50%;
+    background:var(--ink);color:#e8b673;
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;
+    transition:transform .2s;
+  }
+  .foot a:hover .arr{transform:translateX(4px)}
+
+  /* signature */
+  .sig{
+    position:fixed;bottom:14px;right:24px;
+    font-family:'JetBrains Mono',monospace;font-size:9.5px;
+    letter-spacing:.16em;color:rgba(10,10,9,.35);
+    pointer-events:none;
+  }
+</style>
+</head>
+<body>
+
+  <div class="strip"><div class="wrap">
+    <div class="left">
+      <span><em>Fabrika çıkışlı</em> satış</span>
+      <span>Depo · İstanbul · Tuzla & Gebze</span>
+      <span>Bölgeye göre iskonto aktif</span>
+    </div>
+    <div class="right"><span class="dot"></span>STOK CANLI · 14.38 TR</div>
+  </div></div>
+
+  <header><div class="wrap">
+    <a class="brand" href="#">
+      <div class="logo">TY</div>
+      <div class="nm">TaşYünü Fiyatları<small>Yalıtım Sistem Tedariği</small></div>
+    </a>
+    <nav>
+      <a class="active" href="#">Ürünler</a>
+      <a href="#">Markalar</a>
+      <a href="#">Bölge & İskonto</a>
+      <a href="#">Teknik Destek</a>
+      <a class="cta" href="#">Hesap Makinesi</a>
+    </nav>
+  </div></header>
+
+  <section class="hero">
+    <div class="img"></div>
+    <div class="wrap">
+      <div class="top">
+        <div class="meta">Katalog · 09 kategori · 68 ürün · <b>5 marka</b></div>
+        <div class="specs">
+          <div class="col"><span class="v">A1</span>Yangın sınıfı</div>
+          <div class="col"><span class="v">0.035</span>λ W/m·K</div>
+          <div class="col"><span class="v">3–12 cm</span>Kalınlık</div>
+        </div>
+      </div>
+      <div class="bottom">
+        <div class="eyebrow">Isı Yalıtım Tedariği · 2026</div>
+        <h1>Levhadan sıvaya, <span class="em">tek tedarikçi.</span></h1>
+        <p>Müteahhide paket, mimara şartname, ustaya satır net. Marka, kalınlık ve şehir seçin — fabrika çıkışı fiyatınız ekrana düşsün, paket içeriği eksiksiz olsun.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="featured"><div class="wrap">
+    <div class="sec-head">
+      <div class="l">
+        <h2>Levhalar</h2>
+        <p>Sistemin çekirdeği — yangın, ses ve ısı performansı bu seçimde belirleniyor.</p>
+      </div>
+      <div class="r"><b>02</b> ana sınıf · <b>15</b> ürün · <b>3</b> marka</div>
+    </div>
+    <div class="duo">
+      <article class="card">
+        <div class="img tasyunu"></div>
+        <div class="body">
+          <div class="row1">
+            <span class="num">01 · TASYUNU</span>
+            <span class="badge">A1 yangın</span>
+          </div>
+          <h3>Taşyünü Levha</h3>
+          <p class="desc">Mineral elyaf çekirdek. Yangına dayanım A1, ses absorpsiyonu yüksek; ofis-konut-okul için standart seçim.</p>
+          <div class="specs">
+            <div class="s"><b>8</b>ürün</div>
+            <div class="s"><b>3</b>marka</div>
+            <div class="s"><b>4–12 cm</b>kalınlık</div>
+            <div class="s"><b>0.035</b>λ W/m·K</div>
+          </div>
+          <div class="row2">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.10em;color:var(--muted);text-transform:uppercase">Dalmaçyalı SW035 · Expert HD150 · Optimix TR7.5</span>
+            <div class="arr">→</div>
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div class="img eps"></div>
+        <div class="body">
+          <div class="row1">
+            <span class="num">02 · EPS</span>
+            <span class="badge">Ekonomik</span>
+          </div>
+          <h3>EPS Levha</h3>
+          <p class="desc">Genleştirilmiş polistiren. Karbonlu ve beyaz seçenekler; düşük yoğunluk, hızlı uygulama, yüksek hacim avantajı.</p>
+          <div class="specs">
+            <div class="s"><b>6</b>ürün</div>
+            <div class="s"><b>3</b>marka</div>
+            <div class="s"><b>2–10 cm</b>kalınlık</div>
+            <div class="s"><b>0.031</b>λ karbonlu</div>
+          </div>
+          <div class="row2">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.10em;color:var(--muted);text-transform:uppercase">Dalmaçyalı Carbon · Expert · Optimix Karbonlu</span>
+            <div class="arr">→</div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div></section>
+
+  <section class="access"><div class="wrap">
+    <div class="sec-head">
+      <div class="l">
+        <h2>Tamamlayıcı sistem</h2>
+        <p>Yapıştırıcı, sıva, dübel, file, profil ve kaplama — paket içinde veya tekil.</p>
+      </div>
+      <div class="r"><b>07</b> alt-kategori · <b>53</b> ürün · <b>5</b> marka</div>
+    </div>
+    <div class="grid7">
+
+      <article class="c">
+        <div class="img yapistirici"></div>
+        <div class="body">
+          <div class="num">03 · YAPIŞTIRICI</div>
+          <h4>Yapıştırma Harcı</h4>
+          <p class="desc">25 kg torba · taşyünü ve EPS uyumlu sistem yapıştırıcısı.</p>
+          <div class="row2"><span class="tag solo"><b>● Tekil</b> 5 marka · 7 ürün</span><div class="arrcir">→</div></div>
+        </div>
+      </article>
+
+      <article class="c">
+        <div class="img siva"></div>
+        <div class="body">
+          <div class="num">04 · SIVA</div>
+          <h4>Sistem Sıvası</h4>
+          <p class="desc">Mineral / organik · taşyünü ve EPS uyumlu sıva harçları.</p>
+          <div class="row2"><span class="tag solo"><b>● Tekil</b> 5 marka · 8 ürün</span><div class="arrcir">→</div></div>
+        </div>
+      </article>
+
+      <article class="c">
+        <div class="img dubel"></div>
+        <div class="body">
+          <div class="num">05 · DÜBEL</div>
+          <h4>Plastik & Çelik Dübel</h4>
+          <p class="desc">9.5 – 21.5 cm · plastik çivili / çelik çivili · 200–600 ad.</p>
+          <div class="row2"><span class="tag sys"><b>◇ Sistem</b> 5 marka · 56 SKU</span><div class="arrcir">→</div></div>
+        </div>
+      </article>
+
+      <article class="c">
+        <div class="img file"></div>
+        <div class="body">
+          <div class="num">06 · FİLE</div>
+          <h4>Donatı Filesi</h4>
+          <p class="desc">160 gr/m² standart · 50–55 m² rulo · ekstra mukavemet.</p>
+          <div class="row2"><span class="tag sys"><b>◇ Sistem</b> 5 marka · 8 ürün</span><div class="arrcir">→</div></div>
+        </div>
+      </article>
+
+      <article class="c">
+        <div class="img kose"></div>
+        <div class="body">
+          <div class="num">07 · KÖŞE</div>
+          <h4>Fileli Köşe Profili</h4>
+          <p class="desc">PVC + entegre file · 2.5 m boy · 50 ad / 125 m.</p>
+          <div class="row2"><span class="tag sys"><b>◇ Sistem</b> 5 marka · 5 ürün</span><div class="arrcir">→</div></div>
+        </div>
+      </article>
+
+      <article class="c">
+        <div class="img astar"></div>
+        <div class="body">
+          <div class="num">08 · ASTAR</div>
+          <h4>Kaplama Astarı</h4>
+          <p class="desc">25 kg · dekoratif kaplama öncesi tutunma katmanı.</p>
+          <div class="row2"><span class="tag solo"><b>● Tekil</b> 5 marka · 5 ürün</span><div class="arrcir">→</div></div>
+        </div>
+      </article>
+
+      <article class="c">
+        <div class="img kaplama"></div>
+        <div class="body">
+          <div class="num">09 · KAPLAMA</div>
+          <h4>Mineral Kaplama</h4>
+          <p class="desc">İnce / kalın tane, çizgi, tane doku · dış yüzey son kat.</p>
+          <div class="row2"><span class="tag solo"><b>● Tekil</b> 5 marka · 27 doku</span><div class="arrcir">→</div></div>
+        </div>
+      </article>
+
+      <article class="c">
+        <div class="body">
+          <div class="num">↗ TÜM SİSTEM</div>
+          <h4>Komple Mantolama Paketi</h4>
+          <p class="desc">Levha + dübel + file + sıva + harç. Şehir, kalınlık ve m² verin, fabrika çıkışı paket fiyatınız ekranda.</p>
+          <div class="row2"><span class="tag" style="color:#e8b673"><b>HESAP MAKİNESİ</b></span><div class="arrcir">→</div></div>
+        </div>
+      </article>
+
+    </div>
+  </div></section>
+
+  <section class="brands"><div class="wrap">
+    <div class="lbl">Marka<br>filtresi</div>
+    <ul>
+      <li><span class="n">Dalmaçyalı</span><span class="c"><b>22</b> ürün · premium</span></li>
+      <li><span class="n">Fawori Expert</span><span class="c"><b>17</b> ürün · performans</span></li>
+      <li><span class="n">Fawori Optimix</span><span class="c"><b>12</b> ürün · ekonomik</span></li>
+      <li><span class="n">TEKNO</span><span class="c"><b>11</b> ürün · sistem</span></li>
+      <li><span class="n">OEM</span><span class="c"><b>8</b> ürün · 2.kalite</span></li>
+    </ul>
+  </div></section>
+
+  <section class="foot"><div class="wrap">
+    <div>
+      <h3>Saniyede paket <span class="em">fiyatına git.</span></h3>
+      <p>Şehir + m² + kalınlık. Sistem paketi (levha, dübel, file, sıva) bölge iskontosuyla ekrana düşsün.</p>
+    </div>
+    <a href="#">Hesap Makinesi <span class="arr">→</span></a>
+  </div></section>
+
+  <div class="sig">YÖN A · SHOWROOM · APPLE × B&O × DYSON PRO</div>
+</body>
+</html>

@@ -1,6 +1,7 @@
 "use client";
 
 import { WHATSAPP_ORDER } from "@/lib/config";
+import { notifyWhatsappIntent } from "@/lib/notifyWhatsappIntent";
 
 interface Props {
   depotStock: number;
@@ -93,6 +94,7 @@ export default function StokAlternatifSection({
           : `https://wa.me/${WHATSAPP_ORDER}?text=Merhaba%2C+depodaki+ürünle+ilgili+bilgi+almak+istiyorum`}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => notifyWhatsappIntent({ source: 'product_detail_cta' })}
         className="flex w-full items-center justify-center gap-2 rounded-xl border border-green-600/40 bg-green-900/20 py-3 text-sm font-semibold text-green-300 transition-colors hover:bg-green-900/35"
         aria-label="WhatsApp ile Hızlı Teslim hakkında bilgi al"
       >

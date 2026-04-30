@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { List, X, Phone, WhatsappLogo, ArrowRight } from '@phosphor-icons/react';
 import { ICON_WEIGHT } from '@/lib/design/tokens';
+import { notifyWhatsappIntent } from '@/lib/notifyWhatsappIntent';
 
 type Tone = 'dark' | 'warm';
 
@@ -254,6 +255,7 @@ export default function SiteHeader({ tone, theme }: SiteHeaderProps) {
               href={WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => notifyWhatsappIntent({ source: 'header_mobile' })}
               className="inline-flex items-center justify-center gap-2 px-3 py-3 rounded-lg bg-[#25D366]/15 border border-[#25D366]/30 text-[#25D366] hover:bg-[#25D366]/25 text-sm font-medium transition-colors min-h-[44px]"
             >
               <WhatsappLogo weight="fill" size={16} /> WhatsApp
