@@ -74,14 +74,32 @@ async function callCallMeBot(phone: string, apiKey: string, message: string): Pr
   }
 }
 
+/**
+ * Env değerlerini sanitize et:
+ * - Baştaki/sondaki boşluk
+ * - "<value>" placeholder parantezleri (yaygın copy-paste hatası)
+ * - Tırnak işaretleri ("value" / 'value')
+ */
+function cleanEnv(raw: string | undefined): string | undefined {
+  if (!raw) return undefined;
+  let v = raw.trim();
+  // <...> placeholder parantezleri
+  if (v.startsWith('<') && v.endsWith('>')) v = v.slice(1, -1).trim();
+  // Tırnaklar
+  if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+    v = v.slice(1, -1).trim();
+  }
+  return v || undefined;
+}
+
 export async function sendNotification(
   event: LeadEventType,
   data: NotificationData
 ): Promise<void> {
-  const phone1  = process.env.CALLMEBOT_PHONE_1;
-  const apiKey1 = process.env.CALLMEBOT_APIKEY_1;
-  const phone2  = process.env.CALLMEBOT_PHONE_2;
-  const apiKey2 = process.env.CALLMEBOT_APIKEY_2;
+  const phone1  = cleanEnv(process.env.CALLMEBOT_PHONE_1);
+  const apiKey1 = cleanEnv(process.env.CALLMEBOT_APIKEY_1);
+  const phone2  = cleanEnv(process.env.CALLMEBOT_PHONE_2);
+  const apiKey2 = cleanEnv(process.env.CALLMEBOT_APIKEY_2);
 
   // Tanılama: env okunmuyor mu, hangi alıcı aktif?
   console.log('[sendNotification] event=%s phone1=%s phone2=%s apikey1=%s apikey2=%s',
