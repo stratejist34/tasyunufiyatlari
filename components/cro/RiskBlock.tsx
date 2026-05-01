@@ -28,11 +28,11 @@ export function RiskBlock() {
   return (
     <section
       aria-labelledby="risk-baslik"
-      className="bg-fe-bg-2/30 py-16 sm:py-24"
+      className="bg-fe-surface/60 py-16 sm:py-24"
     >
       <div className="max-w-[1100px] mx-auto px-4">
         <div className="max-w-[640px]">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-fe-accent">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand">
             Hesabı Eksik Yaparsanız
           </p>
           <h2
@@ -41,7 +41,7 @@ export function RiskBlock() {
           >
             Mantolama hesabı eksik yapılırsa ne olur?
           </h2>
-          <p className="mt-3 text-sm sm:text-base text-fe-text-muted leading-relaxed">
+          <p className="mt-3 text-sm sm:text-base text-fe-muted leading-relaxed">
             Bu 4 risk hesaplayıcının arka planda otomatik koruduğu — fakat manuel hesapta sıkça atlanan — kalemlerdir.
           </p>
         </div>
@@ -51,12 +51,12 @@ export function RiskBlock() {
               <Icon
                 size={26}
                 weight={ICON_WEIGHT}
-                className="mt-1 shrink-0 text-fe-accent"
+                className="mt-1 shrink-0 text-brand"
                 aria-hidden
               />
               <div>
                 <p className="text-base font-semibold text-fe-text">{title}</p>
-                <p className="mt-1.5 text-sm text-fe-text-muted leading-relaxed">{body}</p>
+                <p className="mt-1.5 text-sm text-fe-muted leading-relaxed">{body}</p>
               </div>
             </li>
           ))}

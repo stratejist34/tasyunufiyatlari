@@ -32,7 +32,7 @@ export function WizardStep3({ shippingZones, selectedCityCode, onCityChange }: W
         >
             <div className="mb-5">
                 <label className="block text-sm font-semibold text-white mb-2">Teslimat İli</label>
-                <p className="mt-2 text-sm text-fe-text-muted leading-relaxed">
+                <p className="mt-2 text-sm text-fe-muted leading-relaxed">
                     Şehir nakliye tutarını ve iskonto bölgesini belirler. Tam araç dolduğunda iskonto otomatik uygulanır.
                 </p>
                 <select

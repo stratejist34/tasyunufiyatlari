@@ -4,11 +4,11 @@ import { ICON_WEIGHT } from '@/lib/design/tokens';
 function ImagePlaceholder({ label, ratio = 'aspect-[4/5]' }: { label: string; ratio?: string }) {
   return (
     <div
-      className={`mt-4 ${ratio} rounded-lg border-2 border-dashed border-fe-border/50 bg-fe-bg-2/30 flex items-center justify-center p-6`}
+      className={`mt-4 ${ratio} rounded-lg border-2 border-dashed border-fe-border/50 bg-fe-surface/60 flex items-center justify-center p-6`}
       role="img"
       aria-label={`Yer tutucu: ${label}`}
     >
-      <p className="text-xs text-fe-text-muted text-center leading-relaxed">
+      <p className="text-xs text-fe-muted text-center leading-relaxed">
         {label}
         <br />
         <span className="text-[10px] uppercase tracking-wider opacity-70">
@@ -29,11 +29,11 @@ export function ProofBlock() {
   return (
     <section
       aria-labelledby="proof-baslik"
-      className="bg-fe-bg-2/40 py-16 sm:py-24"
+      className="bg-fe-raised/40 py-16 sm:py-24"
     >
       <div className="max-w-[1200px] mx-auto px-4">
         <div className="text-center max-w-[680px] mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-fe-accent">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand">
             Söz Değil, Kanıt
           </p>
           <h2
@@ -45,10 +45,10 @@ export function ProofBlock() {
         </div>
 
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="rounded-2xl border border-fe-border/40 bg-fe-bg-2/40 p-6">
-            <FileText size={28} weight={ICON_WEIGHT} className="text-fe-accent" aria-hidden />
+          <div className="rounded-2xl border border-fe-border/40 bg-fe-raised/40 p-6">
+            <FileText size={28} weight={ICON_WEIGHT} className="text-brand" aria-hidden />
             <h3 className="mt-3 text-lg font-semibold text-fe-text">Örnek PDF teklif</h3>
-            <p className="mt-1.5 text-sm text-fe-text-muted leading-relaxed">
+            <p className="mt-1.5 text-sm text-fe-muted leading-relaxed">
               Resmi başlık, kalem listesi, nakliye dahil tutar, referans numarası ve 24 saat geçerlilik. Aşağıda anonimleştirilmiş gerçek bir örnek var.
             </p>
             {/* TODO: public/proof/sample-quote.png hazır olunca ImagePlaceholder → next/image */}
@@ -56,19 +56,19 @@ export function ProofBlock() {
           </div>
 
           <div className="grid grid-cols-1 gap-6">
-            <div className="rounded-2xl border border-fe-border/40 bg-fe-bg-2/40 p-6">
-              <BuildingOffice size={28} weight={ICON_WEIGHT} className="text-fe-accent" aria-hidden />
+            <div className="rounded-2xl border border-fe-border/40 bg-fe-raised/40 p-6">
+              <BuildingOffice size={28} weight={ICON_WEIGHT} className="text-brand" aria-hidden />
               <h3 className="mt-3 text-lg font-semibold text-fe-text">Aktif depo, paletli stok</h3>
-              <p className="mt-1.5 text-sm text-fe-text-muted leading-relaxed">
+              <p className="mt-1.5 text-sm text-fe-muted leading-relaxed">
                 Anlık stok takibi, paletli sevkiyat — sahaya kırık/eksik palet riski en aza iner.
               </p>
               {/* TODO: public/proof/depo.jpg hazır olunca ImagePlaceholder → next/image */}
               <ImagePlaceholder label="ÖzerGrup depo iç görünüm" ratio="aspect-[16/10]" />
             </div>
-            <div className="rounded-2xl border border-fe-border/40 bg-fe-bg-2/40 p-6">
-              <Truck size={28} weight={ICON_WEIGHT} className="text-fe-accent" aria-hidden />
+            <div className="rounded-2xl border border-fe-border/40 bg-fe-raised/40 p-6">
+              <Truck size={28} weight={ICON_WEIGHT} className="text-brand" aria-hidden />
               <h3 className="mt-3 text-lg font-semibold text-fe-text">Tüm Türkiye sevkiyat ağı</h3>
-              <p className="mt-1.5 text-sm text-fe-text-muted leading-relaxed">
+              <p className="mt-1.5 text-sm text-fe-muted leading-relaxed">
                 Kısmi yük, kamyon ve TIR sevkiyatı; iskonto bölgelerine göre ek avantaj.
               </p>
             </div>
@@ -77,11 +77,11 @@ export function ProofBlock() {
 
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4">
           {TRUST_ROW.map(({ Icon, t, d }) => (
-            <div key={t} className="flex items-start gap-3 rounded-2xl border border-fe-border/40 bg-fe-bg-2/30 p-4">
-              <Icon size={22} weight={ICON_WEIGHT} className="mt-0.5 shrink-0 text-fe-accent" aria-hidden />
+            <div key={t} className="flex items-start gap-3 rounded-2xl border border-fe-border/40 bg-fe-surface/60 p-4">
+              <Icon size={22} weight={ICON_WEIGHT} className="mt-0.5 shrink-0 text-brand" aria-hidden />
               <div>
                 <p className="text-sm font-semibold text-fe-text">{t}</p>
-                <p className="mt-0.5 text-xs text-fe-text-muted">{d}</p>
+                <p className="mt-0.5 text-xs text-fe-muted">{d}</p>
               </div>
             </div>
           ))}

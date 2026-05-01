@@ -153,7 +153,7 @@ export function WizardStep4({
                 <label className="block text-sm font-semibold text-white mb-2">
                     Kaç m² hesaplayalım?
                 </label>
-                <p className="mt-2 text-sm text-fe-text-muted leading-relaxed">
+                <p className="mt-2 text-sm text-fe-muted leading-relaxed">
                     Brüt cephe alanı yazın — pencere/kapı çıkarmasını sistem standart sarfiyat ile karşılar. ±15 m² toleransla tam araç eşiklerine otomatik yapışılır.
                 </p>
                 <div className="relative">

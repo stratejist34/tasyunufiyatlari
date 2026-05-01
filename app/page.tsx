@@ -151,22 +151,22 @@ export default function Home() {
                 <div className="relative max-w-[1200px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-10 sm:pb-14">
                     <Eyebrow className="mb-4">Fabrika Çıkışlı Mantolama</Eyebrow>
                     <h1 className="font-heading font-extrabold text-[40px] sm:text-[52px] lg:text-[64px] leading-[1.05] tracking-tight text-fe-text">
-                        Mantolama bütçenizi <span className="text-fe-accent">doğru kuran</span> hesaplayıcı.
+                        Mantolama bütçenizi <span className="text-brand">doğru kuran</span> hesaplayıcı.
                     </h1>
-                    <p className="mt-5 max-w-[640px] text-base sm:text-lg text-fe-text-muted leading-relaxed">
+                    <p className="mt-5 max-w-[640px] text-base sm:text-lg text-fe-muted leading-relaxed">
                         Şehir, metraj ve kalınlık verin — 8 kalemlik komple sistem (taşyünü/EPS, dübel, file, sıva), nakliye dahil, resmi PDF teklifle birlikte saniyeler içinde elinizde olur.
                     </p>
                     <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-4">
                         <Link
                             href="#mantolama-hesaplayici"
-                            className="inline-flex items-center gap-2 rounded-full bg-fe-accent px-6 py-3.5 text-base font-semibold text-fe-bg shadow-lg shadow-fe-accent/20 transition hover:bg-fe-accent-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fe-accent focus-visible:ring-offset-2 focus-visible:ring-offset-fe-bg"
+                            className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3.5 text-base font-semibold text-fe-bg shadow-lg shadow-brand/20 transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-fe-bg"
                         >
                             Paket fiyatımı hesapla
                             <ArrowRight size={18} weight={ICON_WEIGHT} />
                         </Link>
                         <Link
                             href="/urunler"
-                            className="inline-flex items-center gap-2 text-base font-medium text-fe-text-muted transition hover:text-fe-text"
+                            className="inline-flex items-center gap-2 text-base font-medium text-fe-muted transition hover:text-fe-text"
                         >
                             Önce ürünleri inceleyeyim
                             <ArrowRight size={16} weight={ICON_WEIGHT} />
@@ -393,22 +393,22 @@ export default function Home() {
                 <RevealOnScroll className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
                     <Eyebrow className="mb-5 justify-center">Karar Verin</Eyebrow>
                     <h2 className="mt-3 font-heading font-extrabold text-[32px] sm:text-[40px] leading-[1.1] tracking-tight text-fe-text">
-                        Bütçeniz nakliye dahil, paket bazında <span className="text-fe-accent">resmi PDF teklif</span> olarak elinizde.
+                        Bütçeniz nakliye dahil, paket bazında <span className="text-brand">resmi PDF teklif</span> olarak elinizde.
                     </h2>
-                    <p className="mt-4 max-w-[620px] text-base text-fe-text-muted leading-relaxed">
+                    <p className="mt-4 max-w-[620px] text-base text-fe-muted leading-relaxed">
                         Hesaplayıcıdan paketi seçin — fiyat, kalemler ve nakliye dahil tutar tek ekranda. PDF teklifte 24 saat geçerli sabit fiyat ve referans numarası olur, sipariş için aynı numarayı WhatsApp üzerinden iletmeniz yeterli.
                     </p>
                     <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-4">
                         <Link
                             href="#mantolama-hesaplayici"
-                            className="inline-flex items-center gap-2 rounded-full bg-fe-accent px-6 py-3.5 text-base font-semibold text-fe-bg shadow-lg shadow-fe-accent/20 transition hover:bg-fe-accent-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fe-accent focus-visible:ring-offset-2 focus-visible:ring-offset-fe-bg"
+                            className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3.5 text-base font-semibold text-fe-bg shadow-lg shadow-brand/20 transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-fe-bg"
                         >
                             Paket fiyatımı hesapla
                             <ArrowRight size={18} weight={ICON_WEIGHT} />
                         </Link>
                         <Link
                             href="/iletisim"
-                            className="inline-flex items-center gap-2 text-base font-medium text-fe-text-muted transition hover:text-fe-text"
+                            className="inline-flex items-center gap-2 text-base font-medium text-fe-muted transition hover:text-fe-text"
                         >
                             Önce sorum var
                             <ArrowRight size={16} weight={ICON_WEIGHT} />

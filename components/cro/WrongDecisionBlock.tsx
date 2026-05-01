@@ -29,7 +29,7 @@ export function WrongDecisionBlock() {
     >
       <div className="max-w-[1100px] mx-auto px-4">
         <div className="max-w-[640px]">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-fe-accent">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand">
             Sahada Sık Görülen
           </p>
           <h2
@@ -44,12 +44,12 @@ export function WrongDecisionBlock() {
             <li key={m.n} className="relative pl-12">
               <span
                 aria-hidden
-                className="absolute left-0 top-0 inline-flex h-8 w-8 items-center justify-center rounded-full bg-fe-accent/10 text-xs font-mono font-semibold text-fe-accent"
+                className="absolute left-0 top-0 inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand/10 text-xs font-mono font-semibold text-brand"
               >
                 {m.n}
               </span>
               <p className="text-base font-semibold text-fe-text">{m.title}</p>
-              <p className="mt-1.5 text-sm text-fe-text-muted leading-relaxed">{m.body}</p>
+              <p className="mt-1.5 text-sm text-fe-muted leading-relaxed">{m.body}</p>
             </li>
           ))}
         </ol>

@@ -77,7 +77,7 @@ export function SituationSelector() {
     >
       <div className="max-w-[1100px] mx-auto px-4">
         <div className="text-center max-w-[640px] mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-fe-accent">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand">
             Önce Niyetinizi Söyleyin
           </p>
           <h2
@@ -86,7 +86,7 @@ export function SituationSelector() {
           >
             Hangi sorun için araştırıyorsunuz?
           </h2>
-          <p className="mt-3 text-sm sm:text-base text-fe-text-muted leading-relaxed">
+          <p className="mt-3 text-sm sm:text-base text-fe-muted leading-relaxed">
             Seçiminiz hesaplayıcıyı doğru yönlendirir. Kararsızsanız son seçenek size özel.
           </p>
         </div>
@@ -96,11 +96,11 @@ export function SituationSelector() {
               <button
                 type="button"
                 onClick={() => onSelect(s)}
-                className="group h-full w-full text-left rounded-2xl border border-fe-border/50 bg-fe-bg-2/40 p-5 transition hover:border-fe-accent/60 hover:bg-fe-bg-2/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-fe-accent/40"
+                className="group h-full w-full text-left rounded-2xl border border-fe-border/50 bg-fe-raised/40 p-5 transition hover:border-brand/60 hover:bg-fe-raised/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
               >
-                <s.Icon size={28} weight={ICON_WEIGHT} className="text-fe-accent" aria-hidden />
+                <s.Icon size={28} weight={ICON_WEIGHT} className="text-brand" aria-hidden />
                 <p className="mt-4 text-base font-semibold text-fe-text">{s.label}</p>
-                <p className="mt-1.5 text-xs text-fe-text-muted leading-relaxed">{s.helper}</p>
+                <p className="mt-1.5 text-xs text-fe-muted leading-relaxed">{s.helper}</p>
               </button>
             </li>
           ))}
