@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useEffect } from "react";
+import { Check } from "@phosphor-icons/react";
 import type { Brand } from "@/lib/types";
 
 const DIS_CEPHE_MODELLER = [
@@ -106,7 +107,9 @@ export function WizardStep1({
                                 )}
                                 <span className="mt-0.5 text-[11px] font-semibold text-fe-text">{brand.name}</span>
                                 {selectedBrandId === brand.id && (
-                                    <div className="absolute -top-2 -right-2 bg-brand-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow">✓</div>
+                                    <div className="absolute -top-2 -right-2 bg-brand-500 text-[#1a0f08] text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow">
+                                        <Check size={12} weight="bold" />
+                                    </div>
                                 )}
                             </button>
                         ))}

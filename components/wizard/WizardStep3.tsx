@@ -35,7 +35,7 @@ export function WizardStep3({ shippingZones, selectedCityCode, onCityChange }: W
                 <select
                     value={selectedCityCode ?? ""}
                     onChange={e => onCityChange(Number(e.target.value))}
-                    className="w-full px-4 py-3.5 border-2 border-fe-border rounded-xl bg-fe-bg text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all text-base"
+                    className="w-full px-4 py-3.5 border border-fe-border rounded-xl bg-fe-bg text-white focus:ring-1 focus:ring-brand-500/40 focus:border-brand-500 outline-none transition-all text-base"
                 >
                     <option value="">İl seçiniz...</option>
                     <optgroup label="Sık Kullanılan">

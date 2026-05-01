@@ -95,6 +95,9 @@ export interface Brand {
     name: string;
     tier: string;
     description: string | null;
+    // Marka stoktan toplama gerektiriyorsa true — set/paket bütünü tek noktadan
+    // çıkamaz, dolayısıyla nakliye alıcıya ait olur (örn. TEKNO).
+    requires_separate_shipping?: boolean;
 }
 
 export interface Plate {

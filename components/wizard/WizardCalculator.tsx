@@ -1176,7 +1176,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                                                 <div className="flex flex-col items-center">
                                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
                                                         activeStep === step
-                                                            ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/40'
+                                                            ? 'bg-brand-500 text-[#1a0f08] shadow-lg shadow-brand-500/40'
                                                             : activeStep > step
                                                                 ? 'bg-green-600 text-white'
                                                                 : 'bg-fe-raised text-fe-muted'
@@ -1261,7 +1261,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                                     <button
                                         onClick={goNext}
                                         disabled={!isCurrentStepValid()}
-                                        className="flex-1 py-3 rounded-xl font-bold text-base text-white bg-brand-600 hover:bg-brand-500 disabled:bg-fe-raised disabled:text-fe-muted disabled:cursor-not-allowed transition-all"
+                                        className="flex-1 py-3 rounded-xl font-bold text-base text-[#1a0f08] bg-brand-500 hover:bg-brand-400 disabled:bg-fe-raised disabled:text-fe-muted disabled:cursor-not-allowed transition-all"
                                     >
                                         {(['Kalınlık Seçimine Geç', 'Konum Seçimine Geç', 'Metraj Gir'] as const)[activeStep - 1] ?? 'İleri →'}
                                     </button>
@@ -1269,7 +1269,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                                     <button
                                         onClick={handleShowPrices}
                                         disabled={isLoading || !isStepValid()}
-                                        className="flex-1 py-5 px-4 rounded-xl font-bold text-xl text-white bg-brand-500 hover:bg-brand-600 disabled:bg-fe-raised disabled:text-fe-muted disabled:cursor-not-allowed transition-colors"
+                                        className="flex-1 py-5 px-4 rounded-xl font-bold text-xl text-[#1a0f08] bg-brand-500 hover:bg-brand-600 disabled:bg-fe-raised disabled:text-fe-muted disabled:cursor-not-allowed transition-colors"
                                     >
                                         {isLoading ? (
                                             <span className="flex items-center justify-center gap-2">

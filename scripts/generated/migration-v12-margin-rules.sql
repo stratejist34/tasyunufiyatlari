@@ -22,7 +22,7 @@ ALTER TABLE material_types
 -- ─── EPS seed (katmanlı marj, parsiyel açık) ─────────────────────
 UPDATE material_types
 SET
-  min_order_m2               = 200,
+  min_order_m2               = 250,
   tier1_max_m2               = 500,
   tier1_margin_pct           = 35,
   tier2_max_m2               = 1000,
@@ -32,6 +32,13 @@ SET
   special_order_threshold_m2 = NULL,
   special_order_note         = NULL
 WHERE slug = 'eps';
+
+-- ─── brands.requires_separate_shipping (stoktan toplama gerektiren markalar) ─
+-- TRUE olan aksesuar markaları için set tek noktadan çıkamaz, nakliye alıcıya ait.
+ALTER TABLE brands
+  ADD COLUMN IF NOT EXISTS requires_separate_shipping BOOLEAN DEFAULT FALSE;
+
+UPDATE brands SET requires_separate_shipping = TRUE WHERE name = 'TEKNO';
 
 -- ─── Taşyünü seed (tam-araç zorunlu, sabit marj) ─────────────────
 UPDATE material_types

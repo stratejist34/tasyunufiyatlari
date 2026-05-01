@@ -1,12 +1,19 @@
 'use client';
 
 import { motion, AnimatePresence } from "framer-motion";
+import {
+    Truck, Package, WarningCircle, CheckCircle, Confetti,
+    CaretUp, ArrowBendDownRight, Lightbulb,
+} from "@phosphor-icons/react";
+import type { ComponentType } from "react";
 import type { LogisticsCapacity, ShippingZone } from "@/lib/types";
 
 export type MetrajValidation =
     | { isValid: true }
     | { isValid: false; kind: 'min_order'; minOrder: number }
     | { isValid: false; kind: 'full_vehicle'; suggestions: { m2: number; label: string }[] };
+
+type IconCmp = ComponentType<{ size?: number; weight?: 'thin' | 'light' | 'regular' | 'bold' | 'fill' | 'duotone'; className?: string }>;
 
 interface WizardStep4Props {
     metraj: string;
@@ -27,10 +34,10 @@ function getTier(m2: number, lorryM2: number, truckM2: number): Tier {
     return 'parsiyel';
 }
 
-const TIER_CONFIG: Record<Tier, { label: string; emoji: string; ring: string; bg: string; text: string }> = {
-    parsiyel: { label: 'Kısmi Yük',     emoji: '📦', ring: 'ring-fe-muted',  bg: 'bg-fe-raised',    text: 'text-fe-text' },
-    kamyon:   { label: 'Kamyon Dolusu', emoji: '🚚', ring: 'ring-brand-500',  bg: 'bg-brand-900/40', text: 'text-brand-300' },
-    tir:      { label: 'TIR Dolusu',    emoji: '🚛', ring: 'ring-brand-500',   bg: 'bg-brand-900/40',  text: 'text-brand-300'  },
+const TIER_CONFIG: Record<Tier, { label: string; Icon: IconCmp; iconWeight: 'regular' | 'fill' | 'bold'; ring: string; bg: string; text: string }> = {
+    parsiyel: { label: 'Kısmi Yük',     Icon: Package, iconWeight: 'regular', ring: 'ring-fe-muted',  bg: 'bg-fe-raised',    text: 'text-fe-text' },
+    kamyon:   { label: 'Kamyon Dolusu', Icon: Truck,   iconWeight: 'regular', ring: 'ring-brand-500',  bg: 'bg-brand-900/40', text: 'text-brand-300' },
+    tir:      { label: 'TIR Dolusu',    Icon: Truck,   iconWeight: 'fill',    ring: 'ring-brand-500',  bg: 'bg-brand-900/40', text: 'text-brand-300'  },
 };
 
 export function WizardStep4({
@@ -76,8 +83,8 @@ export function WizardStep4({
     const isSnapped = snapTarget !== null && Math.abs(roundedM2 - rawRoundedM2) > 0.05;
     const snapLabel = isSnapped
         ? (snapTarget === lorryM2
-            ? '🚚 Kamyon tam dolu'
-            : `🚛 ${Math.round(snapTarget! / truckM2)} TIR tam dolu`)
+            ? 'Kamyon tam dolu'
+            : `${Math.round(snapTarget! / truckM2)} TIR tam dolu`)
         : null;
 
     // Tier hesabı (roundedM2 üzerinden)
@@ -150,13 +157,13 @@ export function WizardStep4({
                     <input
                         type="number"
                         min="1"
-                        placeholder={selectedMalzeme === 'eps' ? 'Min 200 m² · örn: 350' : 'Tam araç metrajı · örn: 806'}
+                        placeholder={selectedMalzeme === 'eps' ? 'Min 250 m² · örn: 350' : 'Tam araç metrajı · örn: 806'}
                         value={metraj}
                         onChange={e => setMetraj(e.target.value)}
-                        className={`w-full px-4 py-4 border-2 rounded-xl bg-fe-bg text-white text-xl font-bold focus:ring-2 outline-none transition-all tabular-nums pr-16 ${
+                        className={`w-full px-4 py-4 border rounded-xl bg-fe-bg text-white text-xl font-bold focus:ring-1 outline-none transition-all tabular-nums pr-16 ${
                             !validation.isValid
-                                ? 'border-red-500/70 focus:ring-red-500/40 focus:border-red-500'
-                                : 'border-fe-border focus:ring-brand-500 focus:border-brand-500'
+                                ? 'border-red-500/60 focus:ring-red-500/30 focus:border-red-500/80'
+                                : 'border-fe-border focus:ring-brand-500/40 focus:border-brand-500'
                         }`}
                         autoFocus
                     />
@@ -166,8 +173,8 @@ export function WizardStep4({
                 {/* Validation: EPS minimum sipariş uyarısı */}
                 {!validation.isValid && validation.kind === 'min_order' && (
                     <div className="mt-2 p-3 rounded-xl border bg-red-900/15 border-red-700/40">
-                        <p className="text-sm font-semibold text-red-300 mb-1">
-                            ⚠️ Minimum sipariş {validation.minOrder} m²
+                        <p className="text-sm font-semibold text-red-300 mb-1 flex items-center gap-1.5">
+                            <WarningCircle size={16} weight="fill" /> Minimum sipariş {validation.minOrder} m²
                         </p>
                         <p className="text-xs text-red-200/80">
                             Bu metrajın altındaki siparişlerde nakliye masrafı maliyeti karşılamaz.
@@ -176,9 +183,9 @@ export function WizardStep4({
                         <button
                             type="button"
                             onClick={() => setMetraj(String(validation.minOrder))}
-                            className="mt-2 text-xs font-semibold text-red-200 underline decoration-dotted underline-offset-2 hover:decoration-solid"
+                            className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-red-200 underline decoration-dotted underline-offset-2 hover:decoration-solid"
                         >
-                            ↳ {validation.minOrder} m²&apos;ye yuvarla
+                            <ArrowBendDownRight size={14} weight="bold" /> {validation.minOrder} m²&apos;ye yuvarla
                         </button>
                     </div>
                 )}
@@ -186,8 +193,8 @@ export function WizardStep4({
                 {/* Validation: Taşyünü tam-araç kuralı bilgi paneli */}
                 {!validation.isValid && validation.kind === 'full_vehicle' && (
                     <div className="mt-2 p-3 rounded-xl border bg-amber-900/15 border-amber-700/40">
-                        <p className="text-sm font-semibold text-amber-200 mb-1">
-                            🚛 Taşyünü parsiyel taşınamaz
+                        <p className="text-sm font-semibold text-amber-200 mb-1 flex items-center gap-1.5">
+                            <Truck size={16} weight="fill" /> Taşyünü parsiyel taşınamaz
                         </p>
                         <p className="text-xs text-amber-100/80 mb-2">
                             Taşyünü ürünleri yalnızca <span className="font-bold">tam Kamyon</span>,
@@ -210,16 +217,18 @@ export function WizardStep4({
                 )}
                 {/* Yuvarlama / snap gösterimi */}
                 {isSnapped && (
-                    <p className="mt-1.5 text-xs text-fe-muted">
-                        ↳ {m2.toLocaleString('tr-TR', { maximumFractionDigits: 1 })} m² →{' '}
+                    <p className="mt-1.5 text-xs text-fe-muted inline-flex items-center gap-1 flex-wrap">
+                        <ArrowBendDownRight size={12} weight="bold" />
+                        {m2.toLocaleString('tr-TR', { maximumFractionDigits: 1 })} m² →{' '}
                         <span className="font-bold text-white">{roundedM2.toFixed(1)} m²</span>{' '}
                         ({pkgCount} paket × {pkgSizeM2} m²) —{' '}
                         <span className="font-bold text-green-400">{snapLabel}</span>
                     </p>
                 )}
                 {!isSnapped && showRound && (
-                    <p className="mt-1.5 text-xs text-brand-400/80">
-                        ↳ Sipariş {roundedM2.toFixed(1)} m² olacak ({pkgCount} paket × {pkgSizeM2} m²)
+                    <p className="mt-1.5 text-xs text-brand-400/80 inline-flex items-center gap-1 flex-wrap">
+                        <ArrowBendDownRight size={12} weight="bold" />
+                        Sipariş {roundedM2.toFixed(1)} m² olacak ({pkgCount} paket × {pkgSizeM2} m²)
                         {isMultiVehicle && (
                             <span className="text-brand-300/80">
                                 {' '}— {fullTirCount} TIR{remainKisiPaket > 0 ? ` + ${remainKisiPaket} paket kısmi` : ' (tam dolu)'}
@@ -247,26 +256,30 @@ export function WizardStep4({
                     return (
                         <div
                             key={t}
-                            className={`flex-1 flex flex-col items-center py-2 px-1 rounded-xl border-2 transition-all duration-300 ${
+                            className={`flex-1 flex flex-col items-center py-2 px-1 rounded-xl border transition-all duration-300 ${
                                 isActive
-                                    ? `${cfg.bg} border-transparent ring-2 ${cfg.ring}`
+                                    ? `${cfg.bg} border-transparent ring-1 ${cfg.ring}`
                                     : isPast && t !== tier
                                         ? 'bg-fe-raised/40 border-fe-border/50 opacity-50'
                                         : 'bg-fe-surface border-fe-border'
                             }`}
                         >
-                            <span className="text-base leading-none mb-0.5">{cfg.emoji}</span>
-                            <span className={`text-[10px] font-bold text-center leading-tight ${isActive ? cfg.text : 'text-fe-muted'}`}>
+                            <cfg.Icon
+                                size={20}
+                                weight={isActive ? 'fill' : 'regular'}
+                                className={`mb-0.5 ${isActive ? 'text-brand-200' : 'text-fe-muted/60'}`}
+                            />
+                            <span className={`text-[10px] font-bold text-center leading-tight ${isActive ? 'text-brand-200' : 'text-fe-muted/70'}`}>
                                 {cfg.label}
                             </span>
                             {/* İskonto oranı badge */}
                             {t === 'kamyon' && discKamyon != null && (
-                                <span className={`mt-1 text-[10px] font-bold tabular-nums ${isActive ? 'text-brand-300' : 'text-fe-muted'}`}>
+                                <span className={`mt-1 text-[10px] font-bold tabular-nums ${isActive ? 'text-brand-200' : 'text-fe-muted/60'}`}>
                                     %{discKamyon}
                                 </span>
                             )}
                             {t === 'tir' && discTir != null && (
-                                <span className={`mt-1 text-[10px] font-bold tabular-nums ${isActive ? 'text-brand-300' : 'text-fe-muted'}`}>
+                                <span className={`mt-1 text-[10px] font-bold tabular-nums ${isActive ? 'text-brand-200' : 'text-fe-muted/60'}`}>
                                     {isActive && isMultiVehicle ? `×${fullTirCount} TIR` : `%${discTir}`}
                                 </span>
                             )}
@@ -282,7 +295,7 @@ export function WizardStep4({
                         <div className="text-[10px] text-fe-muted uppercase tracking-wider mb-1">Araç Planı</div>
                         {Array.from({ length: fullTirCount }).map((_, i) => (
                             <div key={i} className="flex items-center gap-2">
-                                <span className="text-xs text-fe-muted w-16 shrink-0">🚛 TIR {i + 1}</span>
+                                <span className="text-xs text-fe-muted w-16 shrink-0 inline-flex items-center gap-1"><Truck size={14} weight="fill" /> TIR {i + 1}</span>
                                 <div className="flex-1 h-2 bg-fe-raised rounded-full overflow-hidden">
                                     <div className="h-full w-full bg-brand-400 rounded-full" />
                                 </div>
@@ -293,7 +306,7 @@ export function WizardStep4({
                         ))}
                         {remainKisiPaket > 0 && (
                             <div className="flex items-center gap-2">
-                                <span className="text-xs text-fe-muted w-16 shrink-0">📦 Kısmi</span>
+                                <span className="text-xs text-fe-muted w-16 shrink-0 inline-flex items-center gap-1"><Package size={14} /> Kısmi</span>
                                 <div className="flex-1 h-2 bg-fe-raised rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-fe-muted/60 rounded-full"
@@ -310,7 +323,7 @@ export function WizardStep4({
                     <div className="space-y-2.5 mb-4">
                         <div>
                             <div className="flex justify-between items-center mb-1">
-                                <span className="text-xs text-fe-muted">🚚 Kamyon</span>
+                                <span className="text-xs text-fe-muted inline-flex items-center gap-1"><Truck size={14} /> Kamyon</span>
                                 <span className={`text-xs font-bold tabular-nums ${lorryPct >= 100 ? 'text-brand-300' : 'text-fe-muted'}`}>
                                     {hasVal
                                         ? `${roundedM2.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 1 })} / ${Math.round(lorryM2).toLocaleString('tr-TR')} m²`
@@ -328,7 +341,7 @@ export function WizardStep4({
                         </div>
                         <div>
                             <div className="flex justify-between items-center mb-1">
-                                <span className="text-xs text-fe-muted">🚛 TIR</span>
+                                <span className="text-xs text-fe-muted inline-flex items-center gap-1"><Truck size={14} weight="fill" /> TIR</span>
                                 <span className={`text-xs font-bold tabular-nums ${truckPct >= 100 ? 'text-brand-300' : 'text-fe-muted'}`}>
                                     {hasVal
                                         ? `${roundedM2.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 1 })} / ${Math.round(truckM2).toLocaleString('tr-TR')} m²`
@@ -362,8 +375,8 @@ export function WizardStep4({
                             : 'p-3 rounded-xl border bg-brand-900/20 border-brand-700/40'}
                     >
                         {/* Başlık */}
-                        <p className="text-sm font-bold text-white mb-2">
-                            🚛 {fullTirCount} TIR
+                        <p className="text-sm font-bold text-white mb-2 flex items-center gap-1.5">
+                            <Truck size={16} weight="fill" /> {fullTirCount} TIR
                             {remainKisiPaket > 0
                                 ? <> + <span className="text-brand-300">{remainAfterTir.toFixed(1)} m² TIR kapasitesi aşımı</span></>
                                 : <span className="text-green-300"> — Tam Doluluk</span>
@@ -371,32 +384,29 @@ export function WizardStep4({
                         </p>
                         {remainKisiPaket > 0 && (
                             <>
-                                {/* Seçenek 1: Azalt → tam TIR */}
-                                <div className="flex items-start gap-2 p-2 rounded-lg bg-red-900/20 border border-red-700/30 mb-1.5">
-                                    <span className="text-red-400 font-bold text-sm shrink-0 leading-none mt-0.5">▼</span>
-                                    <p className="text-xs text-red-300">
-                                        <span className="font-bold">{remainAfterTir.toFixed(1)} m² ({remainKisiPaket} paket) azaltın</span>
-                                        {' '}→ {fullTirCount} TIR tam dolar
-                                        {(nudge as any).pct != null && (
-                                            <> · <span className="font-bold text-red-200">%{(nudge as any).pct} iskonto</span> + nakliye ücretsiz</>
-                                        )}
-                                    </p>
-                                </div>
-                                {/* Seçenek 2: Ekle → sonraki TIR (sadece yakınsa) */}
+                                {/* Bilgi: 1 TIR ve üzeri varyasyonlarda TIR iskontosu zaten uygulanır */}
+                                {fullTirCount >= 1 && (nudge as any).pct != null && (
+                                    <div className="flex items-start gap-2 p-2 rounded-lg bg-green-900/20 border border-green-700/30 mb-1.5">
+                                        <CheckCircle size={16} weight="fill" className="text-green-400 shrink-0 mt-0.5" />
+                                        <p className="text-xs text-green-200">
+                                            1 TIR ve üzeri Kamyon + TIR varyasyonlarında{' '}
+                                            <span className="font-bold text-green-100">%{(nudge as any).pct} TIR iskontosu</span>{' '}
+                                            uygulanır.
+                                        </p>
+                                    </div>
+                                )}
+                                {/* Seçenek: Ekle → sonraki TIR (sadece yakınsa) — nakliye optimizasyonu */}
                                 {pkgsToCompleteTir > 0 && pkgsToCompleteTir <= FILL_THRESHOLD ? (
                                     <div className="flex items-start gap-2 p-2 rounded-lg bg-brand-900/20 border border-brand-700/30">
-                                        <span className="text-brand-400 font-bold text-sm shrink-0 leading-none mt-0.5">▲</span>
+                                        <CaretUp size={16} weight="bold" className="text-brand-400 shrink-0 mt-0.5" />
                                         <p className="text-xs text-brand-300">
                                             <span className="font-bold">{m2ToCompleteTir.toFixed(1)} m² ({pkgsToCompleteTir} paket) ekleyin</span>
-                                            {' '}→ {fullTirCount + 1}. TIR tam dolar
-                                            {(nudge as any).pct != null && (
-                                                <> · <span className="font-bold text-brand-200">%{(nudge as any).pct} iskonto</span> + nakliye ücretsiz</>
-                                            )}
+                                            {' '}→ {fullTirCount + 1}. TIR tam dolar · nakliye ücretsiz
                                         </p>
                                     </div>
                                 ) : (
-                                    <p className="text-[11px] text-brand-400/70">
-                                        ⚠️ Kısmi yük ({remainKisiPaket} paket · {remainAfterTir.toFixed(1)} m²) için nakliye ayrıca ücretlendirilir
+                                    <p className="text-[11px] text-brand-400/70 inline-flex items-center gap-1">
+                                        <WarningCircle size={12} weight="fill" /> Kısmi yük ({remainKisiPaket} paket · {remainAfterTir.toFixed(1)} m²) için nakliye ayrıca ücretlendirilir
                                     </p>
                                 )}
                             </>
@@ -417,10 +427,10 @@ export function WizardStep4({
                         transition={{ duration: 0.2 }}
                         className={`p-3 rounded-xl border ${ (nudge as any).target === 'kamyon' ? 'bg-brand-900/20 border-brand-700/40' : 'bg-brand-900/20 border-brand-700/40' }`}
                     >
-                        <p className="text-sm font-bold text-white mb-1">
-                            {(nudge as any).target === 'kamyon' ? '🚚' : '🚛'}{' '}
+                        <p className="text-sm font-bold text-white mb-1 flex items-center gap-1.5">
+                            <Truck size={16} weight={(nudge as any).target === 'kamyon' ? 'regular' : 'fill'} />
                             {(nudge as any).target === 'kamyon' ? 'Kamyona' : "TIR'a"}{' '}
-                            <span className={(nudge as any).target === 'kamyon' ? 'text-brand-300' : 'text-brand-300'}>
+                            <span className="text-brand-300">
                                 {((nudge as any).remainingPkgs * pkgSizeM2).toFixed(1)} m² kaldı
                             </span>
                         </p>
@@ -429,9 +439,9 @@ export function WizardStep4({
                                 <button
                                     type="button"
                                     onClick={() => setMetraj(String(Math.round((rawPkgCount + (nudge as any).remainingPkgs) * pkgSizeM2)))}
-                                    className="font-semibold underline decoration-dotted underline-offset-2 hover:text-hub-warm hover:decoration-solid transition-colors"
+                                    className="inline-flex items-center gap-1 font-semibold underline decoration-dotted underline-offset-2 hover:text-hub-warm hover:decoration-solid transition-colors"
                                 >
-                                    ▲ {((nudge as any).remainingPkgs * pkgSizeM2).toFixed(1)} m² ekleyin
+                                    <CaretUp size={12} weight="bold" /> {((nudge as any).remainingPkgs * pkgSizeM2).toFixed(1)} m² ekleyin
                                 </button>
                                 {' '}→ nakliye ücretsiz + <span className="font-bold text-brand-200">%{(nudge as any).pct}</span> iskonto!
                             </p>
@@ -440,9 +450,9 @@ export function WizardStep4({
                                 <button
                                     type="button"
                                     onClick={() => setMetraj(String(Math.round((rawPkgCount + (nudge as any).remainingPkgs) * pkgSizeM2)))}
-                                    className="font-semibold underline decoration-dotted underline-offset-2 hover:text-hub-warm hover:decoration-solid transition-colors"
+                                    className="inline-flex items-center gap-1 font-semibold underline decoration-dotted underline-offset-2 hover:text-hub-warm hover:decoration-solid transition-colors"
                                 >
-                                    ▲ {((nudge as any).remainingPkgs * pkgSizeM2).toFixed(1)} m² daha ekleyin
+                                    <CaretUp size={12} weight="bold" /> {((nudge as any).remainingPkgs * pkgSizeM2).toFixed(1)} m² daha ekleyin
                                 </button>{' '}
                                 {discKamyon != null && (nudge as any).pct > discKamyon && (
                                     <><span className="font-bold text-brand-200">%{(nudge as any).pct - discKamyon} ekstra iskontolu</span>{' '}</>
@@ -463,11 +473,11 @@ export function WizardStep4({
                             ? 'p-3 rounded-xl border bg-brand-900/25 border-brand-600/50'
                             : 'p-3 rounded-xl border bg-brand-900/25 border-brand-600/50'}
                     >
-                        <p className={(nudge as any).tier === 'tir' ? 'text-sm font-medium text-brand-300' : 'text-sm font-medium text-brand-300'}>
-                            🎉{' '}
+                        <p className="text-sm font-medium text-brand-300 inline-flex items-center gap-1.5 flex-wrap">
+                            <Confetti size={16} weight="fill" className="text-amber-400" />
                             {(nudge as any).tier === 'tir' ? 'TIR tam dolu' : 'Kamyon tam dolu'} —{' '}
                             nakliye{(nudge as any).tier === 'tir' ? '' : ' bedava +'}{' '}
-                            <span className={(nudge as any).tier === 'tir' ? 'font-bold text-brand-200' : 'font-bold text-brand-200'}>
+                            <span className="font-bold text-brand-200">
                                 %{(nudge as any).pct}
                             </span>{' '}
                             iskonto otomatik uygulandı!
@@ -483,8 +493,8 @@ export function WizardStep4({
                         transition={{ duration: 0.2 }}
                         className="p-3 rounded-xl border bg-brand-900/20 border-brand-700/40"
                     >
-                        <p className="text-sm font-medium text-brand-300">
-                            🚛 TIR doldu —{' '}
+                        <p className="text-sm font-medium text-brand-300 inline-flex items-center gap-1.5 flex-wrap">
+                            <Truck size={16} weight="fill" /> TIR doldu —{' '}
                             <span className="font-bold text-brand-200">%{(nudge as any).pct}</span>{' '}
                             bölge iskontosu uygulandı!
                         </p>
@@ -494,8 +504,8 @@ export function WizardStep4({
 
             {/* TIR avantajı bilgi notu */}
             {hasVal && tier !== 'tir' && discTir != null && (
-                <p className="mt-2 text-[11px] text-fe-muted text-center leading-relaxed">
-                    💡 TIR siparişlerinde fabrika nakliyesi ücretsiz +{' '}
+                <p className="mt-2 text-[11px] text-fe-muted text-center leading-relaxed inline-flex items-center justify-center gap-1 flex-wrap">
+                    <Lightbulb size={12} weight="fill" className="text-amber-400" /> TIR siparişlerinde fabrika nakliyesi ücretsiz +{' '}
                     <span className="text-fe-muted font-semibold">%{discTir}</span>{' '}
                     bölge iskontosu uygulanır
                     {discKamyon != null && discTir > discKamyon
