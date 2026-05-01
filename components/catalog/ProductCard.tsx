@@ -65,11 +65,12 @@ export default function ProductCard({ product, kategori }: ProductCardProps) {
         </div>
       )}
 
-      {/* Fiyat */}
+      {/* Fiyat — decision.ts tek otorite, liste/detay tutarlı */}
       <div className="mt-auto pt-2 border-t border-fe-border">
         <PriceDisplay
-          mode={product.rules.pricing_visibility_mode}
+          rules={product.rules}
           basePrice={product.base_price}
+          unitLabel={product.product_type === 'plate' ? 'm²' : 'paket'}
         />
       </div>
 

@@ -1,43 +1,38 @@
 "use client";
 
-import type { PricingVisibilityMode } from '@/lib/catalog/types';
+import type { ProductRules } from '@/lib/catalog/types';
+import { getPriceDisplay } from '@/lib/catalog/decision';
 
 interface PriceDisplayProps {
-  mode: PricingVisibilityMode;
+  rules: ProductRules;
   basePrice: number | null;
-  thicknessOptions?: number[] | null;
+  /** "paket" | "m²" | "adet" — listede ek bilgi için */
+  unitLabel?: string;
 }
 
 /**
- * pricing_visibility_mode'a göre fiyat bilgisini gösterir.
- * Ürün listesi kartı ve detay sayfasında kullanılır.
+ * Liste kartı + detay panel için ortak fiyat etiketi.
+ * Tek karar otoritesi: lib/catalog/decision.ts → getPriceDisplay()
+ * Listede ve detayda farklı render gösterirse hata buraya değil
+ * decision.ts'ye gider.
  */
-export default function PriceDisplay({ mode, basePrice, thicknessOptions }: PriceDisplayProps) {
-  if (mode === 'hidden' || mode === 'quote_required') {
+export default function PriceDisplay({ rules, basePrice, unitLabel = 'paket' }: PriceDisplayProps) {
+  const display = getPriceDisplay(rules, basePrice, unitLabel);
+
+  if (!display.visible) {
     return (
       <span className="text-sm text-fe-muted italic">
-        {mode === 'quote_required' ? 'Teklif ile belirlenir' : 'Fiyat görüntülenmez'}
+        {display.note ?? 'Teklif ile belirlenir'}
       </span>
     );
   }
 
-  if (mode === 'from_price' && basePrice !== null) {
-    return (
-      <span className="text-brand-400 font-semibold">
-        {basePrice.toLocaleString('tr-TR', { minimumFractionDigits: 0 })} TL
-        <span className="text-fe-muted font-normal text-xs ml-1">'den başlayan</span>
-      </span>
-    );
-  }
+  // Etiketi parse et: "850 ₺ / paket'ten başlayan" — ana fiyat + suffix
+  const isFromPrice = rules.pricing_visibility_mode === 'from_price';
 
-  if (mode === 'exact_price' && basePrice !== null) {
-    return (
-      <span className="text-white font-semibold">
-        {basePrice.toLocaleString('tr-TR', { minimumFractionDigits: 0 })} TL
-        <span className="text-fe-muted font-normal text-xs ml-1">/ m²</span>
-      </span>
-    );
-  }
-
-  return <span className="text-fe-muted text-sm">—</span>;
+  return (
+    <span className={isFromPrice ? 'text-brand-400 font-semibold' : 'text-white font-semibold'}>
+      {display.label}
+    </span>
+  );
 }

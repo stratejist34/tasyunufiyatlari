@@ -7,6 +7,7 @@ import {
     ClipboardList, Wrench, CheckCircle2, XCircle, Flame, Snowflake, TrendingDown,
 } from "lucide-react";
 import { roundToKurus, formatCurrency } from "@/lib/admin/utils";
+import { validateRules, getRulesPreview } from "@/lib/catalog/decision";
 
 function StatCard({ title, value, icon, color, onClick }: any) {
     const colors: Record<string, string> = {
@@ -664,7 +665,22 @@ export function ProductsTab() {
             , document.body)}
 
             {/* Aksesuar Katalog Kural Düzenleme Modal */}
-            {editingAccessory && createPortal(
+            {editingAccessory && createPortal((() => {
+                // Live validation + preview — kullanıcı yazarken anlık güncellenir
+                const draftRules = {
+                    sales_mode: editingAccessory.sales_mode ?? 'system_only',
+                    pricing_visibility_mode: editingAccessory.pricing_visibility_mode ?? 'quote_required',
+                    minimum_order_type: editingAccessory.minimum_order_type ?? 'none',
+                    minimum_order_value: editingAccessory.minimum_order_value ?? null,
+                    requires_city_for_pricing: false,
+                    requires_system_context: editingAccessory.requires_system_context ?? true,
+                    recommended_bundle_family: null,
+                };
+                const issues = validateRules(draftRules);
+                const preview = getRulesPreview(draftRules as any, editingAccessory.base_price ?? null);
+                const hasError = (field: string) => issues.find(i => i.field === field);
+
+                return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
                     <div className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-y-auto max-h-[90vh]">
                         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
@@ -681,21 +697,32 @@ export function ProductsTab() {
                                 <legend className="text-xs font-semibold text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-700 w-full">Satış Ayarları</legend>
                                 <div>
                                     <label className="block text-xs text-slate-400 mb-1">Satış Modu</label>
-                                    <select value={editingAccessory.sales_mode ?? 'system_only'} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, sales_mode: e.target.value }))} className="w-full bg-slate-800 border border-slate-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500">
+                                    <select value={editingAccessory.sales_mode ?? 'system_only'} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, sales_mode: e.target.value }))} className={`w-full bg-slate-800 border text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500 ${hasError('sales_mode') ? 'border-red-500' : 'border-slate-600'}`}>
                                         <option value="system_only">Sistem Ürünü</option>
                                         <option value="single_or_quote">Alım veya Teklif</option>
                                         <option value="single_only">Direkt Alım</option>
                                         <option value="quote_only">Sadece Teklif</option>
                                     </select>
+                                    <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                                        Müşteri bu ürünle ne yapabilir?<br/>
+                                        <span className="text-slate-400">• Sistem Ürünü: Tek başına satılmaz, paket içinde<br/>• Alım veya Teklif: Hem direkt sipariş, hem teklif<br/>• Direkt Alım: Sepete ekleyip sipariş ver<br/>• Sadece Teklif: Yalnız teklif iste</span>
+                                    </p>
                                 </div>
                                 <div>
                                     <label className="block text-xs text-slate-400 mb-1">Fiyat Görünürlüğü</label>
-                                    <select value={editingAccessory.pricing_visibility_mode ?? 'quote_required'} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, pricing_visibility_mode: e.target.value }))} className="w-full bg-slate-800 border border-slate-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500">
+                                    <select value={editingAccessory.pricing_visibility_mode ?? 'quote_required'} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, pricing_visibility_mode: e.target.value }))} className={`w-full bg-slate-800 border text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500 ${hasError('pricing_visibility_mode') ? 'border-red-500' : 'border-slate-600'}`}>
                                         <option value="quote_required">Teklif ile belirlenir</option>
                                         <option value="from_price">Başlangıç fiyatı göster</option>
                                         <option value="exact_price">Tam fiyat göster</option>
                                         <option value="hidden">Fiyat gizle</option>
                                     </select>
+                                    <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                                        Müşteri sayfada fiyatı nasıl görür?<br/>
+                                        <span className="text-slate-400">• Teklif ile belirlenir: &ldquo;Fiyat için teklif al&rdquo;<br/>• Başlangıç fiyatı: &ldquo;850 ₺&apos;ten başlayan&rdquo;<br/>• Tam fiyat: Net rakam görünür<br/>• Gizle: Hiçbir fiyat gösterme</span>
+                                    </p>
+                                    {hasError('pricing_visibility_mode') && (
+                                        <p className="text-xs text-red-400 mt-1">⚠ {hasError('pricing_visibility_mode')!.message}</p>
+                                    )}
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
@@ -706,13 +733,42 @@ export function ProductsTab() {
                                     </div>
                                     <div>
                                         <label className="block text-xs text-slate-400 mb-1">Min. Değer</label>
-                                        <input type="number" value={editingAccessory.minimum_order_value ?? ''} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, minimum_order_value: e.target.value ? Number(e.target.value) : null }))} disabled={(editingAccessory.minimum_order_type ?? 'none') === 'none'} placeholder="örn. 10" className="w-full bg-slate-800 border border-slate-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500 disabled:opacity-40" />
+                                        <input type="number" value={editingAccessory.minimum_order_value ?? ''} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, minimum_order_value: e.target.value ? Number(e.target.value) : null }))} disabled={(editingAccessory.minimum_order_type ?? 'none') === 'none'} placeholder="örn. 10" className={`w-full bg-slate-800 border text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500 disabled:opacity-40 ${hasError('minimum_order_type') ? 'border-red-500' : 'border-slate-600'}`} />
                                     </div>
                                 </div>
+                                {hasError('minimum_order_type') && (
+                                    <p className="text-xs text-red-400">⚠ {hasError('minimum_order_type')!.message}</p>
+                                )}
+                                <p className="text-[11px] text-slate-500 leading-relaxed">
+                                    En az ne kadar alınmalı? Birim ile değer (örn. 10 paket).
+                                </p>
                                 <label className="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" checked={editingAccessory.requires_system_context ?? true} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, requires_system_context: e.target.checked }))} className="rounded border-slate-600 bg-slate-800" />
                                     <span className="text-sm text-slate-300">Sistem ürünü (kombinasyon gerekli)</span>
                                 </label>
+                            </fieldset>
+
+                            {/* LIVE PREVIEW */}
+                            <fieldset className="space-y-2 bg-slate-800/40 border border-slate-700 rounded-lg p-4">
+                                <legend className="text-xs font-semibold text-orange-400 uppercase tracking-wider px-2">Önizleme</legend>
+                                <div className="text-xs text-slate-400 space-y-2">
+                                    <div>
+                                        <span className="text-slate-500">📦 Listede:</span>{' '}
+                                        <span className="text-slate-200">{preview.cardSummary}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-slate-500">📄 Detay sayfasında:</span>{' '}
+                                        <span className="text-slate-200">{preview.detailPrice}</span>
+                                        <span className="text-slate-500"> · CTA: </span>
+                                        <span className="text-orange-300">[{preview.detailCta}]</span>
+                                    </div>
+                                    {preview.minOrderNote && (
+                                        <div>
+                                            <span className="text-slate-500">📐 </span>
+                                            <span className="text-slate-200">{preview.minOrderNote}</span>
+                                        </div>
+                                    )}
+                                </div>
                             </fieldset>
                             <fieldset className="space-y-3">
                                 <legend className="text-xs font-semibold text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-700 w-full">Katalog Bilgileri</legend>
@@ -737,23 +793,35 @@ export function ProductsTab() {
                         </div>
                         <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-slate-700">
                             <button type="button" onClick={() => { setEditingAccessory(null); setEditError(null); }} className="px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors">İptal</button>
-                            <button type="button" disabled={editSaving} onClick={() => saveAccessoryRules(editingAccessory.id, {
-                                sales_mode: editingAccessory.sales_mode,
-                                pricing_visibility_mode: editingAccessory.pricing_visibility_mode,
-                                minimum_order_type: editingAccessory.minimum_order_type,
-                                minimum_order_value: editingAccessory.minimum_order_value,
-                                requires_system_context: editingAccessory.requires_system_context,
-                                slug: editingAccessory.slug || null,
-                                catalog_description: editingAccessory.catalog_description || null,
-                                meta_title: editingAccessory.meta_title || null,
-                                meta_description: editingAccessory.meta_description || null,
-                            })} className="px-5 py-2 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
-                                {editSaving ? 'Kaydediliyor…' : 'Kaydet'}
+                            <button
+                                type="button"
+                                disabled={editSaving || issues.length > 0}
+                                title={issues.length > 0 ? 'Önce hataları düzelt' : ''}
+                                onClick={() => {
+                                    if (issues.length > 0) {
+                                        setEditError(issues.map(i => i.message).join(' '));
+                                        return;
+                                    }
+                                    saveAccessoryRules(editingAccessory.id, {
+                                        sales_mode: editingAccessory.sales_mode,
+                                        pricing_visibility_mode: editingAccessory.pricing_visibility_mode,
+                                        minimum_order_type: editingAccessory.minimum_order_type,
+                                        minimum_order_value: editingAccessory.minimum_order_value,
+                                        requires_system_context: editingAccessory.requires_system_context,
+                                        slug: editingAccessory.slug || null,
+                                        catalog_description: editingAccessory.catalog_description || null,
+                                        meta_title: editingAccessory.meta_title || null,
+                                        meta_description: editingAccessory.meta_description || null,
+                                    });
+                                }}
+                                className="px-5 py-2 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors">
+                                {editSaving ? 'Kaydediliyor…' : (issues.length > 0 ? `${issues.length} hata var` : 'Kaydet')}
                             </button>
                         </div>
                     </div>
                 </div>
-            , document.body)}
+                );
+            })(), document.body)}
         </div>
     );
 }
