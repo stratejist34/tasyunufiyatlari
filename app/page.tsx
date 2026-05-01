@@ -42,7 +42,7 @@ const jsonLdOrg = {
     "@context": "https://schema.org",
     "@type": ["Organization", "LocalBusiness"],
     name: "Taşyünü Fiyatları — ÖZERGRUP YALITIM ve İZOLASYON AŞ.",
-    url: "https://tasyunufiyatlari.com",
+    url: "https://www.tasyunufiyatlari.com",
     telephone: "+905322041825",
     address: {
         "@type": "PostalAddress",
@@ -58,7 +58,7 @@ const jsonLdWebApp = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: "Mantolama Maliyet Hesaplayıcı",
-    url: "https://tasyunufiyatlari.com",
+    url: "https://www.tasyunufiyatlari.com",
     applicationCategory: "BusinessApplication",
     description: "8 kalem mantolama setini metraj, kalınlık ve bölgeye göre hesaplayın. Nakliye ve iskonto dahil 3 farklı paket seçeneğini karşılaştırıp PDF teklif alın.",
     offers: {

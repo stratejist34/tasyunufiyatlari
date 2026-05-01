@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/piyasa', '/ofis', '/api/admin'],
       },
     ],
-    sitemap: 'https://tasyunufiyatlari.com/sitemap.xml',
+    sitemap: 'https://www.tasyunufiyatlari.com/sitemap.xml',
   };
 }

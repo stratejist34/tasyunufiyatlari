@@ -25,7 +25,7 @@ const orgJsonLd = {
   legalName: 'ÖzerGrup Yalıtım ve İzolasyon A.Ş.',
   foundingDate: '2006',
   founder: { '@type': 'Person', name: 'Muhammet Öztürk' },
-  url: 'https://tasyunufiyatlari.com',
+  url: 'https://www.tasyunufiyatlari.com',
   telephone: PHONE_TEL,
   address: {
     '@type': 'PostalAddress',

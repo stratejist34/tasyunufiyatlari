@@ -41,7 +41,7 @@ const contactPageJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ContactPage',
   name: 'İletişim — Taşyünü Fiyatları',
-  url: 'https://tasyunufiyatlari.com/iletisim',
+  url: 'https://www.tasyunufiyatlari.com/iletisim',
   mainEntity: {
     '@type': 'Organization',
     name: 'Taşyünü Fiyatları',

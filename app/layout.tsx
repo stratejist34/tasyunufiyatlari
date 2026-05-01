@@ -25,7 +25,7 @@ const barlow = Barlow({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://tasyunufiyatlari.com"),
+  metadataBase: new URL("https://www.tasyunufiyatlari.com"),
   applicationName: "Taşyünü Fiyatları",
   title: {
     default: "Taşyünü Fiyatları — Mantolama Maliyeti Hesaplama",
@@ -37,16 +37,25 @@ export const metadata: Metadata = {
     siteName: "Taşyünü Fiyatları",
     type: "website",
     locale: "tr_TR",
-    url: "https://tasyunufiyatlari.com",
+    url: "https://www.tasyunufiyatlari.com",
     title: "Taşyünü Fiyatları — Mantolama Maliyeti Hesaplama",
     description:
       "Türkiye geneli taşyünü ve EPS fiyatları. Lojistik dahil mantolama maliyetinizi hesaplayın.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Taşyünü Fiyatları — Mantolama Maliyeti Hesaplama",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Taşyünü Fiyatları — Mantolama Maliyeti Hesaplama",
     description:
       "Türkiye geneli taşyünü ve EPS fiyatları. Lojistik dahil mantolama maliyetinizi hesaplayın.",
+    images: ["/og-image.png"],
   },
   icons: {
     icon: [

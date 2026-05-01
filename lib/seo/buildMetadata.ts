@@ -2,7 +2,7 @@
 // SEO Metadata Helper
 // Sayfa generateMetadata fonksiyonlarının ortak iskeletini kurar:
 // canonical URL, OpenGraph, Twitter card alanları tek yerden gelir.
-// metadataBase root layout'ta tanımlı (https://tasyunufiyatlari.com)
+// metadataBase root layout'ta tanımlı (https://www.tasyunufiyatlari.com)
 // — bu helper relative path döndürür, Next.js absolute'a çevirir.
 // ============================================================
 

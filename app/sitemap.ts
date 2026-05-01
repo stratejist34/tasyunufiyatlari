@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { KATEGORI_MAP } from '@/lib/catalog/categories';
 
-const BASE_URL = 'https://tasyunufiyatlari.com';
+const BASE_URL = 'https://www.tasyunufiyatlari.com';
 
 // Statik sayfalar — her zaman sitemap'te
 const STATIC_PATHS = [

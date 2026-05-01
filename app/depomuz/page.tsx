@@ -31,7 +31,7 @@ const localBusinessJsonLd = {
   name: 'Taşyünü Fiyatları — Tuzla Tepeören Deposu',
   legalName: 'ÖzerGrup Yalıtım ve İzolasyon A.Ş.',
   telephone: PHONE_TEL,
-  url: 'https://tasyunufiyatlari.com/depomuz',
+  url: 'https://www.tasyunufiyatlari.com/depomuz',
   address: {
     '@type': 'PostalAddress',
     streetAddress: ADDRESS_LINE,
