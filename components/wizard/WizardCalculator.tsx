@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { generateQuotePDF } from "@/lib/pdfGenerator";
 import { WHATSAPP_ORDER } from "@/lib/config";
 import { uploadPdfToStorage } from "@/lib/uploadPdfToStorage";
+import { notifyWizardShowPrices } from "@/lib/notifyWizardEvent";
 import { PackageCard } from "@/components/package/PackageCard";
 import { PdfOfferModal } from "@/components/modal/PdfOfferModal";
 import { WizardStep1 } from "@/components/wizard/WizardStep1";
@@ -878,6 +879,28 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         setCalculatedPackages(calculated);
         setIsLoading(false);
         setShowResults(true);
+
+        // GA4 event — kullanıcı fiyat ekranına ulaştı (Fiyat_Gosterildi)
+        // PDF/WhatsApp talep etmeden ayrılırsa "abandoned" lead izlemesi
+        const cheapest = calculated.length > 0
+            ? calculated.reduce((min, p) => p.grandTotal < min.grandTotal ? p : min, calculated[0])
+            : null;
+        notifyWizardShowPrices({
+            material_type:          selectedMalzeme,
+            brand_name:             selectedBrand.name,
+            model_name:             selectedModel,
+            thickness_cm:           parseInt(selectedKalinlik) || 0,
+            city_code:              selectedCity.city_code,
+            city_name:              selectedCity.city_name,
+            area_m2:                m2UserInput,
+            total_m2:               totalM2,
+            package_count:          packageCount,
+            results_count:          calculated.length,
+            cheapest_total:         cheapest?.grandTotal ?? null,
+            cheapest_per_m2:        cheapest?.pricePerM2 ?? null,
+            special_order_required: requiresSpecialOrder,
+        });
+
         setTimeout(() => {
             resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
