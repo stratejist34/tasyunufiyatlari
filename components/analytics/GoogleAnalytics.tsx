@@ -1,9 +1,7 @@
-// Google Analytics 4 — Consent Mode v2 ile başlangıçta DENY.
-// KVKK / GDPR uyumlu: cookie banner ile rıza alındığında window.gtag('consent', 'update', {...})
-// çağrılarak izinler 'granted'a yükseltilir.
-//
-// Default deny modunda dahi GA4 anonim "ping" verisi toplar (cookieless),
-// bu sayede kabaca trafik şekli görünür ama kişisel veri saklanmaz.
+// Google Analytics 4 — Consent Mode v2.
+// analytics_storage default GRANTED (analytics anonim, KVKK için kabul edilebilir).
+// ad_* default DENIED — reklam çerezleri sadece banner kabul ile granted.
+// Banner reddinde CookieConsent component analytics_storage'ı denied'a çekiyor.
 
 import Script from 'next/script';
 
@@ -25,12 +23,10 @@ export default function GoogleAnalytics({ measurementId }: Props) {
           ad_storage: 'denied',
           ad_user_data: 'denied',
           ad_personalization: 'denied',
-          analytics_storage: 'denied',
+          analytics_storage: 'granted',
           functionality_storage: 'granted',
-          security_storage: 'granted',
-          wait_for_update: 500
+          security_storage: 'granted'
         });
-        gtag('set', 'ads_data_redaction', true);
       `}</Script>
 
       {/* 2) GA4 gtag.js — analytics_storage 'denied' olsa bile yüklenir, anonim sinyal gönderir */}
