@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { FileText, Truck, BuildingOffice, ShieldCheck } from '@phosphor-icons/react/dist/ssr';
 import { ICON_WEIGHT } from '@/lib/design/tokens';
 
@@ -51,8 +52,15 @@ export function ProofBlock() {
             <p className="mt-1.5 text-sm text-fe-muted leading-relaxed">
               Resmi başlık, kalem listesi, nakliye dahil tutar, referans numarası ve 24 saat geçerlilik. Aşağıda anonimleştirilmiş gerçek bir örnek var.
             </p>
-            {/* TODO: public/proof/sample-quote.png hazır olunca ImagePlaceholder → next/image */}
-            <ImagePlaceholder label="Anonimleştirilmiş örnek mantolama PDF teklifi" ratio="aspect-[4/5]" />
+            <div className="mt-4 overflow-hidden rounded-lg border border-fe-border/30 bg-fe-surface/40">
+              <Image
+                src="/ornek-pdf.webp"
+                alt="Anonimleştirilmiş örnek mantolama PDF teklifi"
+                width={800}
+                height={1000}
+                className="w-full h-auto"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-6">
