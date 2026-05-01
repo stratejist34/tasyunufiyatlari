@@ -11,6 +11,7 @@ import WizardCalculator from "@/components/wizard/WizardCalculator";
 import { TrustStrip } from '@/components/cro/TrustStrip';
 import { SituationSelector } from '@/components/cro/SituationSelector';
 import { RiskBlock } from '@/components/cro/RiskBlock';
+import { WrongDecisionBlock } from '@/components/cro/WrongDecisionBlock';
 import { Truck, Package, Check, ArrowRight, CaretRight, Star } from "@phosphor-icons/react";
 import { ICON_WEIGHT } from "@/lib/design/tokens";
 
@@ -213,6 +214,7 @@ export default function Home() {
             </section>
 
             <RiskBlock />
+            <WrongDecisionBlock />
 
             {/* HOW IT WORKS — 3 adımlı timeline (BURASI gerçek sıralı akış, NumberMarker burada KALIR) */}
             <section className="bg-fe-surface section-pad-md border-t border-fe-border">
