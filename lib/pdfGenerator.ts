@@ -88,6 +88,7 @@ interface PDFQuoteData {
     items: PDFQuoteItem[];
     isShippingIncluded?: boolean;
     shippingWarning?: string;
+    specialOrderNote?: string;
 }
 
 function buildSafeFileName(data: PDFQuoteData): string {
@@ -435,6 +436,7 @@ export async function generateQuotePDF(data: PDFQuoteData): Promise<QuotePDFResu
                 <ul style="margin:0;padding-left:16px;font-size:10px;color:${COLORS.slate700};line-height:1.4;">
                     <li>Fiyatlarımıza <strong>${data.isShippingIncluded ? 'NAKLİYE ve KDV DAHİLDİR' : 'KDV DAHİLDİR, NAKLİYE HARİÇTİR'}.</strong></li>
                     ${data.shippingWarning ? `<li style="color:${COLORS.orange600}; font-weight:700;">${escapeHtml(data.shippingWarning)}</li>` : ''}
+                    ${data.specialOrderNote ? `<li style="color:${COLORS.orange600}; font-weight:700;">⭐ Büyük Metraj — Özel Teklif: ${escapeHtml(data.specialOrderNote)}</li>` : ''}
                     <li>Ürünler şantiyeye teslimdir, indirme alıcıya aittir.</li>
                     <li>Sipariş onayı ile birlikte ödeme talep edilir.</li>
                 </ul>

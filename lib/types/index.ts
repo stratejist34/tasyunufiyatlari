@@ -171,6 +171,16 @@ export interface MaterialType {
     id: number;
     name: string;
     slug: string;
+    // Marj kuralları (migration v12) — wizard tarafında okunur, admin'den düzenlenir
+    min_order_m2: number | null;
+    tier1_max_m2: number | null;
+    tier1_margin_pct: number | null;
+    tier2_max_m2: number | null;
+    tier2_margin_pct: number | null;
+    tier3_margin_pct: number | null;
+    full_vehicle_only: boolean;
+    special_order_threshold_m2: number | null;
+    special_order_note: string | null;
 }
 
 // ==========================================
@@ -211,6 +221,10 @@ export interface CalculatedPackage {
     shippingCost: number;
     grandTotal: number;
     pricePerM2: number;
+    // Hacim-bazlı marj snapshot — sonuç ekranı / PDF okuyabilir
+    appliedMarginPct?: number;
+    requiresSpecialOrder?: boolean;
+    specialOrderNote?: string;
     logistics?: {
         packageCount: number;
         packageSizeM2: number;

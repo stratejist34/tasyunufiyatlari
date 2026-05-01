@@ -3,6 +3,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import type { LogisticsCapacity, ShippingZone } from "@/lib/types";
 
+export type MetrajValidation =
+    | { isValid: true }
+    | { isValid: false; kind: 'min_order'; minOrder: number }
+    | { isValid: false; kind: 'full_vehicle'; suggestions: { m2: number; label: string }[] };
+
 interface WizardStep4Props {
     metraj: string;
     setMetraj: (v: string) => void;
@@ -10,6 +15,8 @@ interface WizardStep4Props {
     selectedKalinlik: string;
     shippingZones: ShippingZone[];
     selectedCityCode: number | null;
+    selectedMalzeme: 'tasyunu' | 'eps';
+    validation: MetrajValidation;
 }
 
 type Tier = 'parsiyel' | 'kamyon' | 'tir';
@@ -30,6 +37,7 @@ export function WizardStep4({
     metraj, setMetraj,
     currentLogistics, selectedKalinlik,
     shippingZones, selectedCityCode,
+    selectedMalzeme, validation,
 }: WizardStep4Props) {
     const m2 = parseFloat(metraj) || 0;
     const lorryM2   = currentLogistics?.lorry_capacity_m2        ?? 480;
@@ -142,14 +150,64 @@ export function WizardStep4({
                     <input
                         type="number"
                         min="1"
-                        placeholder="Örn: 350"
+                        placeholder={selectedMalzeme === 'eps' ? 'Min 200 m² · örn: 350' : 'Tam araç metrajı · örn: 806'}
                         value={metraj}
                         onChange={e => setMetraj(e.target.value)}
-                        className="w-full px-4 py-4 border-2 border-fe-border rounded-xl bg-fe-bg text-white text-xl font-bold focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all tabular-nums pr-16"
+                        className={`w-full px-4 py-4 border-2 rounded-xl bg-fe-bg text-white text-xl font-bold focus:ring-2 outline-none transition-all tabular-nums pr-16 ${
+                            !validation.isValid
+                                ? 'border-red-500/70 focus:ring-red-500/40 focus:border-red-500'
+                                : 'border-fe-border focus:ring-brand-500 focus:border-brand-500'
+                        }`}
                         autoFocus
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-fe-muted font-bold text-lg">m²</span>
                 </div>
+
+                {/* Validation: EPS minimum sipariş uyarısı */}
+                {!validation.isValid && validation.kind === 'min_order' && (
+                    <div className="mt-2 p-3 rounded-xl border bg-red-900/15 border-red-700/40">
+                        <p className="text-sm font-semibold text-red-300 mb-1">
+                            ⚠️ Minimum sipariş {validation.minOrder} m²
+                        </p>
+                        <p className="text-xs text-red-200/80">
+                            Bu metrajın altındaki siparişlerde nakliye masrafı maliyeti karşılamaz.
+                            Lütfen <span className="font-bold">{validation.minOrder} m²</span> veya üzerinde bir değer girin.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => setMetraj(String(validation.minOrder))}
+                            className="mt-2 text-xs font-semibold text-red-200 underline decoration-dotted underline-offset-2 hover:decoration-solid"
+                        >
+                            ↳ {validation.minOrder} m²&apos;ye yuvarla
+                        </button>
+                    </div>
+                )}
+
+                {/* Validation: Taşyünü tam-araç kuralı bilgi paneli */}
+                {!validation.isValid && validation.kind === 'full_vehicle' && (
+                    <div className="mt-2 p-3 rounded-xl border bg-amber-900/15 border-amber-700/40">
+                        <p className="text-sm font-semibold text-amber-200 mb-1">
+                            🚛 Taşyünü parsiyel taşınamaz
+                        </p>
+                        <p className="text-xs text-amber-100/80 mb-2">
+                            Taşyünü ürünleri yalnızca <span className="font-bold">tam Kamyon</span>,
+                            <span className="font-bold"> tam TIR</span> ya da bunların kombinasyonları halinde
+                            taşınabilir. Aşağıdaki yakın geçerli metrajlardan birini seçin:
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                            {validation.suggestions.map((opt) => (
+                                <button
+                                    key={`${opt.m2}-${opt.label}`}
+                                    type="button"
+                                    onClick={() => setMetraj(String(Math.round(opt.m2)))}
+                                    className="rounded-full border border-amber-600/40 bg-amber-900/30 px-3 py-1.5 text-[11px] font-semibold text-amber-100 hover:border-amber-500/60 hover:bg-amber-800/40 transition-colors"
+                                >
+                                    {Math.round(opt.m2).toLocaleString('tr-TR')} m² · {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
                 {/* Yuvarlama / snap gösterimi */}
                 {isSnapped && (
                     <p className="mt-1.5 text-xs text-fe-muted">

@@ -82,6 +82,23 @@ export function PackageCard({
                 </span>
             </div>
 
+            {/* Büyük Metraj — Özel Teklif Rozeti (≥10.000 m² Taşyünü) */}
+            {pkg.requiresSpecialOrder && (
+                <div className="mb-3 rounded-xl border border-amber-500/40 bg-amber-900/15 p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-300">
+                            Büyük Metraj
+                        </span>
+                        <span className="text-xs font-bold text-amber-200">Özel Teklif</span>
+                    </div>
+                    {pkg.specialOrderNote && (
+                        <p className="text-[11px] leading-relaxed text-amber-100/80">
+                            {pkg.specialOrderNote}
+                        </p>
+                    )}
+                </div>
+            )}
+
             {/* Fiyat */}
             <div className="mb-4">
                 <div className="text-xs text-fe-muted mb-0.5">Ödenecek Toplam</div>

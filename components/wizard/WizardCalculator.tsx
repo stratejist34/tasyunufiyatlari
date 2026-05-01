@@ -88,7 +88,16 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
             case 1: return selectedBrandId != null;
             case 2: return !!selectedKalinlik;
             case 3: return selectedCityCode != null;
-            case 4: return !!metraj && Number(metraj) > 0;
+            case 4: {
+                if (!metraj || Number(metraj) <= 0) return false;
+                const m2 = Number(metraj);
+                const matType = materialTypes.find(m => m.slug === selectedMalzeme);
+                const minOrder = matType?.min_order_m2 ?? 0;
+                if (minOrder > 0 && m2 < minOrder) return false;
+                if (matType?.full_vehicle_only && currentLogistics
+                    && !isValidFullVehicleMetraj(m2, currentLogistics)) return false;
+                return true;
+            }
         }
     };
 
@@ -304,7 +313,8 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
             selectedKalinlik &&
             metraj &&
             Number(metraj) > 0 &&
-            selectedCityCode
+            selectedCityCode &&
+            metrajValidation.isValid
         );
     };
 
@@ -391,6 +401,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
             items: itemsForPdf,
             isShippingIncluded: pkg.logistics?.isShippingIncluded,
             shippingWarning: pkg.logistics?.shippingWarning,
+            specialOrderNote: pkg.requiresSpecialOrder ? pkg.specialOrderNote : undefined,
         };
     };
 
@@ -477,15 +488,17 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
     };
 
     // Satış fiyatı hesapla
+    // profitMarginPct opsiyonel: hacim-bazlı marj kademe sisteminden gelir (EPS için 35/23/10).
+    // Verilmezse mevcut sabit %10 davranışı korunur (geriye dönük uyum).
     const calculateSalePrice = (
         basePrice: number,
         discount1: number,
         discount2: number,
         brandName: string,
         isLevha: boolean = false,
-        isKdvIncluded: boolean = true
+        isKdvIncluded: boolean = true,
+        profitMarginPct: number = 10
     ): number => {
-        const profitMargin = 10;
         let isk2 = discount2;
 
         if (brandName === 'Optimix') {
@@ -496,10 +509,111 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
 
         const kdvHaricListe = isKdvIncluded ? basePrice / 1.20 : basePrice;
         const iskontoluFiyat = kdvHaricListe * (1 - discount1 / 100) * (1 - isk2 / 100);
-        const karliKdvHaric = iskontoluFiyat * (1 + profitMargin / 100);
+        const karliKdvHaric = iskontoluFiyat * (1 + profitMarginPct / 100);
 
         return roundToKurus(karliKdvHaric);
     };
+
+    // Hacim-bazlı marj seçici — material_types kademe alanlarına göre.
+    // EPS: tier1_max altı → tier1; tier2_max altı → tier2; üstü → tier3.
+    // Taşyünü: tier'lar boş, tier3_margin_pct döner (sabit).
+    // Migration v12'den önce material_types alanı boş ise → 10 fallback.
+    const selectMarginPct = (matType: MaterialType | undefined, totalM2: number): number => {
+        if (!matType) return 10;
+        const t1Max = matType.tier1_max_m2;
+        const t1Pct = matType.tier1_margin_pct;
+        const t2Max = matType.tier2_max_m2;
+        const t2Pct = matType.tier2_margin_pct;
+        const t3Pct = matType.tier3_margin_pct;
+        if (t1Max != null && t1Pct != null && totalM2 <= t1Max) return Number(t1Pct);
+        if (t2Max != null && t2Pct != null && totalM2 <= t2Max) return Number(t2Pct);
+        if (t3Pct != null) return Number(t3Pct);
+        return 10;
+    };
+
+    // Taşyünü tam-araç kuralı: kullanıcı metrajı yalnızca N×Kamyon + M×TIR
+    // kombinasyonlarına denk geliyorsa geçerli. Tolerans paket boyutunun yarısı kadar.
+    const isValidFullVehicleMetraj = (
+        m2: number,
+        logistics: LogisticsCapacity | null
+    ): boolean => {
+        if (!logistics) return true;
+        const lorry = logistics.lorry_capacity_m2;
+        const truck = logistics.truck_capacity_m2;
+        if (!lorry || !truck) return true;
+        const tolerance = (logistics.package_size_m2 || 1) / 2;
+        const maxTrucks = Math.ceil(m2 / truck) + 1;
+        for (let t = 0; t <= maxTrucks; t++) {
+            const remainder = m2 - t * truck;
+            if (remainder < -tolerance) break;
+            if (Math.abs(remainder) <= tolerance) return true;
+            const lorries = Math.round(remainder / lorry);
+            if (lorries >= 0 && Math.abs(remainder - lorries * lorry) <= tolerance) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    // Hedef metrajın yakınında geçerli tam-araç kombinasyonları üretir
+    // (kullanıcıya snap-suggestion butonları için). En yakın 4 öneri.
+    const getValidFullVehicleOptions = (
+        m2: number,
+        logistics: LogisticsCapacity | null
+    ): { m2: number; label: string }[] => {
+        if (!logistics) return [];
+        const lorry = logistics.lorry_capacity_m2;
+        const truck = logistics.truck_capacity_m2;
+        if (!lorry || !truck) return [];
+        const options: { m2: number; label: string }[] = [];
+        const maxTrucks = Math.max(2, Math.ceil(m2 / truck) + 1);
+        const maxLorries = Math.max(2, Math.ceil(m2 / lorry) + 1);
+        for (let t = 0; t <= maxTrucks; t++) {
+            for (let l = 0; l <= maxLorries; l++) {
+                if (t === 0 && l === 0) continue;
+                const total = t * truck + l * lorry;
+                const parts: string[] = [];
+                if (l > 0) parts.push(`${l} Kamyon`);
+                if (t > 0) parts.push(`${t} TIR`);
+                options.push({ m2: total, label: parts.join(' + ') });
+            }
+        }
+        // En yakın 4 öneri (mutlak farka göre sırala)
+        return options
+            .sort((a, b) => Math.abs(a.m2 - m2) - Math.abs(b.m2 - m2))
+            .slice(0, 4)
+            .sort((a, b) => a.m2 - b.m2);
+    };
+
+    // Metraj input validasyonu — Step4 input UI'ı bu nesneyi okur.
+    // EPS için: m² < min_order_m2 → kind:'min_order'.
+    // Taşyünü için: full_vehicle_only && !isValid → kind:'full_vehicle' + öneri listesi.
+    type MetrajValidation =
+        | { isValid: true }
+        | { isValid: false; kind: 'min_order'; minOrder: number }
+        | { isValid: false; kind: 'full_vehicle'; suggestions: { m2: number; label: string }[] };
+
+    const metrajValidation: MetrajValidation = useMemo(() => {
+        const m2 = parseFloat(metraj);
+        if (!metraj || isNaN(m2) || m2 <= 0) return { isValid: true };
+        const matType = materialTypes.find(m => m.slug === selectedMalzeme);
+        if (!matType) return { isValid: true };
+
+        const minOrder = matType.min_order_m2 ?? 0;
+        if (minOrder > 0 && m2 < minOrder) {
+            return { isValid: false, kind: 'min_order', minOrder };
+        }
+        if (matType.full_vehicle_only && currentLogistics
+            && !isValidFullVehicleMetraj(m2, currentLogistics)) {
+            return {
+                isValid: false,
+                kind: 'full_vehicle',
+                suggestions: getValidFullVehicleOptions(m2, currentLogistics),
+            };
+        }
+        return { isValid: true };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [metraj, selectedMalzeme, materialTypes, currentLogistics]);
 
     // Fiyatları Göster
     const handleShowPrices = async () => {
@@ -517,6 +631,21 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
 
         const m2UserInput = parseFloat(metraj) || 1;
         const activeMaterialTypeId = materialTypes.find(m => m.slug === selectedMalzeme)?.id;
+
+        // Defensive validation: Step4 zaten input'u bloklar; bu, gözden kaçan
+        // bir akış için son kapı. Hatalı durumda alert + iptal.
+        const matTypeForValidation = materialTypes.find(m => m.slug === selectedMalzeme);
+        const minOrder = matTypeForValidation?.min_order_m2 ?? 0;
+        if (minOrder > 0 && m2UserInput < minOrder) {
+            setIsLoading(false);
+            alert(`${matTypeForValidation?.name ?? 'Bu ürün'} için minimum sipariş ${minOrder} m².`);
+            return;
+        }
+        if (matTypeForValidation?.full_vehicle_only && !isValidFullVehicleMetraj(m2UserInput, logistics)) {
+            setIsLoading(false);
+            alert(`Taşyünü parsiyel taşınamaz. Tam Kamyon (${Math.round(logistics.lorry_capacity_m2)} m²) veya tam TIR (${Math.round(logistics.truck_capacity_m2)} m²) ya da bunların kombinasyonu olmalıdır.`);
+            return;
+        }
 
         // Adım 1: Önce levhayı (plate) bul ki gerçek paket metrajını (package_m2) bilelim
         let mainPlate = plates.find(p =>
@@ -553,6 +682,15 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         // Adım 3: Gerçek paket metrajına göre adet ve metraj hesapla
         const packageCount = Math.ceil(m2UserInput / realPackageM2);
         const totalM2 = packageCount * realPackageM2;
+
+        // Adım 3a: Hacim-bazlı marj seçimi (EPS için kademe; Taşyünü için sabit tier3)
+        const matType = materialTypes.find(m => m.slug === selectedMalzeme);
+        const marginPct = selectMarginPct(matType, totalM2);
+
+        // Adım 3b: ≥10.000 m² özel teklif kontrolü (sadece Taşyünü için seed'lendi)
+        const specialThreshold = matType?.special_order_threshold_m2 ?? null;
+        const requiresSpecialOrder = specialThreshold != null && totalM2 >= specialThreshold;
+        const specialOrderNote = requiresSpecialOrder ? (matType?.special_order_note ?? null) : null;
 
         const calculated: CalculatedPackage[] = [];
 
@@ -605,7 +743,8 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                     plateDiscount2,
                     plateBrand?.name || '',
                     true,
-                    plateIsKdvIncluded
+                    plateIsKdvIncluded,
+                    marginPct
                 );
 
                 // Paket fiyatını m² fiyatına çevir (Hata payı bırakmamak için tekrar realPackageM2 kullanıyoruz)
@@ -622,7 +761,8 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                     'KDV Dahil mi?': plateIsKdvIncluded,
                     'Bölge İskontosu (İsk1)': effectivePlateDiscount1,
                     'Bayi İskontosu (İsk2)': plateDiscount2,
-                    'Kar Marjı': 10,
+                    'Hacim Marjı (%)': marginPct,
+                    'Toplam Metraj': totalM2,
                     'Sonuç (KDV Hariç Net Paket)': platePackagePrice,
                     'm² Fiyatı': plateM2Price,
                     'Paket Metrajı': realPackageM2
@@ -677,7 +817,8 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                             accIsk2,
                             selectedBrand.name,
                             false,
-                            acc.is_kdv_included
+                            acc.is_kdv_included,
+                            marginPct
                         );
 
                         const accTotal = roundToKurus(accUnitPrice * itemQuantity);
@@ -697,7 +838,14 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                 }
             }
 
-            const isLowMetrageTasyunu = selectedMalzeme === 'tasyunu' && logistics && packageCount < logistics.lorry_capacity_packages;
+            // Tam-araç kuralı aktifken (yeni davranış) parsiyel taşıma kabul edilmediği için
+            // step4'ten geçerli metraj zaten doğrulanmış olur — nakliye daima dahil.
+            // full_vehicle_only=false (eski davranış) için düşük metrajlı taşyünü uyarısı korunur.
+            const fullVehicleOnly = matType?.full_vehicle_only ?? false;
+            const isLowMetrageTasyunu = !fullVehicleOnly
+                && selectedMalzeme === 'tasyunu'
+                && logistics
+                && packageCount < logistics.lorry_capacity_packages;
 
             calculated.push({
                 definition: pkgDef,
@@ -705,14 +853,12 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                 accessoryBrandName: brands.find(b => b.id === pkgDef.accessory_brand_id)?.name || '',
                 items,
                 totalProductCost,
-                // TODO: shipping_zones.base_shipping_cost henüz hesaplamaya dahil edilmiyor.
-                // isShippingIncluded=true  → fabrika nakliyesi ücretsiz → shippingCost=0 DOĞRU
-                // isShippingIncluded=false → nakliye alıcıya ait (düşük metrajlı Taşyünü);
-                //   grandTotal yalnızca ürün maliyetini yansıtıyor, gerçek nakliye bedeli bilinmiyor.
-                //   PackageCard ve PDF'deki shippingWarning bu durumu kullanıcıya açıklamaktadır.
                 shippingCost: 0,
                 grandTotal: totalProductCost,
                 pricePerM2: totalProductCost / totalM2,
+                appliedMarginPct: marginPct,
+                requiresSpecialOrder,
+                specialOrderNote: specialOrderNote ?? undefined,
                 logistics: {
                     packageCount,
                     packageSizeM2: realPackageM2,
@@ -1006,6 +1152,8 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                                         selectedKalinlik={selectedKalinlik}
                                         shippingZones={shippingZones}
                                         selectedCityCode={selectedCityCode}
+                                        selectedMalzeme={selectedMalzeme}
+                                        validation={metrajValidation}
                                     />
                                 )}
                             </AnimatePresence>

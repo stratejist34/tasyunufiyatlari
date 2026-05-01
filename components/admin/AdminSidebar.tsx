@@ -2,7 +2,7 @@
 
 import {
     LayoutDashboard, FileText, DollarSign, Truck, Tag,
-    Package, Upload, Settings, Flame, BarChart2,
+    Package, Upload, Settings, Flame, BarChart2, Sliders,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
     { id: "quotes",       label: "Teklifler",         Icon: FileText },
     { id: "analytics",    label: "Talep Analizi",     Icon: BarChart2 },
     { id: "prices",       label: "Fiyatlar",          Icon: DollarSign },
+    { id: "margin-rules", label: "Marj Kuralları",   Icon: Sliders },
     { id: "logistics",    label: "Lojistik",          Icon: Truck },
     { id: "discounts",    label: "İskontolar",        Icon: Tag },
     { id: "products",     label: "Ürünler",           Icon: Package },

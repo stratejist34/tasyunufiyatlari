@@ -45,7 +45,9 @@ export function getPriceDisplay(
       return {
         visible: basePrice != null,
         label: basePrice != null ? `${fmt(basePrice)}'ten başlayan` : null,
-        note: 'Başlangıç fiyatı; kalınlık ve miktara göre değişir.',
+        note: rules.requires_city_for_pricing
+          ? 'Fiyat şehir ve miktara göre değişir.'
+          : 'Fiyat miktara göre değişir.',
       };
 
     case 'exact_price':
