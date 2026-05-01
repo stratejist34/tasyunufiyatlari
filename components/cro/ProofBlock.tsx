@@ -71,8 +71,6 @@ export function ProofBlock() {
               <p className="mt-1.5 text-sm text-fe-text-muted leading-relaxed">
                 Kısmi yük, kamyon ve TIR sevkiyatı; iskonto bölgelerine göre ek avantaj.
               </p>
-              {/* TODO: public/proof/sevkiyat.jpg hazır olunca ImagePlaceholder → next/image */}
-              <ImagePlaceholder label="Sevkiyat ağı / araç görseli" ratio="aspect-[16/10]" />
             </div>
           </div>
         </div>
