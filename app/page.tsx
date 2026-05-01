@@ -12,6 +12,7 @@ import { TrustStrip } from '@/components/cro/TrustStrip';
 import { SituationSelector } from '@/components/cro/SituationSelector';
 import { RiskBlock } from '@/components/cro/RiskBlock';
 import { WrongDecisionBlock } from '@/components/cro/WrongDecisionBlock';
+import { ProofBlock } from '@/components/cro/ProofBlock';
 import { Truck, Package, Check, ArrowRight, CaretRight, Star } from "@phosphor-icons/react";
 import { ICON_WEIGHT } from "@/lib/design/tokens";
 
@@ -327,6 +328,9 @@ export default function Home() {
                     </div>
                 </div>
             </section>
+
+            {/* PROOF BLOCK — sprint 4: kanıt katmanı (görsel placeholder, TODO: real assets) */}
+            <ProofBlock />
 
             {/* NAKLIYE — full-width band + yatay step indicator (3-card pattern bırakıldı) */}
             <section className="bg-fe-surface section-pad-md border-t border-fe-border">
