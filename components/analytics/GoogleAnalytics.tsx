@@ -1,7 +1,7 @@
-// Google Analytics 4 — Consent Mode v2.
-// analytics_storage default GRANTED (analytics anonim, KVKK için kabul edilebilir).
-// ad_* default DENIED — reklam çerezleri sadece banner kabul ile granted.
-// Banner reddinde CookieConsent component analytics_storage'ı denied'a çekiyor.
+// Google Analytics 4 — Consent Mode v2 ile başlangıçta DENY (KVKK-strict).
+// CookieConsent.tsx → "Tümünü Kabul Et" tıklanınca analytics + ad çerezleri
+// granted'a çıkar VE explicit bir page_view eventi gönderilir (gtag('config')
+// ilk yüklemede deny olduğu için pageview'ı atlamış olur).
 
 import Script from 'next/script';
 
@@ -23,10 +23,12 @@ export default function GoogleAnalytics({ measurementId }: Props) {
           ad_storage: 'denied',
           ad_user_data: 'denied',
           ad_personalization: 'denied',
-          analytics_storage: 'granted',
+          analytics_storage: 'denied',
           functionality_storage: 'granted',
-          security_storage: 'granted'
+          security_storage: 'granted',
+          wait_for_update: 500
         });
+        gtag('set', 'ads_data_redaction', true);
       `}</Script>
 
       {/* 2) GA4 gtag.js — analytics_storage 'denied' olsa bile yüklenir, anonim sinyal gönderir */}
