@@ -6,7 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { generateQuotePDF } from "@/lib/pdfGenerator";
 import { WHATSAPP_ORDER } from "@/lib/config";
 import { uploadPdfToStorage } from "@/lib/uploadPdfToStorage";
-import { notifyWizardShowPrices } from "@/lib/notifyWizardEvent";
+import {
+  notifyWizardShowPrices,
+  notifyPdfQuoteRequested,
+  notifyWhatsappOrderRequested,
+} from "@/lib/notifyWizardEvent";
 import { PackageCard } from "@/components/package/PackageCard";
 import { PdfOfferModal } from "@/components/modal/PdfOfferModal";
 import { WizardStep1 } from "@/components/wizard/WizardStep1";
@@ -467,6 +471,30 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                 throw new Error(quoteResult.error || "Teklif kaydı oluşturulamadı.");
             }
 
+            // GA4 event — Pdf_Teklif_Talebi (server-side quote insert zaten oldu)
+            const pdfCity = shippingZones.find(z => z.city_code === selectedCityCode);
+            const pdfBrand = brands.find(b => b.id === selectedBrandId);
+            if (pdfCity && pdfBrand) {
+                const pdfPkg = selectedPackageForPdf.logistics;
+                const pdfTotalM2 = pdfPkg ? pdfPkg.packageCount * pdfPkg.packageSizeM2 : undefined;
+                notifyPdfQuoteRequested({
+                    material_type:          selectedMalzeme,
+                    brand_name:             pdfBrand.name,
+                    model_name:             selectedModel,
+                    thickness_cm:           parseInt(selectedKalinlik) || 0,
+                    city_code:              pdfCity.city_code,
+                    city_name:              pdfCity.city_name,
+                    area_m2:                parseFloat(metraj) || 0,
+                    total_m2:               pdfTotalM2,
+                    package_count:          pdfPkg?.packageCount ?? undefined,
+                    selected_package_name:  selectedPackageForPdf.definition.name,
+                    selected_package_total: selectedPackageForPdf.grandTotal,
+                    selected_per_m2:        selectedPackageForPdf.pricePerM2,
+                    ref_code:               refCode,
+                    customer_type:          data.customerCompany ? 'company' : 'individual',
+                });
+            }
+
             // 4. Yeni sekmede aç
             try { window.open(pdfResult.blobUrl, '_blank'); } catch { /* popup blocker */ }
             setShowPdfOfferModal(false);
@@ -848,6 +876,19 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                 && logistics
                 && packageCount < logistics.lorry_capacity_packages;
 
+            // Aksesuar markası stoktan toplanıyorsa (örn. TEKNO) set tek noktadan
+            // çıkamaz → nakliye alıcıya ait. brands.requires_separate_shipping=TRUE
+            // olan aksesuar markaları bu kuralı tetikler.
+            const accBrand = brands.find(b => b.id === pkgDef.accessory_brand_id);
+            const requiresSeparateShipping = accBrand?.requires_separate_shipping === true;
+
+            const isShippingIncluded = !isLowMetrageTasyunu && !requiresSeparateShipping;
+            const shippingWarning = requiresSeparateShipping
+                ? `${accBrand?.name ?? 'Bu aksesuar grubu'} stoktan toplandığı için set tek noktadan sevk edilemez — nakliye alıcıya aittir.`
+                : isLowMetrageTasyunu
+                    ? "Metraj kamyon kapasitesinin altında olduğu için nakliye alıcıya aittir. Ancak fabrikadan en iyi 'Tır İskontosu' fiyatları uygulanmıştır."
+                    : undefined;
+
             calculated.push({
                 definition: pkgDef,
                 plateBrandName: selectedModel ? `${selectedBrand.name} ${selectedModel}` : selectedBrand.name,
@@ -870,8 +911,8 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                     lorryFillPercentage: Math.min((packageCount / logistics.lorry_capacity_packages) * 100, 100),
                     vehicleType: packageCount > logistics.truck_capacity_packages ? 'multiple' :
                                  packageCount >= logistics.lorry_capacity_packages ? 'truck' : 'lorry',
-                    isShippingIncluded: !isLowMetrageTasyunu,
-                    shippingWarning: isLowMetrageTasyunu ? "Metraj kamyon kapasitesinin altında olduğu için nakliye alıcıya aittir. Ancak fabrikadan en iyi 'Tır İskontosu' fiyatları uygulanmıştır." : undefined
+                    isShippingIncluded,
+                    shippingWarning,
                 }
             });
         }
@@ -985,8 +1026,9 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         setIsSubmittingQuote(true);
 
         try {
+            const refCode = `TY${Date.now().toString().slice(-7)}`;
             const quotePayload = buildQuotePayload(selectedPackageForQuote, 'whatsapp_order', {
-                quoteCode: `TY${Date.now().toString().slice(-7)}`,
+                quoteCode: refCode,
             });
             const quoteRes = await fetch('/api/quotes', {
                 method: 'POST',
@@ -999,6 +1041,29 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
             const quoteResult = await quoteRes.json();
             if (!quoteRes.ok || !quoteResult.ok) {
                 throw new Error(quoteResult.error || "Teklif kaydı oluşturulamadı.");
+            }
+
+            // GA4 event — Whatsapp_Siparis (server-side quote insert zaten oldu)
+            const waCity = shippingZones.find(z => z.city_code === selectedCityCode);
+            const waBrand = brands.find(b => b.id === selectedBrandId);
+            if (waCity && waBrand) {
+                const waPkg = selectedPackageForQuote.logistics;
+                const waTotalM2 = waPkg ? waPkg.packageCount * waPkg.packageSizeM2 : undefined;
+                notifyWhatsappOrderRequested({
+                    material_type:          selectedMalzeme,
+                    brand_name:             waBrand.name,
+                    model_name:             selectedModel,
+                    thickness_cm:           parseInt(selectedKalinlik) || 0,
+                    city_code:              waCity.city_code,
+                    city_name:              waCity.city_name,
+                    area_m2:                parseFloat(metraj) || 0,
+                    total_m2:               waTotalM2,
+                    package_count:          waPkg?.packageCount ?? undefined,
+                    selected_package_name:  selectedPackageForQuote.definition.name,
+                    selected_package_total: selectedPackageForQuote.grandTotal,
+                    selected_per_m2:        selectedPackageForQuote.pricePerM2,
+                    ref_code:               refCode,
+                });
             }
 
             const message = generateWhatsAppMessage(
