@@ -8,6 +8,7 @@ import ThicknessSelector from '@/components/catalog/ThicknessSelector';
 import ProductPricePanel from '@/components/catalog/ProductPricePanel';
 import { getCatalogProduct } from '@/lib/catalog/server';
 import { buildMetadata } from '@/lib/seo/buildMetadata';
+import { buildBreadcrumbList } from '@/lib/seo/buildBreadcrumbList';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { unstable_cache } from 'next/cache';
 import SiteHeader from '@/components/shared/SiteHeader';
@@ -156,9 +157,20 @@ export default async function UrunDetayPage({ params, searchParams }: Props) {
     } : {}),
   };
 
+  const breadcrumbSchema = buildBreadcrumbList(
+    [
+      { name: 'Anasayfa', path: '/' },
+      { name: 'Ürünler', path: '/urunler' },
+      { name: kategoriLabel, path: `/urunler/${kategori}` },
+      { name: product.name, path: `/urunler/${kategori}/${slug}` },
+    ],
+    'https://www.tasyunufiyatlari.com',
+  );
+
   return (
     <div className="min-h-screen bg-fe-bg flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <SiteHeader />
 
       {/* Breadcrumb */}

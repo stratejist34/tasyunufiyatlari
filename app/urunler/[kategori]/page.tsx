@@ -6,6 +6,7 @@ import ProductCard from '@/components/catalog/ProductCard';
 import { getCatalogProducts } from '@/lib/catalog/server';
 import { KATEGORI_MAP } from '@/lib/catalog/categories';
 import { buildMetadata } from '@/lib/seo/buildMetadata';
+import { buildBreadcrumbList } from '@/lib/seo/buildBreadcrumbList';
 import SiteHeader from '@/components/shared/SiteHeader';
 import SiteFooter from '@/components/shared/SiteFooter';
 
@@ -34,8 +35,21 @@ export default async function KategoriPage({ params }: Props) {
     info.accessoryTypeSlug ? { accessoryTypeSlug: info.accessoryTypeSlug } : undefined
   );
 
+  const breadcrumbSchema = buildBreadcrumbList(
+    [
+      { name: 'Anasayfa', path: '/' },
+      { name: 'Ürünler', path: '/urunler' },
+      { name: info.title, path: `/urunler/${kategori}` },
+    ],
+    'https://www.tasyunufiyatlari.com',
+  );
+
   return (
     <div className="min-h-screen bg-fe-bg flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <SiteHeader />
 
       {/* Breadcrumb + başlık */}
