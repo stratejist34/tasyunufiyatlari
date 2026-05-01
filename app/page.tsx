@@ -144,24 +144,27 @@ export default function Home() {
                     }}
                 />
                 <div className="relative max-w-[1200px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-10 sm:pb-14">
-                    <Eyebrow className="mb-4">Fabrika Çıkışlı Mantolama</Eyebrow>
-                    <h1 className="font-heading font-extrabold text-white tracking-tight leading-[1.02] text-[clamp(2.25rem,4.6vw,4rem)] max-w-5xl">
-                        Türkiye geneli taşyünü ve EPS fiyatları,{' '}
-                        <span className="text-hub-gold-soft">tek hesapta</span>.
+                    <Eyebrow>Fabrika Çıkışlı Mantolama</Eyebrow>
+                    <h1 className="font-display text-[40px] sm:text-[52px] lg:text-[64px] leading-[1.05] tracking-tight text-fe-text">
+                        Mantolama bütçenizi <span className="text-fe-accent">doğru kuran</span> hesaplayıcı.
                     </h1>
-                    <p className="mt-5 text-fe-text/85 text-base sm:text-lg leading-relaxed max-w-2xl">
-                        Metraj, kalınlık ve şehir verin — 8 kalemlik komple mantolama setiniz, nakliye dahil,
-                        resmi PDF teklifiyle birlikte saniyeler içinde hazır.
+                    <p className="mt-5 max-w-[640px] text-base sm:text-lg text-fe-text-muted leading-relaxed">
+                        Şehir, metraj ve kalınlık verin — 8 kalemlik komple sistem (taşyünü/EPS, dübel, file, sıva), nakliye dahil, resmi PDF teklifle birlikte saniyeler içinde elinizde olur.
                     </p>
-
                     <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-4">
-                        <a href="#mantolama-hesaplayici" className="btn-primary">
-                            Paket Fiyatını Hesapla
-                            <ArrowRight weight={ICON_WEIGHT} size={18} className="btn-arrow" />
-                        </a>
-                        <Link href="/urunler" className="btn-ghost">
-                            Ürün kataloğunu gör
-                            <ArrowRight weight={ICON_WEIGHT} size={16} className="btn-arrow" />
+                        <Link
+                            href="#mantolama-hesaplayici"
+                            className="inline-flex items-center gap-2 rounded-full bg-fe-accent px-6 py-3.5 text-base font-semibold text-fe-bg shadow-lg shadow-fe-accent/20 transition hover:bg-fe-accent-2"
+                        >
+                            Paket fiyatımı hesapla
+                            <ArrowRight size={18} weight={ICON_WEIGHT} />
+                        </Link>
+                        <Link
+                            href="/urunler"
+                            className="inline-flex items-center gap-2 text-base font-medium text-fe-text-muted transition hover:text-fe-text"
+                        >
+                            Önce ürünleri inceleyeyim
+                            <ArrowRight size={16} weight={ICON_WEIGHT} />
                         </Link>
                     </div>
                 </div>
