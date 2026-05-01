@@ -140,10 +140,19 @@ export default async function UrunDetayPage({ params, searchParams }: Props) {
   const kategoriLabel = KATEGORI_LABELS[kategori] ?? kategori;
 
   // ─── Schema.org JSON-LD ──────────────────────────────────────
+  const ORIGIN = 'https://www.tasyunufiyatlari.com';
+  const productUrl = `${ORIGIN}/urunler/${kategori}/${slug}`;
+  const productImage = product.image_cover
+    ? (product.image_cover.startsWith('http') ? product.image_cover : `${ORIGIN}${product.image_cover}`)
+    : `${ORIGIN}/og-image.png`;
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
+    sku: slug,
+    image: [productImage],
+    url: productUrl,
     description: product.catalog_description ?? undefined,
     brand: { '@type': 'Brand', name: product.brand.name },
     category: product.category.name,
@@ -153,6 +162,7 @@ export default async function UrunDetayPage({ params, searchParams }: Props) {
         priceCurrency: 'TRY',
         price: product.base_price,
         availability: 'https://schema.org/InStock',
+        url: productUrl,
       },
     } : {}),
   };
