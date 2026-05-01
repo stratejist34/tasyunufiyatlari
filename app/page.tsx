@@ -14,28 +14,28 @@ import { ICON_WEIGHT } from "@/lib/design/tokens";
 
 const faqItems = [
     {
-        q: "Hesaplama neler içeriyor?",
-        a: "Hesaplama; yalıtım levhası, yapıştırıcı, ısı yalıtım sıvası, donatı filesi, dübel, kaplama astarı, mineral kaplama ve fileli köşe olmak üzere 8 kalemi kapsar. Her kalem için standart sarfiyat değerleri kullanılır; miktarlar paket bazında yukarı yuvarlanır.",
+        q: "Hangi kalınlığı ve hangi malzemeyi seçmeliyim?",
+        a: "Bina tipi (apartman/villa/iş yeri), iklim bölgesi ve enerji kimlik belgesi hedefine göre değişir. Soğuk illerde (Erzurum, Kars, Sivas) 8–10 cm taşyünü; ılıman bölgelerde 5–6 cm EPS yeterli olabilir. Hesaplayıcı, seçimlerinize göre hangi sistemi önerdiğini her adımda gösterir.",
     },
     {
-        q: "Nakliye ücreti hesaplamaya dahil mi?",
-        a: "Evet. Sistem araç kapasitesine (kamyon veya TIR) ve doluluk oranına göre nakliye maliyetini otomatik hesaplar. Araç tam dolmadığında kısmi yük farkı oluşur; tam kapasitede nakliye sıfırlanır.",
+        q: "Hesabı yanlış yaparsam ne kaybederim?",
+        a: "Eksik kalınlık seçimi yıllık ısınma giderinde %15–25 fark, eksik metraj ise sahada eksik malzeme + ek nakliye masrafı yaratır. Hesaplayıcı standart sarfiyat (kesim, fire) ve yuvarlamayı otomatik dahil eder, bu nedenle teklif gerçek sahaya yakın çıkar.",
     },
     {
-        q: "Bölgeye göre fiyat neden değişiyor?",
-        a: "Her il için farklı nakliye mesafesi ve iskonto bölgesi tanımlıdır. Seçtiğiniz şehre göre hem nakliye maliyeti hem de bölgesel iskonto oranı otomatik uygulanır.",
+        q: "Nakliye ücreti hesaba dahil mi, bölgeye göre değişir mi?",
+        a: "Evet, nakliye dahildir. Şehir kodu seçildiğinde sistem kısmi yük (1 paletten itibaren), kamyon ve TIR seçeneklerinden uygun olanı otomatik hesaplar. Tam araç dolduğunda iskonto bölgelerine göre ek indirim uygulanır.",
     },
     {
-        q: "PDF teklif ne zaman hazır olur?",
-        a: "Formu doldurup onayladıktan sonra PDF teklif saniyeler içinde tarayıcınızda açılır ve cihazınıza indirilebilir. Teklif 24 saat geçerlidir.",
+        q: "PDF teklif ne zaman ve nasıl elime ulaşır?",
+        a: "Hesabı tamamladıktan sonra ad-soyad ve telefon bilgisini girdiğinizde resmi PDF saniyeler içinde oluşur, mail adresinize ve WhatsApp üzerinden gönderilir. Teklifte referans numarası, kalem listesi ve 24 saat geçerli sabit fiyat yer alır.",
     },
     {
-        q: "Hangi kalınlığı seçmeliyim?",
-        a: "Kalınlık seçimi bina türüne, iklim bölgesine ve enerji kimlik belgesi hedefine göre değişir. Standart konut projelerinde 5–8 cm sık tercih edilirken yüksek enerji verimliliği için 10–15 cm önerilir.",
+        q: "Sipariş nasıl ilerler, ön ödeme gerekir mi?",
+        a: "PDF teklifteki referans numarasını WhatsApp üzerinden bize iletmeniz yeterli. Sevkiyat planı (tarih, araç tipi) onaylanır, kapora oranı paket büyüklüğüne göre değişir; bu kısmı satış ekibi netleştirir.",
     },
     {
-        q: "PDF teklif sonrası nasıl sipariş veririm?",
-        a: "PDF teklifinizdeki WhatsApp bağlantısına tıklayarak doğrudan bizimle iletişime geçebilirsiniz. Teklifiniz sistemimizde kayıtlı olduğu için referans numarası ile anında sipariş sürecini başlatabilirsiniz.",
+        q: "Kararsızım, hangi paketi seçeceğimi bilmiyorum.",
+        a: "Hesaplayıcı 3 paket seçeneği (Ekonomik, Dengeli, Orijinal) sunar; aralarındaki fark malzeme markası ve yardımcı kalemlerin sınıfıdır. Emin değilseniz \"Bize ulaşın\" üzerinden sahanızı paylaşın, doğru paket için teknik öneri yapalım.",
     },
 ];
 
@@ -410,8 +410,9 @@ export default function Home() {
             <section className="bg-fe-bg section-pad-md border-t border-fe-border">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6">
                     <SectionHeader
-                        eyebrow="Sorular"
-                        title="Sık sorulanlar"
+                        eyebrow="Sıkça Sorulanlar"
+                        title="Karar vermeden önce merak ettikleriniz"
+                        lead="En sık aldığımız 6 soru ve net cevapları."
                         tone="dark"
                         className="mb-12"
                     />
