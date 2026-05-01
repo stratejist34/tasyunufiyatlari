@@ -11,6 +11,7 @@ import { ChevronDown, Layers, Package } from "lucide-react";
 import { notifyWhatsappIntent } from "@/lib/notifyWhatsappIntent";
 
 import type { CatalogProductView, DecisionContext, WizardPrefill } from "@/lib/catalog/types";
+import { getPriceDisplay } from "@/lib/catalog/decision";
 import SepetUI, { type SepetState, type SepetScenario } from "./SepetUI";
 import SingleProductQuoteButton from "./SingleProductQuoteButton";
 import StokAlternatifSection from "./StokAlternatifSection";
@@ -249,21 +250,55 @@ export default function ProductPricePanel({
 
       <div className="rounded-xl border border-fe-border bg-fe-raised/40 p-5">
 
-        {/* ─── Fiyat Görünürlük Kontrolleri ─── */}
-        {rules.pricing_visibility_mode === "hidden" && (
-          <p className="mb-4 text-fe-muted text-sm italic">Fiyat görüntülenmez</p>
-        )}
+        {/* ─── Fiyat Görünürlük Kontrolleri (decision.ts tek otorite) ─── */}
+        {(() => {
+          // Hero dinamik fiyat hesaplandığında statik etiket gizlenir.
+          if (showTierPrice && heroPrice !== null) return null;
 
-        {rules.pricing_visibility_mode === "quote_required" && (
-          <div className="mb-4">
-            <p className="mb-1 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
-              Fiyat
-            </p>
-            <p className="text-base font-medium text-fe-text">Teklif ile belirlenir</p>
-          </div>
-        )}
+          const display = getPriceDisplay(
+            rules,
+            base_price,
+            product.product_type === 'plate' ? 'm²' : 'paket'
+          );
 
-        {/* ─── Hero Fiyat (dinamik) ─── */}
+          // Görünmez kategori (hidden / quote_required) — yine de açıklama satırı göster
+          if (!display.visible) {
+            return (
+              <div className="mb-4">
+                <p className="mb-1 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
+                  Fiyat
+                </p>
+                <p className="text-base font-medium text-fe-text">
+                  {rules.pricing_visibility_mode === 'hidden'
+                    ? 'Fiyat görüntülenmez'
+                    : 'Teklif ile belirlenir'}
+                </p>
+                {display.note && (
+                  <p className="mt-1 text-[11px] text-fe-muted">{display.note}</p>
+                )}
+              </div>
+            );
+          }
+
+          // from_price / exact_price → statik başlangıç etiketi
+          const isFromPrice = rules.pricing_visibility_mode === 'from_price';
+          return (
+            <div className="mb-5">
+              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
+                {isFromPrice ? 'Başlangıç Fiyatı' : 'Fiyat'}
+              </p>
+              <p className="text-3xl font-bold leading-none text-white">
+                {display.label}
+              </p>
+              {display.note && (
+                <p className="mt-1.5 text-[11px] text-fe-muted">{display.note}</p>
+              )}
+              <p className="mt-1 text-[11px] text-fe-muted-strong">KDV hariç</p>
+            </div>
+          );
+        })()}
+
+        {/* ─── Hero Fiyat (dinamik — şehir/metraj seçildiğinde) ─── */}
         {showTierPrice && heroPrice !== null && (
           <div className="mb-5" aria-live="polite" aria-atomic="true">
             <p className="mb-1 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
