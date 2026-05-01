@@ -380,21 +380,27 @@ export default function Home() {
             {/* CTA BAND */}
             <section className="bg-fe-surface section-pad-md border-t border-fe-border">
                 <RevealOnScroll className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-                    <Eyebrow className="mb-5 justify-center">Şimdi Başla</Eyebrow>
-                    <h2 className="font-heading font-bold text-white text-3xl sm:text-4xl md:text-5xl mb-5 tracking-tight leading-tight">
-                        PDF teklifinizi saniyeler içinde oluşturun
+                    <Eyebrow className="mb-5 justify-center">Karar Verin</Eyebrow>
+                    <h2 className="mt-3 font-heading font-extrabold text-[32px] sm:text-[40px] leading-[1.1] tracking-tight text-fe-text">
+                        Bütçeniz nakliye dahil, paket bazında <span className="text-fe-accent">resmi PDF teklif</span> olarak elinizde.
                     </h2>
-                    <p className="text-fe-text/85 text-base sm:text-lg leading-relaxed mb-10 max-w-xl mx-auto">
-                        Hesaplayıcıdan paketinizi seçin, ad ve telefon bilgisi girin — nakliye dahil resmi fiyat teklifiniz hazır.
+                    <p className="mt-4 max-w-[620px] text-base text-fe-text-muted leading-relaxed">
+                        Hesaplayıcıdan paketi seçin — fiyat, kalemler ve nakliye dahil tutar tek ekranda. PDF teklifte 24 saat geçerli sabit fiyat ve referans numarası olur, sipariş için aynı numarayı WhatsApp üzerinden iletmeniz yeterli.
                     </p>
-                    <div className="flex flex-wrap items-center justify-center gap-4">
-                        <a href="#mantolama-hesaplayici" className="btn-primary">
-                            Şimdi Hesapla
-                            <ArrowRight weight={ICON_WEIGHT} size={18} className="btn-arrow" />
-                        </a>
-                        <Link href="/iletisim" className="btn-ghost">
-                            Bize ulaşın
-                            <ArrowRight weight={ICON_WEIGHT} size={16} className="btn-arrow" />
+                    <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-4">
+                        <Link
+                            href="#mantolama-hesaplayici"
+                            className="inline-flex items-center gap-2 rounded-full bg-fe-accent px-6 py-3.5 text-base font-semibold text-fe-bg shadow-lg shadow-fe-accent/20 transition hover:bg-fe-accent-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fe-accent focus-visible:ring-offset-2 focus-visible:ring-offset-fe-bg"
+                        >
+                            Paket fiyatımı hesapla
+                            <ArrowRight size={18} weight={ICON_WEIGHT} />
+                        </Link>
+                        <Link
+                            href="/iletisim"
+                            className="inline-flex items-center gap-2 text-base font-medium text-fe-text-muted transition hover:text-fe-text"
+                        >
+                            Önce sorum var
+                            <ArrowRight size={16} weight={ICON_WEIGHT} />
                         </Link>
                     </div>
                 </RevealOnScroll>
