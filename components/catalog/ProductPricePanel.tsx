@@ -255,10 +255,16 @@ export default function ProductPricePanel({
           // Hero dinamik fiyat hesaplandığında statik etiket gizlenir.
           if (showTierPrice && heroPrice !== null) return null;
 
-          // Zone-aware fiyat: şehir değişikliği truckPrice/lorryPrice'ı yeniden
-          // hesaplar (zone discount'ları içerir). Yoksa base_price'a düşer.
-          // Aksesuar gibi logistics olmayan ürünlerde base_price stabil kalır.
-          const dynamicPrice = truckPrice ?? lorryPrice ?? base_price;
+          // Zone-aware fiyat — 3 katmanlı:
+          //   1. truckPrice (plate, TIR — en agresif zone indirimi)
+          //   2. lorryPrice (plate, Kamyon)
+          //   3. base_price × (1 − discount_tir%) (aksesuar, logistics yok)
+          // Şehir değişimi her durumda fiyatı yeniden hesaplar.
+          const accessoryTirPrice =
+            base_price != null && zone
+              ? Math.round(base_price * (1 - parseFloat(String(zone.discount_tir)) / 100) * 100) / 100
+              : base_price;
+          const dynamicPrice = truckPrice ?? lorryPrice ?? accessoryTirPrice;
 
           const display = getPriceDisplay(
             rules,
