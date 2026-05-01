@@ -34,6 +34,9 @@ export const metadata: Metadata = {
   },
   description:
     "Türkiye geneli taşyünü ve EPS fiyatları. Lojistik dahil mantolama maliyetinizi hesaplayın.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     siteName: "Taşyünü Fiyatları",
     type: "website",
