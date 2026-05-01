@@ -54,7 +54,7 @@ export function ProofBlock() {
             </p>
             <div className="mt-4 overflow-hidden rounded-lg border border-fe-border/30 bg-fe-surface/40">
               <Image
-                src="/ornek-pdf.webp"
+                src="/images/ornek-pdf.webp"
                 alt="Anonimleştirilmiş örnek mantolama PDF teklifi"
                 width={800}
                 height={1000}
