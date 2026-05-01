@@ -220,9 +220,9 @@ export default function Home() {
             <section className="bg-fe-surface section-pad-md border-t border-fe-border">
                 <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
                     <SectionHeader
-                        eyebrow="3 Adımda"
-                        title={<>Hesaplamadan teklife,<br className="hidden sm:inline" /> kesintisiz akış</>}
-                        lead="Süreç boyunca tek formdasınız. Wizard, levha + 7 aksesuar + nakliye + iskontoyu kendi başına hesaplar."
+                        eyebrow="Karar → Sevkiyat"
+                        title="3 adımda doğru karar, doğru sevkiyat"
+                        lead="Hesaplayıcı sadece fiyatı değil, hangi sistemin sizin için doğru olduğunu da gösterir; sevkiyatı tarih ve araç tipiyle planlarız."
                         tone="dark"
                         className="mb-16"
                     />
