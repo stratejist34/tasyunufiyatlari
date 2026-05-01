@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { ErrorBoundaryWrapper } from "@/components/shared/ErrorBoundaryWrapper";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import GAPageviewTracker from "@/components/analytics/GAPageviewTracker";
 import CookieConsent from "@/components/analytics/CookieConsent";
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || "G-VCHRKVJCEN";
@@ -85,7 +86,12 @@ export default function RootLayout({
         <ErrorBoundaryWrapper>
           <Providers>{children}</Providers>
         </ErrorBoundaryWrapper>
-        {process.env.NODE_ENV === "production" && <CookieConsent />}
+        {process.env.NODE_ENV === "production" && (
+          <>
+            <GAPageviewTracker measurementId={GA_MEASUREMENT_ID} />
+            <CookieConsent />
+          </>
+        )}
       </body>
     </html>
   );

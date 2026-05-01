@@ -41,7 +41,8 @@ export default function GoogleAnalytics({ measurementId }: Props) {
         gtag('config', '${measurementId}', {
           anonymize_ip: true,
           allow_google_signals: false,
-          allow_ad_personalization_signals: false
+          allow_ad_personalization_signals: false,
+          send_page_view: false
         });
       `}</Script>
     </>

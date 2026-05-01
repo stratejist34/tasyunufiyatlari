@@ -13,26 +13,12 @@ import { X } from '@phosphor-icons/react';
 import { ICON_WEIGHT } from '@/lib/design/tokens';
 
 const STORAGE_KEY = 'cookie-consent-v1';
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-VCHRKVJCEN';
 
 type ConsentValue = 'accepted' | 'rejected';
 
 type GtagWindow = Window & {
   gtag?: (...args: unknown[]) => void;
 };
-
-function sendPageView() {
-  if (typeof window === 'undefined') return;
-  const w = window as GtagWindow;
-  if (typeof w.gtag !== 'function') return;
-
-  w.gtag('event', 'page_view', {
-    page_title: document.title,
-    page_location: window.location.href,
-    page_path: `${window.location.pathname}${window.location.search}`,
-    send_to: GA_MEASUREMENT_ID,
-  });
-}
 
 function setGtagConsent(value: ConsentValue) {
   if (typeof window === 'undefined') return;
@@ -45,9 +31,6 @@ function setGtagConsent(value: ConsentValue) {
       ad_user_data: 'granted',
       ad_personalization: 'granted',
     });
-    // gtag('config') ilk yüklemede deny durumunda çalıştığı için
-    // consent verildikten sonra mevcut sayfa görüntülemesini açıkça yeniden gönderiyoruz.
-    sendPageView();
   } else {
     w.gtag('consent', 'update', {
       analytics_storage: 'denied',
