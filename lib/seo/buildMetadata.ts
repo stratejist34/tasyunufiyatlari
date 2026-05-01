@@ -9,7 +9,7 @@
 import type { Metadata } from 'next';
 
 const SITE_NAME = 'Taşyünü Fiyatları';
-const DEFAULT_OG_IMAGE = '/og-default.png';
+const DEFAULT_OG_IMAGE = '/og-image.png';
 
 // Next.js Metadata API runtime'da yalnız 'website' | 'article' kabul ediyor.
 // Ürün sayfaları için 'product' istense de OG protokolündeki ham değer
