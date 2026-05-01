@@ -9,6 +9,7 @@ import NumberMarker from "@/components/shared/NumberMarker";
 import RevealOnScroll from "@/components/shared/RevealOnScroll";
 import WizardCalculator from "@/components/wizard/WizardCalculator";
 import { TrustStrip } from '@/components/cro/TrustStrip';
+import { SituationSelector } from '@/components/cro/SituationSelector';
 import { Truck, Package, Check, ArrowRight, CaretRight, Star } from "@phosphor-icons/react";
 import { ICON_WEIGHT } from "@/lib/design/tokens";
 
@@ -172,6 +173,7 @@ export default function Home() {
             </section>
 
             <TrustStrip />
+            <SituationSelector />
 
             {/* WIZARD CALCULATOR — id form kartına atandı (WizardCalculator içinde) */}
             <section className="bg-fe-surface border-t border-fe-border">
