@@ -134,3 +134,24 @@ export function notifyWhatsappOrderRequested(p: WhatsappOrderRequestedPayload): 
     ref_code:                p.ref_code,
   });
 }
+
+// ─── 4. Situation Selected (Sprint 2 — Karar Yardımı) ────────────────
+const GA_EVENT_SITUATION_SELECTED = 'Situation_Selected';
+
+export type SituationKey =
+  | 'isi_yalitimi'
+  | 'ses_yalitimi'
+  | 'cati_yalitimi'
+  | 'emin_degilim';
+
+export interface SituationSelectedPayload {
+  situationKey: SituationKey;
+  situationLabel: string;
+}
+
+export function notifySituationSelected(p: SituationSelectedPayload): void {
+  emit(GA_EVENT_SITUATION_SELECTED, {
+    situation_key:   p.situationKey,
+    situation_label: p.situationLabel,
+  });
+}
