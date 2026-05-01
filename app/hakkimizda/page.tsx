@@ -9,6 +9,7 @@ import Timeline, { type Milestone } from '@/components/about/Timeline';
 import { Handshake, Truck, Medal, ArrowRight } from '@phosphor-icons/react/dist/ssr';
 import { ICON_WEIGHT } from '@/lib/design/tokens';
 import { buildMetadata } from '@/lib/seo/buildMetadata';
+import { buildLocalBusiness } from '@/lib/seo/buildLocalBusiness';
 
 const PHONE_TEL = '+905322041825';
 
@@ -200,6 +201,10 @@ export default function HakkimizdaPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildLocalBusiness()) }}
       />
     </div>
   );

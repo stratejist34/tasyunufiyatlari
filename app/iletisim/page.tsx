@@ -8,6 +8,7 @@ import RevealOnScroll from '@/components/shared/RevealOnScroll';
 import WhatsappLink from '@/components/shared/WhatsappLink';
 import PhoneCallLink from '@/components/shared/PhoneCallLink';
 import { buildMetadata } from '@/lib/seo/buildMetadata';
+import { buildLocalBusiness } from '@/lib/seo/buildLocalBusiness';
 import {
   Phone,
   WhatsappLogo,
@@ -297,6 +298,10 @@ export default function IletisimPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(contactPageJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildLocalBusiness()) }}
       />
     </div>
   );
