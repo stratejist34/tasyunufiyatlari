@@ -73,7 +73,7 @@ export function SituationSelector() {
   return (
     <section
       aria-labelledby="situation-baslik"
-      className="bg-fe-bg py-12 sm:py-16"
+      className="bg-fe-bg py-16 sm:py-24"
     >
       <div className="max-w-[1100px] mx-auto px-4">
         <div className="text-center max-w-[640px] mx-auto">

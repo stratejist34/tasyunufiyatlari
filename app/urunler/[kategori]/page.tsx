@@ -7,6 +7,7 @@ import { getCatalogProducts } from '@/lib/catalog/server';
 import { KATEGORI_MAP } from '@/lib/catalog/categories';
 import { buildMetadata } from '@/lib/seo/buildMetadata';
 import { buildBreadcrumbList } from '@/lib/seo/buildBreadcrumbList';
+import { SITE_ORIGIN } from '@/lib/seo/siteConfig';
 import SiteHeader from '@/components/shared/SiteHeader';
 import SiteFooter from '@/components/shared/SiteFooter';
 
@@ -41,7 +42,7 @@ export default async function KategoriPage({ params }: Props) {
       { name: 'Ürünler', path: '/urunler' },
       { name: info.title, path: `/urunler/${kategori}` },
     ],
-    'https://www.tasyunufiyatlari.com',
+    SITE_ORIGIN,
   );
 
   return (

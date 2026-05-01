@@ -3,6 +3,7 @@ import { MOCK_TRANSACTIONS } from "@/lib/data/marketData";
 import WizardCalculator from "@/components/wizard/WizardCalculator";
 import { buildMetadata } from '@/lib/seo/buildMetadata';
 import { buildBreadcrumbList } from '@/lib/seo/buildBreadcrumbList';
+import { SITE_ORIGIN } from '@/lib/seo/siteConfig';
 
 // DİKKAT: Params artık bir Promise
 type Props = {
@@ -40,10 +41,9 @@ export default async function BolgePage({ params }: Props) {
   const breadcrumbSchema = buildBreadcrumbList(
     [
       { name: 'Anasayfa', path: '/' },
-      { name: city, path: `/bolge/${resolvedParams.sehir}` },
-      { name: district, path: `/bolge/${resolvedParams.sehir}/${resolvedParams.ilce}` },
+      { name: `${city} ${district}`, path: `/bolge/${resolvedParams.sehir}/${resolvedParams.ilce}` },
     ],
-    'https://www.tasyunufiyatlari.com',
+    SITE_ORIGIN,
   );
 
   return (

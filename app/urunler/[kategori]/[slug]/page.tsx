@@ -9,6 +9,7 @@ import ProductPricePanel from '@/components/catalog/ProductPricePanel';
 import { getCatalogProduct } from '@/lib/catalog/server';
 import { buildMetadata } from '@/lib/seo/buildMetadata';
 import { buildBreadcrumbList } from '@/lib/seo/buildBreadcrumbList';
+import { SITE_ORIGIN } from '@/lib/seo/siteConfig';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { unstable_cache } from 'next/cache';
 import SiteHeader from '@/components/shared/SiteHeader';
@@ -140,11 +141,10 @@ export default async function UrunDetayPage({ params, searchParams }: Props) {
   const kategoriLabel = KATEGORI_LABELS[kategori] ?? kategori;
 
   // ─── Schema.org JSON-LD ──────────────────────────────────────
-  const ORIGIN = 'https://www.tasyunufiyatlari.com';
-  const productUrl = `${ORIGIN}/urunler/${kategori}/${slug}`;
+  const productUrl = `${SITE_ORIGIN}/urunler/${kategori}/${slug}`;
   const productImage = product.image_cover
-    ? (product.image_cover.startsWith('http') ? product.image_cover : `${ORIGIN}${product.image_cover}`)
-    : `${ORIGIN}/og-image.png`;
+    ? (product.image_cover.startsWith('http') ? product.image_cover : `${SITE_ORIGIN}${product.image_cover}`)
+    : `${SITE_ORIGIN}/og-image.png`;
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -174,7 +174,7 @@ export default async function UrunDetayPage({ params, searchParams }: Props) {
       { name: kategoriLabel, path: `/urunler/${kategori}` },
       { name: product.name, path: `/urunler/${kategori}/${slug}` },
     ],
-    'https://www.tasyunufiyatlari.com',
+    SITE_ORIGIN,
   );
 
   return (

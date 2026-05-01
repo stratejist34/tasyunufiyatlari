@@ -1,3 +1,5 @@
+import { SITE_ORIGIN } from './siteConfig';
+
 export type LocalBusinessSchema = {
   '@context': 'https://schema.org';
   '@type': 'LocalBusiness';
@@ -21,15 +23,17 @@ export type LocalBusinessSchema = {
     closes: string;
   }>;
   priceRange: string;
+  foundingDate?: string;
+  founder?: { '@type': 'Person'; name: string };
 };
 
-export function buildLocalBusiness(): LocalBusinessSchema {
-  return {
+export function buildLocalBusiness(opts?: { foundingDate?: string; founder?: string }): LocalBusinessSchema {
+  const base: LocalBusinessSchema = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: 'Taşyünü Fiyatları',
     legalName: 'ÖzerGrup Yalıtım ve İzolasyon A.Ş.',
-    url: 'https://www.tasyunufiyatlari.com',
+    url: SITE_ORIGIN,
     telephone: '+905322041825',
     email: 'bilgi@tasyunufiyatlari.com',
     address: {
@@ -50,4 +54,7 @@ export function buildLocalBusiness(): LocalBusinessSchema {
     ],
     priceRange: '₺₺',
   };
+  if (opts?.foundingDate) base.foundingDate = opts.foundingDate;
+  if (opts?.founder) base.founder = { '@type': 'Person', name: opts.founder };
+  return base;
 }

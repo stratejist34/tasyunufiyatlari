@@ -11,34 +11,15 @@ import { ICON_WEIGHT } from '@/lib/design/tokens';
 import { buildMetadata } from '@/lib/seo/buildMetadata';
 import { buildLocalBusiness } from '@/lib/seo/buildLocalBusiness';
 
-const PHONE_TEL = '+905322041825';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Hakkımızda — ÖzerGrup Yalıtım',
+  title: 'Hakkımızda',
   description:
     "2006'dan beri yalıtım sektöründe. 20 yıllık tecrübe, 81 il sevkiyat, Filli Boya / Fawori / Dalmaçyalı resmi bayilik. ÖzerGrup Yalıtım ve İzolasyon A.Ş.",
   path: '/hakkimizda',
   type: 'website',
 });
 
-const orgJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: 'Taşyünü Fiyatları',
-  legalName: 'ÖzerGrup Yalıtım ve İzolasyon A.Ş.',
-  foundingDate: '2006',
-  founder: { '@type': 'Person', name: 'Muhammet Öztürk' },
-  url: 'https://www.tasyunufiyatlari.com',
-  telephone: PHONE_TEL,
-  address: {
-    '@type': 'PostalAddress',
-    streetAddress: 'Orhanlı Mescit Mh. Demokrasi Cd. No:5',
-    addressLocality: 'Tuzla',
-    addressRegion: 'İstanbul',
-    addressCountry: 'TR',
-  },
-  areaServed: { '@type': 'Country', name: 'Türkiye' },
-};
 
 const MILESTONES: Milestone[] = [
   {
@@ -200,11 +181,7 @@ export default function HakkimizdaPage() {
 
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildLocalBusiness()) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildLocalBusiness({ foundingDate: '2006', founder: 'Muhammet Öztürk' })) }}
       />
     </div>
   );
