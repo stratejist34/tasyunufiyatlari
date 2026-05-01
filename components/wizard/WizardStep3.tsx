@@ -32,6 +32,9 @@ export function WizardStep3({ shippingZones, selectedCityCode, onCityChange }: W
         >
             <div className="mb-5">
                 <label className="block text-sm font-semibold text-white mb-2">Teslimat İli</label>
+                <p className="mt-2 text-sm text-fe-text-muted leading-relaxed">
+                    Şehir nakliye tutarını ve iskonto bölgesini belirler. Tam araç dolduğunda iskonto otomatik uygulanır.
+                </p>
                 <select
                     value={selectedCityCode ?? ""}
                     onChange={e => onCityChange(Number(e.target.value))}
@@ -83,11 +86,6 @@ export function WizardStep3({ shippingZones, selectedCityCode, onCityChange }: W
             {selectedZone?.city_name === 'İstanbul' && (
                 <p className="text-[11px] text-fe-muted text-center mt-3">
                     Varsayılan İstanbul. Farklı il için seçim yapın.
-                </p>
-            )}
-            {!selectedCityCode && (
-                <p className="text-xs text-fe-muted text-center mt-3">
-                    İl seçimi, bölge iskontosunu ve nakliye hesaplamasını belirler.
                 </p>
             )}
         </motion.div>

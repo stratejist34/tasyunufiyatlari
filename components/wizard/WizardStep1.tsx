@@ -57,6 +57,9 @@ export function WizardStep1({
             {/* Malzeme Tipi */}
             <div className="mb-5">
                 <label className="block text-sm font-semibold text-white mb-3">Malzeme Tipi</label>
+                <p className="mt-2 text-sm text-fe-text-muted leading-relaxed">
+                    Taşyünü ısıya ve sese karşı daha güçlü; EPS daha hafif ve ekonomik. Marka seçimi paket fiyatını ±%10 değiştirir, sistem aynıdır.
+                </p>
                 <div className="grid grid-cols-2 gap-3">
                     {([
                         { value: "tasyunu", label: "Taşyünü", sub: "Yüksek Yangın Dayanımı", img: "/images/ikonlar/tas-yunu-levha.webp" },
@@ -138,6 +141,15 @@ export function WizardStep1({
                         </div>
                     </div>
                 )}
+            </div>
+
+            <div className="mt-6 flex items-center justify-center">
+                <a
+                    href="/iletisim"
+                    className="text-xs text-fe-text-muted underline underline-offset-4 hover:text-fe-text transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fe-accent/40 rounded"
+                >
+                    Emin değilim, benimle iletişime geçin
+                </a>
             </div>
         </motion.div>
     );
