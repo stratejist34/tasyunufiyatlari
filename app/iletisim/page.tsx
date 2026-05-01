@@ -7,6 +7,7 @@ import Eyebrow from '@/components/shared/Eyebrow';
 import RevealOnScroll from '@/components/shared/RevealOnScroll';
 import WhatsappLink from '@/components/shared/WhatsappLink';
 import PhoneCallLink from '@/components/shared/PhoneCallLink';
+import { buildMetadata } from '@/lib/seo/buildMetadata';
 import {
   Phone,
   WhatsappLogo,
@@ -30,12 +31,13 @@ const ADDRESS_CITY = 'Tuzla / İstanbul';
 const MAPS_DIRECTIONS_URL =
   'https://www.google.com/maps/dir/?api=1&destination=40.8933583,29.3547698';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'İletişim',
   description:
     'Soru, teklif ve bayilik için bize ulaşın. Telefon, WhatsApp, e-posta. Mesai içinde 30 dk dönüş garantisi.',
-  alternates: { canonical: '/iletisim' },
-};
+  path: '/iletisim',
+  type: 'website',
+});
 
 const contactPageJsonLd = {
   '@context': 'https://schema.org',

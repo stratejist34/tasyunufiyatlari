@@ -24,6 +24,11 @@ export interface BuildMetadataOptions {
   type?: OgType;
 }
 
+/**
+ * Sayfa başlığı `title` parametresi suffix'siz (ham) verilir.
+ * Root layout'un `title.template = "%s | Taşyünü Fiyatları"` ayarı suffix'i otomatik ekler;
+ * burada manuel olarak " | Taşyünü Fiyatları" sonu eklemeyin → çift suffix oluşur.
+ */
 export function buildMetadata({
   title,
   description,

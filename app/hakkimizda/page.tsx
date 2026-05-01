@@ -8,15 +8,17 @@ import RevealOnScroll from '@/components/shared/RevealOnScroll';
 import Timeline, { type Milestone } from '@/components/about/Timeline';
 import { Handshake, Truck, Medal, ArrowRight } from '@phosphor-icons/react/dist/ssr';
 import { ICON_WEIGHT } from '@/lib/design/tokens';
+import { buildMetadata } from '@/lib/seo/buildMetadata';
 
 const PHONE_TEL = '+905322041825';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Hakkımızda — ÖzerGrup Yalıtım',
   description:
     "2006'dan beri yalıtım sektöründe. 20 yıllık tecrübe, 81 il sevkiyat, Filli Boya / Fawori / Dalmaçyalı resmi bayilik. ÖzerGrup Yalıtım ve İzolasyon A.Ş.",
-  alternates: { canonical: '/hakkimizda' },
-};
+  path: '/hakkimizda',
+  type: 'website',
+});
 
 const orgJsonLd = {
   '@context': 'https://schema.org',

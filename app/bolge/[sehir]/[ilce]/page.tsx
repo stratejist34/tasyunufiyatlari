@@ -1,6 +1,7 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { MOCK_TRANSACTIONS } from "@/lib/data/marketData";
 import WizardCalculator from "@/components/wizard/WizardCalculator";
+import { buildMetadata } from '@/lib/seo/buildMetadata';
 
 // DİKKAT: Params artık bir Promise
 type Props = {
@@ -10,14 +11,16 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Params'ı önce bekliyoruz (await)
   const resolvedParams = await params;
-  
+
   const city = resolvedParams.sehir.charAt(0).toUpperCase() + resolvedParams.sehir.slice(1);
   const district = resolvedParams.ilce.charAt(0).toUpperCase() + resolvedParams.ilce.slice(1);
-  
-  return {
-    title: `${city} ${district} Taşyünü ve Mantolama Fiyatları | Lojistik Destekli`,
+
+  return buildMetadata({
+    title: `${city} ${district} Taşyünü ve Mantolama Fiyatları`,
     description: `${city} ${district} bölgesi için güncel taşyünü fiyatları, tır bazlı sevkiyat avantajları.`,
-  }
+    path: `/bolge/${resolvedParams.sehir}/${resolvedParams.ilce}`,
+    type: 'website',
+  });
 }
 
 export default async function BolgePage({ params }: Props) {
