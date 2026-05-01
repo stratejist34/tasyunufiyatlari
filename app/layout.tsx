@@ -48,6 +48,13 @@ export const metadata: Metadata = {
     description:
       "Türkiye geneli taşyünü ve EPS fiyatları. Lojistik dahil mantolama maliyetinizi hesaplayın.",
   },
+  icons: {
+    icon: [
+      { url: "/images/ikonlar/favicon.webp", type: "image/webp" },
+    ],
+    shortcut: ["/images/ikonlar/favicon.webp"],
+    apple: ["/images/ikonlar/favicon.webp"],
+  },
 };
 
 export default function RootLayout({

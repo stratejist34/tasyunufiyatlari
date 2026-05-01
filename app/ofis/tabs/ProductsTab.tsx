@@ -44,6 +44,21 @@ export function ProductsTab() {
     const [editingAccessory, setEditingAccessory] = useState<any | null>(null);
     const [editSaving, setEditSaving] = useState(false);
     const [editError, setEditError] = useState<string | null>(null);
+    const [imageLibrary, setImageLibrary] = useState<Array<{ name: string; url: string }>>([]);
+    const [imageLibraryLoaded, setImageLibraryLoaded] = useState(false);
+    const [imagePickerOpen, setImagePickerOpen] = useState(false);
+    const [imagePickerQuery, setImagePickerQuery] = useState('');
+
+    async function ensureImageLibrary() {
+        if (imageLibraryLoaded) return;
+        try {
+            const res = await fetch('/api/admin/storage-images');
+            const json = await res.json();
+            if (res.ok) setImageLibrary(json.files ?? []);
+        } finally {
+            setImageLibraryLoaded(true);
+        }
+    }
 
     async function savePlateRules(id: number, fields: Record<string, unknown>) {
         setEditSaving(true);
@@ -773,6 +788,27 @@ export function ProductsTab() {
                             <fieldset className="space-y-3">
                                 <legend className="text-xs font-semibold text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-700 w-full">Katalog Bilgileri</legend>
                                 <div>
+                                    <label className="block text-xs text-slate-400 mb-1">Kapak Görseli</label>
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-24 h-24 shrink-0 rounded-lg border border-slate-600 bg-slate-800 overflow-hidden flex items-center justify-center">
+                                            {editingAccessory.image_cover ? (
+                                                <img src={editingAccessory.image_cover} alt="" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <span className="text-[10px] text-slate-500">Görsel yok</span>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 space-y-2">
+                                            <input type="text" value={editingAccessory.image_cover ?? ''} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, image_cover: e.target.value }))} placeholder="https://...supabase.co/storage/.../foto.webp" className="w-full bg-slate-800 border border-slate-600 text-white text-xs rounded-lg px-3 py-2 font-mono focus:outline-none focus:border-orange-500" />
+                                            <div className="flex gap-2">
+                                                <button type="button" onClick={() => { ensureImageLibrary(); setImagePickerOpen(true); setImagePickerQuery(''); }} className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded-md transition-colors">Galeriden Seç</button>
+                                                {editingAccessory.image_cover && (
+                                                    <button type="button" onClick={() => setEditingAccessory((prev: any) => ({ ...prev, image_cover: null }))} className="px-3 py-1.5 text-xs text-red-400 hover:text-red-300 transition-colors">Kaldır</button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
                                     <label className="block text-xs text-slate-400 mb-1">Slug (URL)</label>
                                     <input type="text" value={editingAccessory.slug ?? ''} onChange={(e) => setEditingAccessory((prev: any) => ({ ...prev, slug: e.target.value }))} placeholder="ornek-aksesuar" className="w-full bg-slate-800 border border-slate-600 text-white text-sm rounded-lg px-3 py-2 font-mono focus:outline-none focus:border-orange-500" />
                                 </div>
@@ -812,6 +848,7 @@ export function ProductsTab() {
                                         catalog_description: editingAccessory.catalog_description || null,
                                         meta_title: editingAccessory.meta_title || null,
                                         meta_description: editingAccessory.meta_description || null,
+                                        image_cover: editingAccessory.image_cover || null,
                                     });
                                 }}
                                 className="px-5 py-2 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors">
@@ -822,6 +859,44 @@ export function ProductsTab() {
                 </div>
                 );
             })(), document.body)}
+            {imagePickerOpen && createPortal(
+                <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setImagePickerOpen(false)}>
+                    <div className="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-4xl max-h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
+                            <h3 className="text-sm font-semibold text-white">Görsel Galerisi ({imageLibrary.length})</h3>
+                            <button onClick={() => setImagePickerOpen(false)} className="text-slate-400 hover:text-white">×</button>
+                        </div>
+                        <div className="px-5 py-3 border-b border-slate-700">
+                            <input type="text" value={imagePickerQuery} onChange={(e) => setImagePickerQuery(e.target.value)} placeholder="Dosya adında ara..." className="w-full bg-slate-800 border border-slate-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500" autoFocus />
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4">
+                            {!imageLibraryLoaded ? (
+                                <p className="text-sm text-slate-400 text-center py-8">Yükleniyor...</p>
+                            ) : (
+                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                                    {imageLibrary
+                                        .filter((f) => !imagePickerQuery || f.name.toLowerCase().includes(imagePickerQuery.toLowerCase()))
+                                        .map((f) => (
+                                            <button
+                                                key={f.name}
+                                                type="button"
+                                                onClick={() => {
+                                                    setEditingAccessory((prev: any) => prev ? ({ ...prev, image_cover: f.url }) : prev);
+                                                    setImagePickerOpen(false);
+                                                }}
+                                                className={`group relative aspect-square rounded-lg border-2 overflow-hidden transition-all ${editingAccessory?.image_cover === f.url ? 'border-orange-500' : 'border-slate-700 hover:border-slate-500'}`}
+                                            >
+                                                <img src={f.url} alt={f.name} className="w-full h-full object-cover" loading="lazy" />
+                                                <div className="absolute inset-x-0 bottom-0 bg-black/70 px-1.5 py-1 text-[10px] text-white font-mono truncate">{f.name}</div>
+                                            </button>
+                                        ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
         </div>
     );
 }

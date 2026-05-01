@@ -14,6 +14,7 @@ const ALLOWED_FIELDS = [
   'catalog_description',
   'meta_title',
   'meta_description',
+  'image_cover',
 ] as const;
 
 export async function PATCH(
