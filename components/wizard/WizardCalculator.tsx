@@ -190,52 +190,41 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
     // ============================================================
     // Niyet kartı preset → wizard pre-fill (iki fazlı uygulama)
     //
-    // Faz 1: material + thicknessCm anında uygulanır (data gerektirmez).
-    // Faz 2: brandName + modelShortName ertelenir; brands/plates yüklendikten
-    //        sonra ada göre çözümlenir ve uygulanır.
+    // Faz 1 (situationPreset değişiminde):
+    //   - material + thicknessCm hemen uygulanır.
+    //   - brandName/modelShortName varsa pendingBrandModel state'ine alınır.
     //
-    // Pending değer useRef'te tutulur — store'dan tüketildikten sonra
-    // brand/model yüklenmeden kaybolmasın.
+    // Faz 2 (pendingBrandModel + brands + availableModels değişiminde):
+    //   - Önce brand çözümlenip set edilir → bu re-render tetikler
+    //   - Sonra availableModels güncellenince model set edilir, pending temizlenir.
+    //
+    // Pending state olarak tutulur (ref değil) — useEffect'in deps array'inin
+    // pending değişimine reaktif olabilmesi için.
     // ============================================================
     const situationPresetFromStore = useWizardStore((state) => state.situationPreset);
-    const pendingBrandModelRef = useRef<{ brandName?: string; modelShortName?: string } | null>(null);
+    const [pendingBrandModel, setPendingBrandModel] = useState<{
+        brandName?: string;
+        modelShortName?: string;
+    } | null>(null);
 
-    // Faz 1: material + thickness anlık uygulama
+    // Faz 1: material + thickness anlık uygulama, brand/model'i pending'e al
     useEffect(() => {
         if (!situationPresetFromStore) return;
         setSelectedMalzeme(situationPresetFromStore.material);
         setSelectedKalinlik(String(situationPresetFromStore.thicknessCm));
 
         if (situationPresetFromStore.brandName || situationPresetFromStore.modelShortName) {
-            pendingBrandModelRef.current = {
+            setPendingBrandModel({
                 brandName: situationPresetFromStore.brandName,
                 modelShortName: situationPresetFromStore.modelShortName,
-            };
+            });
         }
 
         // Preset'i tüket — bir sonraki render'da tekrar uygulanmasın
         useWizardStore.getState().consumeSituationPreset();
     }, [situationPresetFromStore]);
 
-    // Faz 2: brands yüklenince pending brand/model çözümle ve uygula
-    useEffect(() => {
-        const pending = pendingBrandModelRef.current;
-        if (!pending) return;
-        if (!brands.length) return;
-
-        if (pending.brandName) {
-            const target = pending.brandName.toLocaleLowerCase('tr-TR');
-            const found = brands.find(
-                (b) => b.name.toLocaleLowerCase('tr-TR') === target
-            );
-            if (found) setSelectedBrandId(found.id);
-        }
-        if (pending.modelShortName) {
-            setSelectedModel(pending.modelShortName);
-        }
-
-        pendingBrandModelRef.current = null;
-    }, [brands.length]);
+    // (Faz 2 effect'i availableModels declaration'ından SONRA tanımlandı — aşağıda)
 
     const PRIORITY_CITIES = ["İstanbul", "Kocaeli", "Bolu", "Sakarya", "Düzce", "Tekirdağ", "Yalova", "Bursa", "Balıkesir"];
     const sortShippingZones = (zones: ShippingZone[]) => {
@@ -266,6 +255,35 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                 .map(p => p.short_name)
         ))
         : [];
+
+    // Niyet preseti Faz 2: brand önce, sonra model (sıralı) — re-render zincirinde tamamlanır
+    useEffect(() => {
+        if (!pendingBrandModel) return;
+        if (!brands.length) return;
+
+        // 1) Brand henüz set edilmediyse, önce onu uygula ve sıradaki render'ı bekle
+        if (pendingBrandModel.brandName) {
+            const target = pendingBrandModel.brandName.toLocaleLowerCase('tr-TR');
+            const found = brands.find(
+                (b) => b.name.toLocaleLowerCase('tr-TR') === target
+            );
+            if (found && selectedBrandId !== found.id) {
+                setSelectedBrandId(found.id);
+                return; // bir sonraki render'da model fazına geç
+            }
+        }
+
+        // 2) Brand hazır — model'i uygula (availableModels yüklendiyse)
+        if (pendingBrandModel.modelShortName) {
+            if (!availableModels.length) return; // bekle, plates filtreli liste daha hesaplanmadı
+            if (availableModels.includes(pendingBrandModel.modelShortName)) {
+                setSelectedModel(pendingBrandModel.modelShortName);
+            }
+        }
+
+        // Hem brand hem model işlendi (veya model yoktu) — pending temizle
+        setPendingBrandModel(null);
+    }, [pendingBrandModel, brands.length, selectedBrandId, availableModels.length]);
 
     // Sayfa yüklendiğinde verileri çek
     useEffect(() => {
