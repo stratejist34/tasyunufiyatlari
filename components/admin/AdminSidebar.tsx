@@ -52,6 +52,7 @@ export function AdminSidebar({ active, onNavigate }: Props) {
                     <button
                         key={id}
                         onClick={() => onNavigate(id)}
+                        aria-current={active === id ? "page" : undefined}
                         className={`nx-nav-item w-full text-left ${active === id ? "active" : ""}`}
                     >
                         <Icon className="w-4 h-4 flex-shrink-0" />

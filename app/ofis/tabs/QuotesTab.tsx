@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 import { Trash2 } from "lucide-react";
 import { buildBrandRanking, formatCurrency } from "@/lib/admin/utils";
 
+const ofisPanel = "rounded-2xl border border-[var(--nx-border)] bg-[rgba(13,15,18,0.72)] shadow-[0_18px_44px_rgba(0,0,0,0.24)]";
+const ofisInner = "rounded-xl border border-[rgba(92,98,108,0.18)] bg-[rgba(255,255,255,0.025)]";
+const ofisControl = "rounded-xl border border-[rgba(92,98,108,0.24)] bg-[rgba(18,20,24,0.82)] text-[var(--nx-text-soft)] transition-colors focus:outline-none focus-visible:border-[var(--nx-border-accent)] focus-visible:ring-2 focus-visible:ring-[rgba(201,168,76,0.14)]";
+const ofisChip = "rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(201,168,76,0.16)]";
+
 export function QuotesTab() {
     const [quotes, setQuotes] = useState<any[]>([]);
     const [quoteEventsById, setQuoteEventsById] = useState<Record<string, any[]>>({});
@@ -75,9 +80,9 @@ export function QuotesTab() {
 
     const getRequestTypeBadge = (requestType: string) => {
         const style = requestType === "pdf_quote"
-            ? "bg-purple-500/20 text-purple-400 border-purple-500/30"
-            : "bg-green-500/20 text-green-400 border-green-500/30";
-        const label = requestType === "pdf_quote" ? "Teklif Verildi" : "Sipariş Onayı";
+            ? "border-[rgba(201,168,76,0.26)] bg-[rgba(201,168,76,0.10)] text-[var(--nx-gold)]"
+            : "border-emerald-400/25 bg-emerald-400/10 text-emerald-200";
+        const label = requestType === "pdf_quote" ? "PDF Teklif" : "Sipariş Onayı";
         return (
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${style}`}>
                 {label}
@@ -144,8 +149,8 @@ export function QuotesTab() {
     const urgencyStyle: Record<string, string> = {
         urgent: "border-red-400/30 bg-red-400/10 text-red-200",
         high:   "border-amber-400/30 bg-amber-400/10 text-amber-200",
-        normal: "border-amber-400/30 bg-amber-400/10 text-amber-200",
-        low:    "border-white/10 bg-white/5 text-slate-400",
+        normal: "border-[rgba(201,168,76,0.22)] bg-[rgba(201,168,76,0.08)] text-[var(--nx-gold)]",
+        low:    "border-[rgba(92,98,108,0.24)] bg-[rgba(255,255,255,0.03)] text-[var(--nx-text-soft)]",
     };
     const urgencyLabel: Record<string, string> = { urgent: "Acil", high: "Yüksek", normal: "Normal", low: "Düşük" };
 
@@ -158,10 +163,10 @@ export function QuotesTab() {
     ];
 
     const kpis = [
-        { label: "Toplam Talep", value: String(quoteSummary.total), sub: `Bugün ${todayQuoteCount} yeni`, accent: "from-amber-400/30 to-amber-500/5", border: "border-amber-400/30", glow: "shadow-amber-500/10", icon: "◈", pct: Math.min(100, quoteSummary.total * 4) },
-        { label: "Bekleyen Kritik", value: String(quoteSummary.pending), sub: quoteSummary.pending > 0 ? `${quoteSummary.pending} teklif yanıt bekliyor` : "Bekleyen talep yok", accent: "from-amber-400/25 to-orange-500/5", border: "border-amber-400/30", glow: "shadow-amber-500/10", icon: "⧖", pct: quoteSummary.total > 0 ? Math.round((quoteSummary.pending / quoteSummary.total) * 100) : 0 },
-        { label: "Toplam Ciro", value: totalQuoteValue >= 1_000_000 ? `₺${(totalQuoteValue / 1_000_000).toFixed(2)}M` : totalQuoteValue >= 1000 ? `₺${(totalQuoteValue / 1000).toFixed(1)}K` : formatCurrency(totalQuoteValue), sub: `Ort. ${formatCurrency(averageQuoteValue)} / teklif`, accent: "from-emerald-400/25 to-emerald-500/5", border: "border-emerald-400/30", glow: "shadow-emerald-500/10", icon: "⬢", pct: 68 },
-        { label: "Onay Oranı", value: `%${onayOrani}`, sub: `${approvedCount} teklif onaylandı`, accent: "from-fuchsia-400/20 to-violet-500/5", border: "border-fuchsia-400/25", glow: "shadow-fuchsia-500/10", icon: "✦", pct: onayOrani },
+        { label: "Toplam Talep", value: String(quoteSummary.total), sub: `Bugün ${todayQuoteCount} yeni`, accent: "from-[rgba(201,168,76,0.16)] to-transparent", border: "border-[rgba(201,168,76,0.24)]", progress: "from-[var(--nx-gold)] to-[rgba(201,168,76,0.58)]", icon: "◈", pct: Math.min(100, quoteSummary.total * 4) },
+        { label: "Bekleyen Kritik", value: String(quoteSummary.pending), sub: quoteSummary.pending > 0 ? `${quoteSummary.pending} teklif yanıt bekliyor` : "Bekleyen talep yok", accent: "from-amber-400/15 to-transparent", border: "border-amber-400/25", progress: "from-amber-300 to-amber-500", icon: "⧖", pct: quoteSummary.total > 0 ? Math.round((quoteSummary.pending / quoteSummary.total) * 100) : 0 },
+        { label: "Toplam Ciro", value: totalQuoteValue >= 1_000_000 ? `₺${(totalQuoteValue / 1_000_000).toFixed(2)}M` : totalQuoteValue >= 1000 ? `₺${(totalQuoteValue / 1000).toFixed(1)}K` : formatCurrency(totalQuoteValue), sub: `Ort. ${formatCurrency(averageQuoteValue)} / teklif`, accent: "from-emerald-400/10 to-transparent", border: "border-emerald-400/20", progress: "from-emerald-300 to-emerald-500", icon: "⬢", pct: 68 },
+        { label: "Onay Oranı", value: `%${onayOrani}`, sub: `${approvedCount} teklif onaylandı`, accent: "from-emerald-400/10 to-transparent", border: "border-[rgba(92,98,108,0.26)]", progress: "from-emerald-300 to-[var(--nx-gold)]", icon: "✓", pct: onayOrani },
     ];
 
     if (loading) {
@@ -169,11 +174,11 @@ export function QuotesTab() {
             <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                     {[...Array(4)].map((_, i) => (
-                        <div key={i} className="rounded-[28px] border border-white/8 bg-slate-950/55 h-36 animate-pulse" />
+                        <div key={i} className={`${ofisPanel} h-36 animate-pulse`} />
                     ))}
                 </div>
-                <div className="rounded-[32px] border border-white/10 bg-slate-950/45 p-8 text-center text-slate-500">
-                    Teklifler yükleniyor...
+                <div className={`${ofisPanel} p-8 text-center text-[var(--nx-text-muted)]`}>
+                    Teklifler yükleniyor…
                 </div>
             </div>
         );
@@ -195,7 +200,7 @@ export function QuotesTab() {
                             Bugün {todayQuoteCount} teklif
                         </span>
                     )}
-                    <button onClick={loadQuotes} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300 hover:bg-white/8 hover:text-white transition">
+                    <button onClick={loadQuotes} className={`${ofisControl} px-4 py-2 text-sm hover:bg-[rgba(255,255,255,0.05)] hover:text-[var(--nx-text)]`}>
                         Yenile
                     </button>
                 </div>
@@ -204,7 +209,7 @@ export function QuotesTab() {
             {/* KPI Kartlar */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                 {kpis.map((item) => (
-                    <div key={item.label} className={`relative overflow-hidden rounded-[28px] border ${item.border} bg-slate-950/55 p-5 shadow-2xl ${item.glow}`}>
+                    <div key={item.label} className={`relative overflow-hidden rounded-2xl border ${item.border} bg-[rgba(13,15,18,0.76)] p-5 shadow-[0_16px_38px_rgba(0,0,0,0.24)]`}>
                         <div className={`absolute inset-0 bg-gradient-to-br ${item.accent}`} />
                         <div className="relative z-10">
                             <div className="flex items-start justify-between">
@@ -213,8 +218,8 @@ export function QuotesTab() {
                             </div>
                             <div className="mt-3 text-3xl font-semibold tracking-tight">{item.value}</div>
                             <div className="mt-4 text-xs text-slate-400">{item.sub}</div>
-                            <div className="mt-3 h-1.5 rounded-full bg-white/5 overflow-hidden">
-                                <div className="h-full rounded-full bg-gradient-to-r from-white/70 to-amber-300" style={{ width: `${Math.max(4, item.pct)}%` }} />
+                            <div className="mt-3 h-1.5 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
+                                <div className={`h-full rounded-full bg-gradient-to-r ${item.progress}`} style={{ width: `${Math.max(4, item.pct)}%` }} />
                             </div>
                         </div>
                     </div>
@@ -223,16 +228,16 @@ export function QuotesTab() {
 
             {/* Teklif Ritmi + Markalar */}
             <div className="grid grid-cols-1 xl:grid-cols-[1.55fr_1fr] gap-5">
-                <div className="rounded-[32px] border border-white/10 bg-slate-950/45 backdrop-blur-xl p-5 shadow-2xl shadow-black/20">
+                <div className={`${ofisPanel} p-5`}>
                     <div className="flex items-center justify-between mb-5">
                         <div>
                             <div className="text-xs uppercase tracking-[0.28em] text-amber-300/80">Canlı Görünüm</div>
                             <h2 className="mt-1.5 text-xl font-semibold">Teklif Ritmi</h2>
                         </div>
-                        <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-200">{quotes.length} toplam</span>
+                        <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-200">{quotes.length} toplam</span>
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.9fr] gap-4">
-                        <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
+                        <div className={`${ofisInner} p-4`}>
                             <div className="flex items-center justify-between mb-4">
                                 <div className="text-sm text-slate-300">Aylık Teklif Hacmi</div>
                                 <div className="text-xs text-slate-500">Son 6 ay</div>
@@ -240,7 +245,7 @@ export function QuotesTab() {
                             <div className="h-40 flex items-end gap-3 px-1">
                                 {last6Months.map((m, i) => (
                                     <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                                        <div className="w-full rounded-t-xl bg-gradient-to-t from-amber-500/30 via-amber-400/50 to-amber-300/90 border border-amber-300/20 shadow-lg shadow-amber-500/10 min-h-[6px]"
+                                        <div className="w-full rounded-t-lg border border-[rgba(201,168,76,0.18)] bg-gradient-to-t from-[rgba(201,168,76,0.22)] to-[rgba(201,168,76,0.72)] min-h-[6px]"
                                             style={{ height: `${Math.max(6, (m.count / maxMonthly) * 100)}%` }} />
                                         <span className="text-[10px] text-slate-500">{m.label}</span>
                                     </div>
@@ -248,30 +253,30 @@ export function QuotesTab() {
                             </div>
                         </div>
                         <div className="space-y-3">
-                            <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
+                            <div className={`${ofisInner} p-4`}>
                                 <div className="text-sm text-slate-300 mb-3">Durum Akışı</div>
                                 {[
                                     { label: "Bekliyor", value: quoteSummary.pending, gradient: "from-amber-300 to-orange-400" },
-                                    { label: "Teklif Verildi", value: quotes.filter((q) => q.status === "quoted").length, gradient: "from-fuchsia-400 to-violet-500" },
+                                    { label: "Teklif Verildi", value: quotes.filter((q) => q.status === "quoted").length, gradient: "from-[var(--nx-gold)] to-amber-500" },
                                     { label: "Onaylandı", value: approvedCount, gradient: "from-emerald-400 to-teal-400" },
-                                    { label: "İletişimde", value: quotes.filter((q) => q.status === "contacted").length, gradient: "from-amber-400 to-amber-500" },
+                                    { label: "İletişimde", value: quotes.filter((q) => q.status === "contacted").length, gradient: "from-sky-300 to-sky-500" },
                                 ].map(({ label, value, gradient }) => (
                                     <div key={label} className="mb-3 last:mb-0">
                                         <div className="mb-1.5 flex items-center justify-between text-xs text-slate-300">
                                             <span>{label}</span><span>{value}</span>
                                         </div>
-                                        <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                                        <div className="h-2 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
                                             <div className={`h-full rounded-full bg-gradient-to-r ${gradient}`}
                                                 style={{ width: `${quoteSummary.total > 0 ? Math.max(value > 0 ? 6 : 0, Math.round((value / quoteSummary.total) * 100)) : 0}%` }} />
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
+                            <div className={`${ofisInner} p-4`}>
                                 <div className="text-sm text-slate-300 mb-3">Anlık İçgörü</div>
                                 <div className="space-y-2">
                                     {insights.map((txt, i) => (
-                                        <div key={i} className="rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2 text-xs text-slate-400">{txt}</div>
+                                        <div key={i} className="rounded-lg border border-[rgba(92,98,108,0.16)] bg-[rgba(255,255,255,0.02)] px-3 py-2 text-xs text-slate-400">{txt}</div>
                                     ))}
                                 </div>
                             </div>
@@ -280,12 +285,12 @@ export function QuotesTab() {
                 </div>
 
                 <div className="space-y-4">
-                    <div className="rounded-[32px] border border-white/10 bg-slate-950/45 p-5">
+                    <div className={`${ofisPanel} p-5`}>
                         <div className="text-xs uppercase tracking-[0.28em] text-slate-500">Nabız</div>
                         <h3 className="mt-1.5 text-xl font-semibold">En Çok Talep Alan</h3>
                         <div className="mt-4 space-y-2">
                             {topQuoteBrands.length > 0 ? topQuoteBrands.map(([brand, count], i) => (
-                                <div key={brand} className="rounded-[22px] border border-white/8 bg-white/[0.03] p-4">
+                                <div key={brand} className={`${ofisInner} p-4`}>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div className="h-7 w-7 rounded-full bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-xs text-amber-200">{i + 1}</div>
@@ -298,23 +303,23 @@ export function QuotesTab() {
                                     </div>
                                 </div>
                             )) : (
-                                <div className="rounded-[22px] border border-white/8 bg-white/[0.03] p-4 text-sm text-slate-500">Henüz marka verisi oluşmadı.</div>
+                                <div className={`${ofisInner} p-4 text-sm text-slate-500`}>Henüz marka verisi oluşmadı.</div>
                             )}
                         </div>
                     </div>
-                    <div className="rounded-[32px] border border-white/10 bg-slate-950/45 p-5">
+                    <div className={`${ofisPanel} p-5`}>
                         <div className="text-xs uppercase tracking-[0.28em] text-slate-500">Kanal</div>
                         <h3 className="mt-1.5 text-xl font-semibold">Talep Türleri</h3>
                         <div className="mt-4 space-y-3">
                             {[
-                                { label: "PDF Teklif", value: quoteSummary.pdfQuote, gradient: "from-fuchsia-400 to-violet-500" },
+                                { label: "PDF Teklif", value: quoteSummary.pdfQuote, gradient: "from-[var(--nx-gold)] to-amber-500" },
                                 { label: "WhatsApp Onay", value: quoteSummary.whatsappOrder, gradient: "from-emerald-400 to-teal-400" },
-                                { label: "PDF İndirme", value: funnelSummary.pdf_downloaded || 0, gradient: "from-amber-400 to-orange-500" },
+                                { label: "PDF İndirme", value: funnelSummary.pdf_downloaded || 0, gradient: "from-[var(--nx-gold)] to-amber-500" },
                                 { label: "WA Açılışı", value: funnelSummary.whatsapp_opened || 0, gradient: "from-green-400 to-emerald-500" },
                             ].map(({ label, value, gradient }) => (
                                 <div key={label}>
                                     <div className="mb-1.5 flex items-center justify-between text-xs text-slate-300"><span>{label}</span><span>{value}</span></div>
-                                    <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                                    <div className="h-2 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
                                         <div className={`h-full rounded-full bg-gradient-to-r ${gradient}`} style={{ width: `${Math.max(4, Math.min(100, value * 8))}%` }} />
                                     </div>
                                 </div>
@@ -325,7 +330,7 @@ export function QuotesTab() {
             </div>
 
             {/* Teklif Masası */}
-            <div className="rounded-[32px] border border-white/10 bg-slate-950/45 p-5">
+            <div className={`${ofisPanel} p-5`}>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
                     <div>
                         <div className="text-xs uppercase tracking-[0.28em] text-slate-500">Operasyon</div>
@@ -342,7 +347,7 @@ export function QuotesTab() {
                             { value: "completed", label: "Tamamlandı" },
                         ].map((f) => (
                             <button key={f.value} onClick={() => setStatusFilter(f.value)}
-                                className={`rounded-full px-4 py-1.5 border text-xs font-medium transition ${statusFilter === f.value ? "bg-white text-slate-900 border-white" : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/8 hover:text-white"}`}>
+                                className={`${ofisChip} ${statusFilter === f.value ? "border-[var(--nx-gold)] bg-[var(--nx-gold)] text-[#101114]" : "border-[rgba(92,98,108,0.24)] bg-[rgba(255,255,255,0.03)] text-[var(--nx-text-soft)] hover:bg-[rgba(255,255,255,0.055)] hover:text-[var(--nx-text)]"}`}>
                                 {f.label}
                             </button>
                         ))}
@@ -350,7 +355,8 @@ export function QuotesTab() {
                 </div>
                 <div className="grid gap-3 md:grid-cols-[200px_1fr] mb-5">
                     <select value={requestTypeFilter} onChange={(e) => setRequestTypeFilter(e.target.value)}
-                        className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-slate-300 focus:outline-none focus:border-amber-400/40">
+                        aria-label="Talep türüne göre filtrele"
+                        className={`${ofisControl} px-4 py-2.5 text-sm`}>
                         <option value="all">Tüm Talep Türleri</option>
                         <option value="pdf_quote">PDF Teklif</option>
                         <option value="whatsapp_order">WhatsApp Onay</option>
@@ -358,28 +364,29 @@ export function QuotesTab() {
                     <div className="relative">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm">⌕</span>
                         <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Müşteri, marka, şehir veya paket ara..."
-                            className="w-full rounded-2xl border border-white/10 bg-white/5 pl-9 pr-4 py-2.5 text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-amber-400/40" />
+                            aria-label="Tekliflerde ara"
+                            placeholder="Müşteri, marka, şehir veya paket ara…"
+                            className={`${ofisControl} w-full pl-9 pr-4 py-2.5 text-sm placeholder:text-slate-600`} />
                     </div>
                 </div>
                 <div className="space-y-3">
                     {filteredQuotes.length === 0 ? (
-                        <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-8 text-center text-slate-500">Seçili filtrelerde teklif talebi bulunmuyor.</div>
+                        <div className={`${ofisInner} p-8 text-center text-slate-500`}>Seçili filtrelerde teklif talebi bulunmuyor.</div>
                     ) : filteredQuotes.map((quote) => (
-                        <div key={quote.id} className="rounded-[24px] border border-white/8 bg-white/[0.03] px-5 py-4 hover:bg-white/[0.05] transition">
+                        <div key={quote.id} className={`${ofisInner} px-5 py-4 transition-colors hover:bg-[rgba(255,255,255,0.045)]`}>
                             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                                 <div className="min-w-0">
                                     <div className="flex flex-wrap items-center gap-2">
                                         <span className="text-base font-semibold text-white">{quote.customer_name}</span>
                                         {quote.quote_code && (
-                                            <span className="rounded-md px-2 py-0.5 text-xs font-mono bg-white/8 text-slate-400 border border-white/10">
+                                            <span className="rounded-md px-2 py-0.5 text-xs font-mono bg-[rgba(255,255,255,0.04)] text-slate-400 border border-[rgba(92,98,108,0.22)]">
                                                 {quote.quote_code}
                                             </span>
                                         )}
                                         <span className={`rounded-full px-2.5 py-0.5 text-xs border ${urgencyStyle[quote.priority] ?? urgencyStyle.normal}`}>
                                             {urgencyLabel[quote.priority] ?? "Normal"}
                                         </span>
-                                        <span className={`rounded-full px-2.5 py-0.5 text-xs border ${quote.request_type === "pdf_quote" ? "border-fuchsia-400/30 bg-fuchsia-400/10 text-fuchsia-200" : "border-emerald-400/30 bg-emerald-400/10 text-emerald-200"}`}>
+                                        <span className={`rounded-full px-2.5 py-0.5 text-xs border ${quote.request_type === "pdf_quote" ? "border-[rgba(201,168,76,0.26)] bg-[rgba(201,168,76,0.10)] text-[var(--nx-gold)]" : "border-emerald-400/25 bg-emerald-400/10 text-emerald-200"}`}>
                                             {quote.request_type === "pdf_quote" ? "PDF" : "WhatsApp"}
                                         </span>
                                     </div>
@@ -396,7 +403,8 @@ export function QuotesTab() {
                                         <div className="text-xs text-slate-500">{quote.price_per_m2.toFixed(2)} ₺/m²</div>
                                     </div>
                                     <select value={quote.status} onChange={(e) => updateQuoteStatus(quote.id, e.target.value)}
-                                        className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-400/40 min-w-[130px]">
+                                        aria-label={`${quote.customer_name} teklif durumu`}
+                                        className={`${ofisControl} px-3 py-2 text-xs min-w-[130px]`}>
                                         <option value="pending">Bekliyor</option>
                                         <option value="contacted">İletişimde</option>
                                         <option value="quoted">Teklif Verildi</option>
@@ -405,7 +413,8 @@ export function QuotesTab() {
                                         <option value="completed">Tamamlandı</option>
                                     </select>
                                     <select value={quote.priority} onChange={(e) => updateQuotePriority(quote.id, e.target.value)}
-                                        className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-400/40 min-w-[100px]">
+                                        aria-label={`${quote.customer_name} teklif önceliği`}
+                                        className={`${ofisControl} px-3 py-2 text-xs min-w-[100px]`}>
                                         <option value="low">Düşük</option>
                                         <option value="normal">Normal</option>
                                         <option value="high">Yüksek</option>
@@ -416,18 +425,18 @@ export function QuotesTab() {
                                             href={quote.pdf_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="rounded-2xl border border-sky-400/25 bg-sky-400/10 px-3 py-2 text-xs text-sky-300 hover:bg-sky-400/15 transition whitespace-nowrap"
+                                            className={`${ofisControl} px-3 py-2 text-xs text-sky-300 hover:bg-sky-400/10 whitespace-nowrap`}
                                             title="PDF Görüntüle"
                                         >
                                             PDF
                                         </a>
                                     )}
                                     <button onClick={() => setSelectedQuote(quote)}
-                                        className="rounded-2xl border border-amber-400/25 bg-amber-400/10 px-4 py-2 text-xs text-amber-200 hover:bg-amber-400/15 transition whitespace-nowrap">
+                                        className={`${ofisControl} border-[rgba(201,168,76,0.26)] bg-[rgba(201,168,76,0.10)] px-4 py-2 text-xs text-[var(--nx-gold)] hover:bg-[rgba(201,168,76,0.14)] whitespace-nowrap`}>
                                         Detay →
                                     </button>
                                     <button onClick={() => { if (confirm(`"${quote.customer_name}" teklifini silmek istiyor musunuz?\nBu işlem geri alınamaz.`)) { deleteQuote(quote.id); } }}
-                                        className="rounded-2xl border border-red-500/20 bg-red-500/[0.08] p-2 text-red-400/60 hover:bg-red-500/15 hover:text-red-300 hover:border-red-500/35 transition" title="Teklifi sil">
+                                        className="rounded-xl border border-red-500/20 bg-red-500/[0.08] p-2 text-red-400/70 transition-colors hover:bg-red-500/15 hover:text-red-300 hover:border-red-500/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400/25" title="Teklifi sil" aria-label="Teklifi sil">
                                         <Trash2 className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
@@ -441,7 +450,7 @@ export function QuotesTab() {
             {selectedQuote && (
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="admin-nexus-panel max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl">
-                        <div className="sticky top-0 rounded-t-2xl border-b border-amber-400/20 bg-gradient-to-r from-amber-500/18 via-orange-500/14 to-slate-900 p-6 text-white shadow-[0_18px_34px_rgba(2,8,23,0.34)]">
+                        <div className="sticky top-0 rounded-t-2xl border-b border-[rgba(92,98,108,0.24)] bg-[rgba(15,17,21,0.96)] p-6 text-white shadow-[0_14px_30px_rgba(0,0,0,0.28)]">
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h3 className="text-2xl font-bold mb-2">
@@ -450,28 +459,28 @@ export function QuotesTab() {
                                             <span className="ml-3 text-base font-mono font-normal text-amber-300/80">{selectedQuote.quote_code}</span>
                                         )}
                                     </h3>
-                                        <p className="text-orange-100 text-sm">{new Date(selectedQuote.created_at).toLocaleString("tr-TR")}</p>
+                                        <p className="text-[var(--nx-text-soft)] text-sm">{new Date(selectedQuote.created_at).toLocaleString("tr-TR")}</p>
                                     {selectedQuote.pdf_url && (
                                         <div className="flex gap-2 mt-3">
                                             <a
                                                 href={selectedQuote.pdf_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="rounded-xl bg-sky-500/20 border border-sky-400/30 px-4 py-2 text-xs font-semibold text-sky-300 hover:bg-sky-500/30 transition"
+                                                className={`${ofisControl} px-4 py-2 text-xs font-semibold text-sky-300 hover:bg-sky-500/10`}
                                             >
                                                 PDF Görüntüle
                                             </a>
                                             <a
                                                 href={selectedQuote.pdf_url}
                                                 download
-                                                className="rounded-xl bg-white/8 border border-white/15 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-white/12 transition"
+                                                className={`${ofisControl} px-4 py-2 text-xs font-semibold hover:bg-[rgba(255,255,255,0.06)]`}
                                             >
                                                 ↓ İndir
                                             </a>
                                         </div>
                                     )}
                                 </div>
-                                <button onClick={() => setSelectedQuote(null)} className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2">
+                                <button onClick={() => setSelectedQuote(null)} className="rounded-full p-2 text-[var(--nx-text-soft)] transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(201,168,76,0.18)]" aria-label="Detay penceresini kapat">
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                     </svg>
@@ -480,7 +489,7 @@ export function QuotesTab() {
                         </div>
                         <div className="p-6 space-y-6">
                             <div className="admin-nexus-subtle p-4">
-                                <h4 className="font-semibold text-blue-300 mb-3">👤 Müşteri Bilgileri</h4>
+                                <h4 className="font-semibold text-[var(--nx-text)] mb-3">Müşteri Bilgileri</h4>
                                 <div className="grid grid-cols-2 gap-3 text-sm">
                                     <div><span className="text-slate-400">Ad Soyad:</span><div className="font-medium text-white">{selectedQuote.customer_name}</div></div>
                                     <div><span className="text-slate-400">E-posta:</span><div className="font-medium text-white">{selectedQuote.customer_email}</div></div>
@@ -490,7 +499,7 @@ export function QuotesTab() {
                                 </div>
                             </div>
                             <div className="admin-nexus-subtle p-4">
-                                <h4 className="font-semibold text-orange-300 mb-3">📦 Sipariş Detayları</h4>
+                                <h4 className="font-semibold text-[var(--nx-gold)] mb-3">Sipariş Detayları</h4>
                                 <div className="grid grid-cols-2 gap-3 text-sm">
                                     <div><span className="text-slate-400">Paket:</span><div className="font-medium text-white">{selectedQuote.package_name}</div></div>
                                     <div><span className="text-slate-400">Marka:</span><div className="font-medium text-white">{selectedQuote.brand_name}</div></div>
@@ -501,8 +510,8 @@ export function QuotesTab() {
                                     <div><span className="text-slate-400">Paket Sayısı:</span><div className="font-medium text-white">{selectedQuote.package_count} paket</div></div>
                                 </div>
                             </div>
-                            <div className="bg-green-600/20 rounded-xl p-4 border border-green-500/30">
-                                <h4 className="font-semibold text-green-300 mb-3">💰 Fiyat Bilgileri</h4>
+                            <div className="rounded-xl border border-emerald-400/25 bg-emerald-400/10 p-4">
+                                <h4 className="font-semibold text-green-300 mb-3">Fiyat Bilgileri</h4>
                                 <div className="grid grid-cols-2 gap-3 text-sm">
                                     <div><span className="text-slate-400">KDV Hariç:</span><div className="font-medium text-white">{selectedQuote.price_without_vat.toLocaleString("tr-TR")} ₺</div></div>
                                     <div><span className="text-slate-400">KDV:</span><div className="font-medium text-white">{selectedQuote.vat_amount.toLocaleString("tr-TR")} ₺</div></div>
@@ -511,8 +520,8 @@ export function QuotesTab() {
                                 </div>
                             </div>
                             {selectedQuote.vehicle_type && (
-                                <div className="bg-purple-600/20 rounded-xl p-4 border border-purple-500/30">
-                                    <h4 className="font-semibold text-purple-300 mb-3">🚚 Lojistik Bilgileri</h4>
+                                <div className="rounded-xl border border-[rgba(92,98,108,0.24)] bg-[rgba(255,255,255,0.03)] p-4">
+                                    <h4 className="font-semibold text-[var(--nx-text)] mb-3">Lojistik Bilgileri</h4>
                                     <div className="grid grid-cols-2 gap-3 text-sm">
                                         <div><span className="text-slate-400">Araç Tipi:</span><div className="font-medium text-white">{selectedQuote.vehicle_type === "lorry" && "Kamyon"}{selectedQuote.vehicle_type === "truck" && "Tır"}{selectedQuote.vehicle_type === "multiple" && "Birden Fazla Araç"}</div></div>
                                         <div><span className="text-slate-400">Paket Sayısı:</span><div className="font-medium text-white">{selectedQuote.package_count} paket</div></div>
@@ -525,7 +534,7 @@ export function QuotesTab() {
                                 <h4 className="mb-3 font-semibold text-amber-300">Akış Zaman Çizgisi</h4>
                                 <div className="space-y-3">
                                     {selectedQuoteEvents.length > 0 ? selectedQuoteEvents.map((event) => (
-                                        <div key={event.id} className="flex items-start justify-between gap-4 rounded-2xl border border-slate-700/50 bg-slate-950/35 p-4">
+                                        <div key={event.id} className="flex items-start justify-between gap-4 rounded-xl border border-[rgba(92,98,108,0.20)] bg-[rgba(255,255,255,0.025)] p-4">
                                             <div>
                                                 <p className="font-medium text-slate-100">{getEventLabel(event.event_type)}</p>
                                                 <p className="mt-1 text-xs text-slate-500">{event.brand_name || selectedQuote.brand_name || "Marka yok"} • {event.package_name || selectedQuote.package_name || "Paket yok"}</p>
@@ -539,7 +548,7 @@ export function QuotesTab() {
                                             </div>
                                         </div>
                                     )) : (
-                                        <div className="rounded-2xl border border-slate-700/50 bg-slate-950/35 p-4 text-sm text-slate-500">Bu teklif için henüz funnel event kaydı görünmüyor.</div>
+                                        <div className="rounded-xl border border-[rgba(92,98,108,0.20)] bg-[rgba(255,255,255,0.025)] p-4 text-sm text-slate-500">Bu teklif için henüz funnel event kaydı görünmüyor.</div>
                                     )}
                                 </div>
                             </div>

@@ -45,17 +45,17 @@
      Tüm card border / buton / grafik için ANA RENK DEĞİL.
      Fonksiyonel renkler (success/warning/danger) ayrı tutulur.
   ───────────────────────────────────────────────────────────────────── */
-  --admin-bg:           #111111;
-  --admin-bg-2:         #1a1a1a;
-  --admin-panel:        rgba(26, 26, 26, 0.88);
-  --admin-panel-soft:   rgba(32, 30, 28, 0.78);
-  --admin-card:         rgba(28, 26, 24, 0.92);
-  --admin-card-2:       rgba(34, 32, 28, 0.90);
-  --admin-border:       rgba(72, 65, 52, 0.28);           /* ılık nötr */
+  --admin-bg:           #0c0d0f;
+  --admin-bg-2:         #111317;
+  --admin-panel:        rgba(18, 20, 24, 0.90);
+  --admin-panel-soft:   rgba(22, 24, 28, 0.82);
+  --admin-card:         rgba(20, 22, 26, 0.92);
+  --admin-card-2:       rgba(24, 26, 31, 0.90);
+  --admin-border:       rgba(92, 98, 108, 0.22);           /* nötr */
   --admin-border-strong: rgba(201, 168, 76, 0.28);        /* altın — aktif durumlar */
-  --admin-text:         #e8e6e1;                          /* ılık beyaz */
-  --admin-text-soft:    #8c8880;
-  --admin-text-muted:   #665f56;
+  --admin-text:         #e7e9ee;
+  --admin-text-soft:    #9ba1ad;
+  --admin-text-muted:   #6e7582;
   --admin-accent:       #c9a84c;   /* Altın — aktif nav · kritik highlight · küçük accent */
   --admin-accent-2:     #b87333;   /* Bakır — secondary */
   --admin-accent-green: #22c55e;   /* Fonksiyonel: success */
@@ -64,10 +64,10 @@
   --admin-glow: 0 0 0 1px rgba(201, 168, 76, 0.06), 0 18px 48px rgba(8, 6, 4, 0.50);
 
   /* ─── Nexus Admin Tokens (Antrasit + Altın) ─────────────────────── */
-  --nx-bg:            #111111;
-  --nx-bg-2:          #1a1a1a;
-  --nx-card:          rgba(28, 26, 24, 0.50);
-  --nx-border:        rgba(60, 56, 46, 0.50);
+  --nx-bg:            #0c0d0f;
+  --nx-bg-2:          #111317;
+  --nx-card:          rgba(18, 20, 24, 0.78);
+  --nx-border:        rgba(92, 98, 108, 0.24);
   --nx-border-accent: rgba(201, 168, 76, 0.28);
   --nx-gold:          #c9a84c;    /* aktif nav + kritik highlight */
   --nx-copper:        #b87333;    /* secondary accent */
@@ -77,12 +77,12 @@
   --nx-green:         #22c55e;    /* Success */
   --nx-amber:         #f59e0b;    /* Warning */
   --nx-red:           #ef4444;    /* Danger */
-  --nx-text:          #e8e6e1;
-  --nx-text-soft:     #8c8880;
-  --nx-text-muted:    #665f56;
-  --nx-glow-gold:     0 0 20px rgba(201, 168, 76, 0.12);
-  --nx-glow-cyan:     0 0 20px rgba(201, 168, 76, 0.12);  /* backward-compat */
-  --nx-glow-purple:   0 0 20px rgba(168, 85, 247, 0.15);
+  --nx-text:          #e7e9ee;
+  --nx-text-soft:     #9ba1ad;
+  --nx-text-muted:    #6e7582;
+  --nx-glow-gold:     0 0 0 1px rgba(201, 168, 76, 0.10), 0 12px 30px rgba(0, 0, 0, 0.24);
+  --nx-glow-cyan:     0 0 0 1px rgba(201, 168, 76, 0.10), 0 12px 30px rgba(0, 0, 0, 0.24);  /* backward-compat */
+  --nx-glow-purple:   0 0 0 1px rgba(168, 85, 247, 0.12), 0 12px 30px rgba(0, 0, 0, 0.24);
 
   /* ─── Frontend (fe-*) — koyu tema, gold accent ─────────────────────
      Saf iki dünya: /urunler hub krem, geri kalan her sayfa koyu.
@@ -414,10 +414,9 @@ select:-webkit-autofill:focus {
   .nx-shell {
     min-height: 100vh;
     background:
-      radial-gradient(ellipse 900px 600px at 12% 85%, rgba(201, 168, 76, 0.12), transparent 60%),
-      radial-gradient(ellipse 900px 700px at 88% 15%, rgba(184, 115, 51, 0.10), transparent 60%),
-      radial-gradient(ellipse 700px 500px at 50% 50%, rgba(80, 55, 30, 0.08), transparent 70%),
-      linear-gradient(135deg, #141210 0%, #1a1714 45%, #0d0b08 100%);
+      radial-gradient(ellipse 820px 520px at 12% 88%, rgba(201, 168, 76, 0.055), transparent 64%),
+      radial-gradient(ellipse 760px 560px at 92% 8%, rgba(201, 168, 76, 0.035), transparent 64%),
+      linear-gradient(135deg, var(--nx-bg) 0%, var(--nx-bg-2) 52%, #090a0c 100%);
     color: var(--nx-text);
     position: relative;
     overflow-x: hidden;
@@ -429,10 +428,10 @@ select:-webkit-autofill:focus {
     left: 0;
     height: 100vh;
     width: 240px;
-    background: linear-gradient(180deg, rgba(22, 20, 18, 0.82) 0%, rgba(16, 14, 12, 0.72) 100%);
-    border-right: 1px solid rgba(72, 65, 52, 0.22);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    background: linear-gradient(180deg, rgba(16, 18, 22, 0.94) 0%, rgba(12, 13, 16, 0.90) 100%);
+    border-right: 1px solid var(--nx-border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     display: flex;
     flex-direction: column;
     z-index: 40;
@@ -444,7 +443,7 @@ select:-webkit-autofill:focus {
     position: absolute;
     top: 0; bottom: 0; right: 0;
     width: 1px;
-    background: linear-gradient(180deg, transparent, rgba(201, 168, 76, 0.18), transparent);
+    background: linear-gradient(180deg, transparent, rgba(201, 168, 76, 0.12), transparent);
     pointer-events: none;
   }
 
@@ -453,10 +452,10 @@ select:-webkit-autofill:focus {
     top: 0;
     z-index: 30;
     height: 64px;
-    background: linear-gradient(180deg, rgba(20, 18, 16, 0.78) 0%, rgba(16, 14, 12, 0.68) 100%);
-    border-bottom: 1px solid rgba(72, 65, 52, 0.22);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    background: linear-gradient(180deg, rgba(15, 17, 21, 0.90) 0%, rgba(13, 15, 18, 0.82) 100%);
+    border-bottom: 1px solid var(--nx-border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     display: flex;
     align-items: center;
     padding: 0 1.5rem;
@@ -468,7 +467,7 @@ select:-webkit-autofill:focus {
     position: absolute;
     left: 0; right: 0; bottom: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.22), transparent);
+    background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.14), transparent);
     pointer-events: none;
   }
 
@@ -476,9 +475,9 @@ select:-webkit-autofill:focus {
     position: relative;
     background: var(--nx-card);
     border: 1px solid var(--nx-border);
-    backdrop-filter: blur(16px);
-    border-radius: 1.25rem;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.32);
+    backdrop-filter: blur(12px);
+    border-radius: 1rem;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
   }
 
   .nx-card::before {
@@ -486,7 +485,7 @@ select:-webkit-autofill:focus {
     position: absolute;
     inset: 0 0 auto 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.28), transparent);
+    background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.16), transparent);
     border-top-left-radius: inherit;
     border-top-right-radius: inherit;
     pointer-events: none;
@@ -510,16 +509,16 @@ select:-webkit-autofill:focus {
     border-radius: 0.5rem;
     font-size: 0.875rem;
     color: var(--nx-text-soft);
-    transition: all 180ms ease;
+    transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
     cursor: pointer;
     border: 1px solid transparent;
     position: relative;
   }
 
   .nx-nav-item:hover {
-    background: rgba(38, 35, 28, 0.60);
+    background: rgba(35, 38, 44, 0.62);
     color: var(--nx-text);
-    border-color: rgba(60, 56, 46, 0.30);
+    border-color: rgba(92, 98, 108, 0.30);
   }
 
   .nx-nav-item.active {
@@ -536,7 +535,7 @@ select:-webkit-autofill:focus {
     border-radius: 0.75rem;
     padding: 1.25rem;
     cursor: pointer;
-    transition: all 200ms ease;
+    transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
     border-top: 2px solid transparent;
   }
 
@@ -574,7 +573,7 @@ select:-webkit-autofill:focus {
     position: absolute;
     border-radius: 50%;
     filter: blur(110px);
-    opacity: 0.55;
+    opacity: 0.22;
   }
 
   .nx-blobs::before {
@@ -582,7 +581,7 @@ select:-webkit-autofill:focus {
     height: 640px;
     left: -160px;
     bottom: -220px;
-    background: radial-gradient(circle, rgba(201, 168, 76, 0.70) 0%, rgba(201, 168, 76, 0.22) 45%, transparent 70%);
+    background: radial-gradient(circle, rgba(201, 168, 76, 0.34) 0%, rgba(201, 168, 76, 0.10) 45%, transparent 70%);
   }
 
   .nx-blobs::after {
@@ -590,7 +589,7 @@ select:-webkit-autofill:focus {
     height: 720px;
     right: -180px;
     top: -220px;
-    background: radial-gradient(circle, rgba(184, 115, 51, 0.60) 0%, rgba(120, 70, 30, 0.22) 45%, transparent 70%);
+    background: radial-gradient(circle, rgba(201, 168, 76, 0.20) 0%, rgba(108, 116, 130, 0.09) 45%, transparent 70%);
   }
 
   .nx-blob-mid {
@@ -601,8 +600,8 @@ select:-webkit-autofill:focus {
     height: 460px;
     border-radius: 50%;
     filter: blur(120px);
-    opacity: 0.35;
-    background: radial-gradient(circle, rgba(110, 70, 30, 0.55) 0%, transparent 70%);
+    opacity: 0.16;
+    background: radial-gradient(circle, rgba(108, 116, 130, 0.30) 0%, transparent 70%);
     pointer-events: none;
   }
 
@@ -1001,5 +1000,3 @@ select:-webkit-autofill:focus {
   }
 
 }
-
-
