@@ -2,28 +2,16 @@ import Image from 'next/image';
 import { FileText, Truck, BuildingOffice, ShieldCheck } from '@phosphor-icons/react/dist/ssr';
 import { ICON_WEIGHT } from '@/lib/design/tokens';
 
-function ImagePlaceholder({ label, ratio = 'aspect-[4/5]' }: { label: string; ratio?: string }) {
-  return (
-    <div
-      className={`mt-4 ${ratio} rounded-lg border-2 border-dashed border-fe-border/50 bg-fe-surface/60 flex items-center justify-center p-6`}
-      role="img"
-      aria-label={`Yer tutucu: ${label}`}
-    >
-      <p className="text-xs text-fe-muted text-center leading-relaxed">
-        {label}
-        <br />
-        <span className="text-[10px] uppercase tracking-wider opacity-70">
-          gerçek görsel hazır olunca eklenecek
-        </span>
-      </p>
-    </div>
-  );
-}
-
 const TRUST_ROW = [
   { Icon: ShieldCheck, t: 'TSE & CE belgeli sistem', d: 'Tüm kalemler standartlara uygun, raporlu.' },
   { Icon: BuildingOffice, t: 'ÖzerGrup — 2006', d: 'Yalıtım ve izolasyon alanında 19 yıl.' },
   { Icon: Truck, t: '81 il sevkiyat', d: 'Kısmi yükten tam araca her ölçek.' },
+] as const;
+
+const OPERATION_STATS = [
+  { value: '40+', label: 'Palet kapasiteli stok', sub: 'Anlık takip, kırılma riski en aza iner.' },
+  { value: '81', label: 'İl aktif sevkiyat ağı', sub: 'Kısmi yük + tam araç, iskonto bölgeli.' },
+  { value: '24 sa.', label: 'PDF teklif geçerlilik', sub: 'Sabit fiyat, referans no, WhatsApp\'tan onay.' },
 ] as const;
 
 export function ProofBlock() {
@@ -45,14 +33,18 @@ export function ProofBlock() {
           </h2>
         </div>
 
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="rounded-2xl border border-fe-border/40 bg-fe-raised/40 p-6">
-            <FileText size={28} weight={ICON_WEIGHT} className="text-brand" aria-hidden />
-            <h3 className="mt-3 text-lg font-semibold text-fe-text">Örnek PDF teklif</h3>
-            <p className="mt-1.5 text-sm text-fe-muted leading-relaxed">
-              Resmi başlık, kalem listesi, nakliye dahil tutar, referans numarası ve 24 saat geçerlilik. Aşağıda anonimleştirilmiş gerçek bir örnek var.
+        {/* Asymmetric main row: large PDF card + tall stat band stack */}
+        <div className="mt-12 grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* PDF kartı — büyük, görsel ağırlıklı (3/5 desktop) */}
+          <div className="lg:col-span-3 rounded-2xl border border-fe-border/40 bg-fe-raised/40 p-6">
+            <div className="flex items-center gap-3">
+              <FileText size={26} weight={ICON_WEIGHT} className="text-brand" aria-hidden />
+              <h3 className="text-lg font-semibold text-fe-text">Örnek PDF teklif</h3>
+            </div>
+            <p className="mt-2 text-sm text-fe-muted leading-relaxed">
+              Resmi başlık, kalem listesi, nakliye dahil tutar, referans numarası, 24 saat geçerlilik. Aşağıda anonimleştirilmiş gerçek bir örnek var.
             </p>
-            <div className="mt-4 overflow-hidden rounded-lg border border-fe-border/30 bg-fe-surface/40">
+            <div className="mt-5 overflow-hidden rounded-lg border border-fe-border/30 bg-fe-surface/40">
               <Image
                 src="/images/ornek-pdf.webp"
                 alt="Anonimleştirilmiş örnek mantolama PDF teklifi"
@@ -63,26 +55,31 @@ export function ProofBlock() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6">
-            <div className="rounded-2xl border border-fe-border/40 bg-fe-raised/40 p-6">
-              <BuildingOffice size={28} weight={ICON_WEIGHT} className="text-brand" aria-hidden />
-              <h3 className="mt-3 text-lg font-semibold text-fe-text">Aktif depo, paletli stok</h3>
-              <p className="mt-1.5 text-sm text-fe-muted leading-relaxed">
-                Anlık stok takibi, paletli sevkiyat — sahaya kırık/eksik palet riski en aza iner.
-              </p>
-              {/* TODO: public/proof/depo.jpg hazır olunca ImagePlaceholder → next/image */}
-              <ImagePlaceholder label="ÖzerGrup depo iç görünüm" ratio="aspect-[16/10]" />
-            </div>
-            <div className="rounded-2xl border border-fe-border/40 bg-fe-raised/40 p-6">
-              <Truck size={28} weight={ICON_WEIGHT} className="text-brand" aria-hidden />
-              <h3 className="mt-3 text-lg font-semibold text-fe-text">Tüm Türkiye sevkiyat ağı</h3>
-              <p className="mt-1.5 text-sm text-fe-muted leading-relaxed">
-                Kısmi yük, kamyon ve TIR sevkiyatı; iskonto bölgelerine göre ek avantaj.
+          {/* Stat band — operational scale (2/5 desktop) */}
+          <div className="lg:col-span-2 grid grid-cols-1 gap-4 content-start">
+            {OPERATION_STATS.map((s) => (
+              <div key={s.label} className="rounded-2xl border border-fe-border/40 bg-fe-raised/40 p-5">
+                <p className="font-heading font-extrabold text-3xl sm:text-4xl text-brand leading-none tabular-nums">
+                  {s.value}
+                </p>
+                <p className="mt-2 text-sm font-semibold text-fe-text">{s.label}</p>
+                <p className="mt-1 text-xs text-fe-muted leading-relaxed">{s.sub}</p>
+              </div>
+            ))}
+            {/* Sevkiyat ağı kartı — text + icon, no image */}
+            <div className="rounded-2xl border border-fe-border/40 bg-fe-raised/40 p-5">
+              <div className="flex items-center gap-2">
+                <Truck size={22} weight={ICON_WEIGHT} className="text-brand" aria-hidden />
+                <h3 className="text-base font-semibold text-fe-text">Tüm Türkiye sevkiyat ağı</h3>
+              </div>
+              <p className="mt-1.5 text-xs text-fe-muted leading-relaxed">
+                Kısmi yük, kamyon ve TIR; iskonto bölgelerine göre ek avantaj.
               </p>
             </div>
           </div>
         </div>
 
+        {/* Trust row — kept as-is */}
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4">
           {TRUST_ROW.map(({ Icon, t, d }) => (
             <div key={t} className="flex items-start gap-3 rounded-2xl border border-fe-border/40 bg-fe-surface/60 p-4">
