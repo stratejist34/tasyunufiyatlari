@@ -8,12 +8,6 @@ const TRUST_ROW = [
   { Icon: Truck, t: '81 il sevkiyat', d: 'Kısmi yükten tam araca her ölçek.' },
 ] as const;
 
-const OPERATION_STATS = [
-  { value: '40+', label: 'Palet kapasiteli stok', sub: 'Anlık takip, kırılma riski en aza iner.' },
-  { value: '81', label: 'İl aktif sevkiyat ağı', sub: 'Kısmi yük + tam araç, iskonto bölgeli.' },
-  { value: '24 sa.', label: 'PDF teklif geçerlilik', sub: 'Sabit fiyat, referans no, WhatsApp\'tan onay.' },
-] as const;
-
 export function ProofBlock() {
   return (
     <section
@@ -33,53 +27,48 @@ export function ProofBlock() {
           </h2>
         </div>
 
-        {/* Asymmetric main row: large PDF card + tall stat band stack */}
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* PDF kartı — büyük, görsel ağırlıklı (3/5 desktop) */}
-          <div className="lg:col-span-3 rounded-2xl border border-fe-border/40 bg-fe-raised/40 p-6">
+        <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* PDF kartı */}
+          <div className="rounded-2xl border border-fe-border/40 bg-fe-raised/40 p-6">
             <div className="flex items-center gap-3">
               <FileText size={26} weight={ICON_WEIGHT} className="text-brand" aria-hidden />
               <h3 className="text-lg font-semibold text-fe-text">Örnek PDF teklif</h3>
             </div>
             <p className="mt-2 text-sm text-fe-muted leading-relaxed">
-              Resmi başlık, kalem listesi, nakliye dahil tutar, referans numarası, 24 saat geçerlilik. Aşağıda anonimleştirilmiş gerçek bir örnek var.
+              Resmi başlık, kalem listesi, nakliye dahil tutar, referans numarası ve 24 saat geçerlilik. Aşağıda anonimleştirilmiş gerçek bir örnek.
             </p>
             <div className="mt-5 overflow-hidden rounded-lg border border-fe-border/30 bg-fe-surface/40">
               <Image
                 src="/images/ornek-pdf.webp"
                 alt="Anonimleştirilmiş örnek mantolama PDF teklifi"
                 width={800}
-                height={1000}
+                height={1100}
                 className="w-full h-auto"
               />
             </div>
           </div>
 
-          {/* Stat band — operational scale (2/5 desktop) */}
-          <div className="lg:col-span-2 grid grid-cols-1 gap-4 content-start">
-            {OPERATION_STATS.map((s) => (
-              <div key={s.label} className="rounded-2xl border border-fe-border/40 bg-fe-raised/40 p-5">
-                <p className="font-heading font-extrabold text-3xl sm:text-4xl text-brand leading-none tabular-nums">
-                  {s.value}
-                </p>
-                <p className="mt-2 text-sm font-semibold text-fe-text">{s.label}</p>
-                <p className="mt-1 text-xs text-fe-muted leading-relaxed">{s.sub}</p>
-              </div>
-            ))}
-            {/* Sevkiyat ağı kartı — text + icon, no image */}
-            <div className="rounded-2xl border border-fe-border/40 bg-fe-raised/40 p-5">
-              <div className="flex items-center gap-2">
-                <Truck size={22} weight={ICON_WEIGHT} className="text-brand" aria-hidden />
-                <h3 className="text-base font-semibold text-fe-text">Tüm Türkiye sevkiyat ağı</h3>
-              </div>
-              <p className="mt-1.5 text-xs text-fe-muted leading-relaxed">
-                Kısmi yük, kamyon ve TIR; iskonto bölgelerine göre ek avantaj.
-              </p>
+          {/* Depo kartı */}
+          <div className="rounded-2xl border border-fe-border/40 bg-fe-raised/40 p-6">
+            <div className="flex items-center gap-3">
+              <BuildingOffice size={26} weight={ICON_WEIGHT} className="text-brand" aria-hidden />
+              <h3 className="text-lg font-semibold text-fe-text">Aktif depo, paletli sevkiyat</h3>
+            </div>
+            <p className="mt-2 text-sm text-fe-muted leading-relaxed">
+              Tuzla deposundan paletli yüklemeyle çıkış. Sahaya kırık ve eksik palet riski en aza iner; yükleme öncesi sayım yapılır.
+            </p>
+            <div className="mt-5 overflow-hidden rounded-lg border border-fe-border/30 bg-fe-surface/40">
+              <Image
+                src="/images/depo.webp"
+                alt="ÖzerGrup Tuzla deposundan paletli sevkiyat çıkışı"
+                width={1200}
+                height={800}
+                className="w-full h-auto"
+              />
             </div>
           </div>
         </div>
 
-        {/* Trust row — kept as-is */}
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4">
           {TRUST_ROW.map(({ Icon, t, d }) => (
             <div key={t} className="flex items-start gap-3 rounded-2xl border border-fe-border/40 bg-fe-surface/60 p-4">
