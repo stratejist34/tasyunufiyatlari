@@ -359,10 +359,14 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         }
     }, [preSelectedCityName, shippingZones, selectedCityCode]);
 
-    // Marka veya Malzeme tipi değiştiğinde model seçimini sıfırla
+    // Marka veya Malzeme tipi değiştiğinde model seçimini sıfırla.
+    // ÖNEMLİ: Niyet kartı preseti aktifken (pendingBrandModel) atla — preset
+    // bizim Faz 2 effect'imiz tarafından yönetilir; burada null'a çekersek
+    // child auto-select preset model'i ezer (örn. HD150 yerine LD125 atar).
     useEffect(() => {
+        if (pendingBrandModel) return;
         setSelectedModel(null);
-    }, [selectedBrandId, selectedMalzeme]);
+    }, [selectedBrandId, selectedMalzeme, pendingBrandModel]);
 
     // Kalınlık değiştiğinde lojistik verisini yükle
     useEffect(() => {
