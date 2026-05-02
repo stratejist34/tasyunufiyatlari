@@ -206,6 +206,10 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         brandName?: string;
         modelShortName?: string;
     } | null>(null);
+    const previousSelectionRef = useRef({
+        brandId: selectedBrandId,
+        material: selectedMalzeme,
+    });
 
     // Faz 1: material + thickness anlık uygulama, brand/model'i pending'e al
     useEffect(() => {
@@ -359,11 +363,21 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         }
     }, [preSelectedCityName, shippingZones, selectedCityCode]);
 
-    // Marka veya Malzeme tipi değiştiğinde model seçimini sıfırla.
-    // ÖNEMLİ: Niyet kartı preseti aktifken (pendingBrandModel) atla — preset
-    // bizim Faz 2 effect'imiz tarafından yönetilir; burada null'a çekersek
-    // child auto-select preset model'i ezer (örn. HD150 yerine LD125 atar).
+    // Marka veya Malzeme tipi gerçekten değiştiğinde model seçimini sıfırla.
+    // ÖNEMLİ: pendingBrandModel temizlenirken bu effect tekrar çalışır; o an
+    // brand/material değişmemişse modeli null'a çekmemeliyiz, yoksa child
+    // auto-select preset model'i ezer (örn. HD150 yerine LD125 atar).
     useEffect(() => {
+        const previous = previousSelectionRef.current;
+        const brandChanged = previous.brandId !== selectedBrandId;
+        const materialChanged = previous.material !== selectedMalzeme;
+
+        previousSelectionRef.current = {
+            brandId: selectedBrandId,
+            material: selectedMalzeme,
+        };
+
+        if (!brandChanged && !materialChanged) return;
         if (pendingBrandModel) return;
         setSelectedModel(null);
     }, [selectedBrandId, selectedMalzeme, pendingBrandModel]);
