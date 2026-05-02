@@ -21,10 +21,14 @@ export function proxy(req: NextRequest) {
     const user = decoded.slice(0, colonIdx);
     const pass = decoded.slice(colonIdx + 1);
 
-    const expectedUser = process.env.ADMIN_USER ?? 'admin';
-    const expectedPass = process.env.ADMIN_PASSWORD;
+    const adminUser = process.env.ADMIN_USER ?? 'admin';
+    const adminPass = process.env.ADMIN_PASSWORD;
+    const patronPass = process.env.PATRON_PASSWORD;
 
-    if (expectedPass && user === expectedUser && pass === expectedPass) {
+    const isAdmin = !!adminPass && user === adminUser && pass === adminPass;
+    const isPatron = !!patronPass && user === 'patron' && pass === patronPass;
+
+    if (isAdmin || isPatron) {
       return NextResponse.next();
     }
   }
