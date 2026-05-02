@@ -3,6 +3,18 @@ import { NextRequest, NextResponse } from 'next/server';
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Logout endpoint: yetkili olsa bile her zaman 401 döner.
+  // Tarayıcı cached basic-auth credential'larını bu sinyalle bırakır.
+  if (pathname === '/api/admin/logout') {
+    return new NextResponse('Çıkış yapıldı', {
+      status: 401,
+      headers: {
+        'WWW-Authenticate': 'Basic realm="Yönetim Paneli"',
+        'Cache-Control': 'no-store',
+      },
+    });
+  }
+
   // /ofis sayfası ve /api/admin/* rotalarını koru
   const isProtected =
     pathname.startsWith('/ofis') ||
@@ -30,7 +42,9 @@ export function proxy(req: NextRequest) {
     const isPatron = !!patronPass && user === 'patron' && pass === patronPass;
 
     if (isAdmin || isPatron) {
-      return NextResponse.next();
+      const headers = new Headers(req.headers);
+      headers.set('x-auth-user', user);
+      return NextResponse.next({ request: { headers } });
     }
   }
 
