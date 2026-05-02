@@ -256,12 +256,22 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         ))
         : [];
 
-    // Niyet preseti Faz 2: brand önce, sonra model (sıralı) — re-render zincirinde tamamlanır
+    // Niyet preseti Faz 2: brand + model uygulama
+    //
+    // Önemli: WizardStep1'de child auto-select useEffect'i var (`!selectedModel`
+    // ise availableModels[0]'ı atar). Bu, brand atandığı re-render'da bizim
+    // Faz 2'mizden ÖNCE çalışırsa preset model'i ezer (örn. HD150 yerine LD125).
+    //
+    // Bypass stratejisi: brand atarken AYNI render'da preset model'i de set et.
+    // Bir sonraki render'da `!selectedModel` false olduğu için child auto-select
+    // skip eder. Faz 2 ikinci kez çalıştığında availableModels'i denetler:
+    // preset model brand'de varsa dokunmaz, yoksa null'a çekip child'ın
+    // geçerli bir modeli seçmesine izin verir.
     useEffect(() => {
         if (!pendingBrandModel) return;
         if (!brands.length) return;
 
-        // 1) Brand henüz set edilmediyse, önce onu uygula ve sıradaki render'ı bekle
+        // 1) Brand henüz atanmadıysa: brand + (varsa) preset model'i AYNI ANDA set et
         if (pendingBrandModel.brandName) {
             const target = pendingBrandModel.brandName.toLocaleLowerCase('tr-TR');
             const found = brands.find(
@@ -269,19 +279,27 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
             );
             if (found && selectedBrandId !== found.id) {
                 setSelectedBrandId(found.id);
-                return; // bir sonraki render'da model fazına geç
+                if (pendingBrandModel.modelShortName) {
+                    // Child auto-select'i bypass etmek için pre-emptively model'i ata.
+                    // Geçerli kombinasyon ise (Expert+HD150) sonraki render'da öyle kalır.
+                    // Geçersizse aşağıdaki dal availableModels yenilenince null'a çeker.
+                    setSelectedModel(pendingBrandModel.modelShortName);
+                }
+                return; // bir sonraki render'da doğrulama dalına gir
             }
         }
 
-        // 2) Brand hazır — model'i uygula (availableModels yüklendiyse)
-        if (pendingBrandModel.modelShortName) {
-            if (!availableModels.length) return; // bekle, plates filtreli liste daha hesaplanmadı
-            if (availableModels.includes(pendingBrandModel.modelShortName)) {
-                setSelectedModel(pendingBrandModel.modelShortName);
+        // 2) Brand atandı — availableModels güncel; preset model'i doğrula
+        if (pendingBrandModel.modelShortName && availableModels.length) {
+            if (!availableModels.includes(pendingBrandModel.modelShortName)) {
+                // Preset model bu brand'de yok — null'a çek, child auto-select
+                // (filtered[0]) uygun modeli yerleştirsin
+                setSelectedModel(null);
             }
+            // Listede varsa zaten 1. dalda set edildi, dokunma
         }
 
-        // Hem brand hem model işlendi (veya model yoktu) — pending temizle
+        // Tüm faz işlendi — pending'i temizle
         setPendingBrandModel(null);
     }, [pendingBrandModel, brands.length, selectedBrandId, availableModels.length]);
 
