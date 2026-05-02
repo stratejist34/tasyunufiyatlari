@@ -373,37 +373,61 @@ export default function Home() {
                                 <div className="t-meta text-hub-gold-soft uppercase tracking-[0.18em] mb-5">
                                     Doluluk Eşikleri
                                 </div>
-                                <div className="flex flex-col sm:flex-row sm:items-stretch gap-2 sm:gap-3">
+                                <div className="flex flex-col gap-3">
                                     {[
-                                        { label: 'Kısmi Yük', sub: 'Düşük m²', badge: undefined, Icon: Package, color: 'text-red-400 border-red-700/50 bg-red-950/30' },
-                                        { label: 'Kamyon', sub: 'Orta m²', badge: undefined, Icon: Truck, color: 'text-fe-text border-fe-border bg-fe-surface' },
-                                        { label: 'TIR', sub: 'Tam dolulukta nakliye 0₺', badge: 'En avantajlı', Icon: Truck, color: 'text-green-400 border-green-700/50 bg-green-950/30' },
-                                    ].map((item, i, arr) => (
-                                        <div key={item.label} className="flex sm:flex-1 items-center gap-2 sm:gap-3 min-w-0">
-                                            <div className={`flex flex-1 items-center gap-3 px-3.5 py-3 rounded-xl border min-w-0 ${item.color}`}>
-                                                <item.Icon weight={ICON_WEIGHT} size={24} className="shrink-0" />
-                                                <div className="min-w-0">
-                                                    <div className="font-heading font-bold text-sm sm:text-base leading-tight flex items-center gap-1.5 flex-wrap">
+                                        {
+                                            label: 'Kısmi Yük',
+                                            badge: undefined,
+                                            Icon: Package,
+                                            iskonto: 'Kısmi iskonto',
+                                            nakliye: 'Nakliye alıcıya ait',
+                                            scope: 'Yakın bölge (İstanbul · Gebze)',
+                                            color: 'text-red-300 border-red-800/40 bg-red-950/25',
+                                        },
+                                        {
+                                            label: 'Kamyon',
+                                            badge: undefined,
+                                            Icon: Truck,
+                                            iskonto: '%14\'e kadar iskonto',
+                                            nakliye: 'Ücretsiz nakliye',
+                                            scope: 'Orta-büyük metraj',
+                                            color: 'text-fe-text border-fe-border bg-fe-surface',
+                                        },
+                                        {
+                                            label: 'TIR',
+                                            badge: 'En avantajlı',
+                                            Icon: Truck,
+                                            iskonto: '%18\'e kadar iskonto',
+                                            nakliye: 'Ücretsiz nakliye',
+                                            scope: 'Tam araç eşiğinde',
+                                            color: 'text-green-300 border-green-800/40 bg-green-950/25',
+                                        },
+                                    ].map((item) => (
+                                        <div key={item.label} className={`rounded-xl border p-4 ${item.color}`}>
+                                            <div className="flex items-start gap-3">
+                                                <item.Icon weight={ICON_WEIGHT} size={26} className="shrink-0 mt-0.5" />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="font-heading font-bold text-base sm:text-lg leading-tight flex items-center gap-2 flex-wrap">
                                                         {item.label}
                                                         {item.badge && (
                                                             <span className="inline-flex items-center rounded-full bg-brand/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand">{item.badge}</span>
                                                         )}
                                                     </div>
-                                                    <div className="text-[11px] sm:text-xs opacity-80 leading-snug">{item.sub}</div>
+                                                    <div className="mt-1.5 flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-sm">
+                                                        <span className="font-semibold">{item.iskonto}</span>
+                                                        <span className="opacity-70">·</span>
+                                                        <span>{item.nakliye}</span>
+                                                    </div>
+                                                    <div className="mt-1 text-[11px] uppercase tracking-wider opacity-60">
+                                                        {item.scope}
+                                                    </div>
                                                 </div>
                                             </div>
-                                            {i < arr.length - 1 && (
-                                                <CaretRight
-                                                    weight={ICON_WEIGHT}
-                                                    size={18}
-                                                    className="text-fe-text/50 shrink-0 hidden sm:block"
-                                                />
-                                            )}
                                         </div>
                                     ))}
                                 </div>
-                                <p className="text-fe-text/70 text-sm mt-6 leading-relaxed">
-                                    Hesaplayıcı her pakette araç doluluk oranını canlı gösterir; metrajı değiştirin, ideal araç tipini anında görün.
+                                <p className="text-fe-text/60 text-xs mt-5 leading-relaxed">
+                                    Oranlar İstanbul / taşyünü için örnektir; şehir + ürün + paket metrajına göre hesaplayıcıda gerçek değer görünür.
                                 </p>
                             </div>
                         </div>
