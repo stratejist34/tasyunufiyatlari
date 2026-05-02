@@ -16,7 +16,8 @@ export function proxy(req: NextRequest) {
 
   if (authHeader) {
     const base64 = authHeader.replace('Basic ', '');
-    const decoded = atob(base64);
+    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    const decoded = new TextDecoder('utf-8').decode(bytes);
     const colonIdx = decoded.indexOf(':');
     const user = decoded.slice(0, colonIdx);
     const pass = decoded.slice(colonIdx + 1);
