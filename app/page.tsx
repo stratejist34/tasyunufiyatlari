@@ -88,17 +88,17 @@ const HOW_STEPS = [
     {
         n: 1,
         title: "Metraj, kalınlık ve şehir girin",
-        desc: "Cephe m²'sini, levha kalınlığını ve sevkiyat ilini seçin. Sistem o bölgenin nakliye mesafesini ve iskonto oranını otomatik tanır.",
+        desc: "Şehir, metraj, kalınlık — 4 adımda formu tamamlayın.",
     },
     {
         n: 2,
         title: "8 kalem ve nakliye otomatik hesaplansın",
-        desc: "Levha + 7 aksesuar standart sarfiyatla, kamyon/TIR doluluğuna göre nakliyeyle birlikte tek tabloda toplanır.",
+        desc: "3 paket karşınızda; markalar ve kalemler net karşılaştırılır.",
     },
     {
         n: 3,
         title: "PDF teklifinizi indirin, paylaşın",
-        desc: "Adınız ve telefonunuzla resmi PDF teklifiniz anında oluşur — sistemde kayıtlı, WhatsApp'la sipariş için doğrudan referans numarası taşır.",
+        desc: "Resmi PDF teklif anında oluşur, WhatsApp ile sipariş onayı tek mesaj uzakta.",
     },
 ];
 
@@ -149,13 +149,13 @@ export default function Home() {
                             'radial-gradient(900px 400px at 70% -10%, rgba(198,158,84,0.10), transparent 60%), radial-gradient(700px 300px at 10% 110%, rgba(212,132,90,0.06), transparent 60%)',
                     }}
                 />
-                <div className="relative max-w-[1200px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-10 sm:pb-14">
+                <div className="relative max-w-[1200px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-6 sm:pb-8">
                     <Eyebrow className="mb-4">Fabrika Çıkışlı Mantolama</Eyebrow>
                     <h1 className="font-heading font-extrabold text-[40px] sm:text-[52px] lg:text-[64px] leading-[1.05] tracking-tight text-fe-text">
-                        Mantolama bütçenizi <span className="text-brand">doğru kuran</span> hesaplayıcı.
+                        Mantolama maliyetinizin <span className="text-brand">kapı teslim nakliye dahil</span>, net hesabı.
                     </h1>
-                    <p className="mt-5 max-w-[640px] text-base sm:text-lg text-fe-muted leading-relaxed">
-                        Şehir, metraj ve kalınlık verin — 8 kalemlik komple sistem (taşyünü/EPS, dübel, file, sıva), nakliye dahil, resmi PDF teklifle birlikte saniyeler içinde elinizde olur.
+                    <p className="mt-5 max-w-[620px] text-base sm:text-lg text-fe-muted leading-relaxed">
+                        Şehir, metraj ve kalınlık verin — sistemin 8 kalemi (levha, sıva, dübel, file, profil) ve nakliye saniyeler içinde resmi PDF teklif olarak elinizde.
                     </p>
                     <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-4">
                         <Link
@@ -267,6 +267,8 @@ export default function Home() {
                                 desc: "Toplam maliyeti minimize etmek isteyen projeler için bütçe dostu kombinasyon.",
                                 points: ["Bütçe dostu kombinasyon", "Üretici ürün garantisi", "En düşük toplam maliyet"],
                                 featured: false,
+                                forWho: "Toplam maliyeti aşağı çekmek isteyenler için.",
+                                notForWho: "Tek marka sistem bütünlüğü arıyorsanız size göre değil.",
                             },
                             {
                                 name: "Dengeli",
@@ -274,6 +276,8 @@ export default function Home() {
                                 desc: "Fiyat / performans dengesini gözeten projeler için optimize edilmiş paket.",
                                 points: ["Onaylı levha + aksesuar", "Üretici ürün garantisi", "Fiyat/performans dengesi"],
                                 featured: true,
+                                forWho: "Fiyat ve güven dengesi arayanlar için.",
+                                notForWho: "Ultra premium beklenti varsa Orijinal'i tercih edin.",
                             },
                             {
                                 name: "Orijinal",
@@ -281,6 +285,8 @@ export default function Home() {
                                 desc: "Tek marka bütünlüğüyle sistem garantisi. Dalmaçyalı levha ve aksesuar kombinasyonu.",
                                 points: ["Aynı marka levha + aksesuar", "Sistem garanti koşulları", "Marka bütünlüğü"],
                                 featured: false,
+                                forWho: "Tek marka sistem bütünlüğü arayanlar için.",
+                                notForWho: "Maliyeti minimum tutmak istiyorsanız Ekonomik'e bakın.",
                             },
                         ].map((tier) => (
                             <div
@@ -313,6 +319,16 @@ export default function Home() {
                                         </li>
                                     ))}
                                 </ul>
+                                {tier.forWho && (
+                                    <p className="mt-3 text-xs text-fe-muted leading-relaxed">
+                                        <span className="font-semibold text-fe-text">Kimin için: </span>{tier.forWho}
+                                    </p>
+                                )}
+                                {tier.notForWho && (
+                                    <p className="mt-1 text-xs text-fe-muted/70 leading-relaxed">
+                                        <span className="font-semibold">Kimin için değil: </span>{tier.notForWho}
+                                    </p>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -359,16 +375,19 @@ export default function Home() {
                                 </div>
                                 <div className="flex flex-col sm:flex-row sm:items-stretch gap-2 sm:gap-3">
                                     {[
-                                        { label: 'Kısmi Yük', sub: 'Düşük m²', Icon: Package, color: 'text-red-400 border-red-700/50 bg-red-950/30' },
-                                        { label: 'Kamyon', sub: 'Orta m²', Icon: Truck, color: 'text-fe-text border-fe-border bg-fe-surface' },
-                                        { label: 'TIR', sub: 'Tam dolulukta nakliye 0₺', Icon: Truck, color: 'text-green-400 border-green-700/50 bg-green-950/30' },
+                                        { label: 'Kısmi Yük', sub: 'Düşük m²', badge: undefined, Icon: Package, color: 'text-red-400 border-red-700/50 bg-red-950/30' },
+                                        { label: 'Kamyon', sub: 'Orta m²', badge: undefined, Icon: Truck, color: 'text-fe-text border-fe-border bg-fe-surface' },
+                                        { label: 'TIR', sub: 'Tam dolulukta nakliye 0₺', badge: 'En avantajlı', Icon: Truck, color: 'text-green-400 border-green-700/50 bg-green-950/30' },
                                     ].map((item, i, arr) => (
                                         <div key={item.label} className="flex sm:flex-1 items-center gap-2 sm:gap-3 min-w-0">
                                             <div className={`flex flex-1 items-center gap-3 px-3.5 py-3 rounded-xl border min-w-0 ${item.color}`}>
                                                 <item.Icon weight={ICON_WEIGHT} size={24} className="shrink-0" />
                                                 <div className="min-w-0">
-                                                    <div className="font-heading font-bold text-sm sm:text-base leading-tight">
+                                                    <div className="font-heading font-bold text-sm sm:text-base leading-tight flex items-center gap-1.5 flex-wrap">
                                                         {item.label}
+                                                        {item.badge && (
+                                                            <span className="inline-flex items-center rounded-full bg-brand/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand">{item.badge}</span>
+                                                        )}
                                                     </div>
                                                     <div className="text-[11px] sm:text-xs opacity-80 leading-snug">{item.sub}</div>
                                                 </div>
@@ -397,10 +416,10 @@ export default function Home() {
                 <RevealOnScroll className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
                     <Eyebrow className="mb-5 justify-center">Karar Verin</Eyebrow>
                     <h2 className="mt-3 font-heading font-extrabold text-[32px] sm:text-[40px] leading-[1.1] tracking-tight text-fe-text">
-                        Bütçeniz nakliye dahil, paket bazında <span className="text-brand">resmi PDF teklif</span> olarak elinizde.
+                        Nakliye dahil teklifinizi <span className="text-brand">şimdi oluşturun</span>.
                     </h2>
-                    <p className="mt-4 max-w-[620px] text-base text-fe-muted leading-relaxed">
-                        Hesaplayıcıdan paketi seçin — fiyat, kalemler ve nakliye dahil tutar tek ekranda. PDF teklifte 24 saat geçerli sabit fiyat ve referans numarası olur, sipariş için aynı numarayı WhatsApp üzerinden iletmeniz yeterli.
+                    <p className="mt-4 max-w-[560px] text-base text-fe-muted leading-relaxed">
+                        Paketi seçin, ad-soyad ve telefon girin; resmi PDF saniyeler içinde elinizde. Sipariş için referans numaranızla WhatsApp tek mesaj.
                     </p>
                     <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-4">
                         <Link
@@ -410,13 +429,15 @@ export default function Home() {
                             Paket fiyatımı hesapla
                             <ArrowRight size={18} weight={ICON_WEIGHT} />
                         </Link>
-                        <Link
-                            href="/iletisim"
+                        <a
+                            href="https://wa.me/905322041825"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 text-base font-medium text-fe-muted transition hover:text-fe-text"
                         >
-                            Önce sorum var
+                            WhatsApp'tan danış
                             <ArrowRight size={16} weight={ICON_WEIGHT} />
-                        </Link>
+                        </a>
                     </div>
                 </RevealOnScroll>
             </section>
@@ -425,9 +446,9 @@ export default function Home() {
             <section className="bg-fe-bg section-pad-md border-t border-fe-border">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6">
                     <SectionHeader
-                        eyebrow="Sıkça Sorulanlar"
-                        title="Karar vermeden önce merak ettikleriniz"
-                        lead="En sık aldığımız 6 soru ve net cevapları."
+                        eyebrow="Karar Öncesi"
+                        title="Son netleştirmeler"
+                        lead="Sipariş öncesi en sık aldığımız 6 soru ve net cevapları."
                         tone="dark"
                         className="mb-12"
                     />
