@@ -1099,7 +1099,7 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
             <section
                 className="relative bg-cover bg-center py-10 lg:py-14"
                 style={{
-                    backgroundImage: `linear-gradient(to right, rgba(11, 11, 12, 0.97), rgba(11, 11, 12, 0.88)), url('/images/markalogolar/bina-dis-cephe-kaplama-4000x4000.png')`,
+                    backgroundImage: `linear-gradient(to right, rgba(11, 11, 12, 0.97), rgba(11, 11, 12, 0.88)), url('/images/bina-dis-cephe-mantolama.webp')`,
                 }}
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
