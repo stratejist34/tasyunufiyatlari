@@ -8,6 +8,8 @@ import ThicknessSelector from '@/components/catalog/ThicknessSelector';
 import ProductPricePanel from '@/components/catalog/ProductPricePanel';
 import { getCatalogProduct } from '@/lib/catalog/server';
 import { buildMetadata } from '@/lib/seo/buildMetadata';
+import { buildBreadcrumbList } from '@/lib/seo/buildBreadcrumbList';
+import { SITE_ORIGIN } from '@/lib/seo/siteConfig';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { unstable_cache } from 'next/cache';
 import SiteHeader from '@/components/shared/SiteHeader';
@@ -139,10 +141,18 @@ export default async function UrunDetayPage({ params, searchParams }: Props) {
   const kategoriLabel = KATEGORI_LABELS[kategori] ?? kategori;
 
   // ─── Schema.org JSON-LD ──────────────────────────────────────
+  const productUrl = `${SITE_ORIGIN}/urunler/${kategori}/${slug}`;
+  const productImage = product.image_cover
+    ? (product.image_cover.startsWith('http') ? product.image_cover : `${SITE_ORIGIN}${product.image_cover}`)
+    : `${SITE_ORIGIN}/og-image.png`;
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
+    sku: slug,
+    image: [productImage],
+    url: productUrl,
     description: product.catalog_description ?? undefined,
     brand: { '@type': 'Brand', name: product.brand.name },
     category: product.category.name,
@@ -152,13 +162,25 @@ export default async function UrunDetayPage({ params, searchParams }: Props) {
         priceCurrency: 'TRY',
         price: product.base_price,
         availability: 'https://schema.org/InStock',
+        url: productUrl,
       },
     } : {}),
   };
 
+  const breadcrumbSchema = buildBreadcrumbList(
+    [
+      { name: 'Anasayfa', path: '/' },
+      { name: 'Ürünler', path: '/urunler' },
+      { name: kategoriLabel, path: `/urunler/${kategori}` },
+      { name: product.name, path: `/urunler/${kategori}/${slug}` },
+    ],
+    SITE_ORIGIN,
+  );
+
   return (
     <div className="min-h-screen bg-fe-bg flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <SiteHeader />
 
       {/* Breadcrumb */}

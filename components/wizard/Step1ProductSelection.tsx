@@ -64,13 +64,13 @@ const DIS_CEPHE_MODELLER = [
 ];
 
 const MARKA_LOGOLARI: { [key: string]: string } = {
-    'Dalmaçyalı': '/images/markalogolar/dalmaçyalı taşyünü fiyatları.png',
-    'Expert': '/images/markalogolar/fawori taşyünü fiyatları.png',
-    'Optimix': '/images/markalogolar/fawori taşyünü fiyatları.png',
-    'Fawori': '/images/markalogolar/fawori taşyünü fiyatları.png',
-    'Knauf': '/images/markalogolar/Knauf Mineral yünleri.png',
-    'Tekno': '/images/markalogolar/Tekno Taşyünü ve EPs Fiyatları.png',
-    'Filli Boya': '/images/markalogolar/filli boya.png'
+    'Dalmaçyalı': '/images/markalogolar/dalmaçyalı-taşyünü- fiyatları.webp',
+    'Expert': '/images/markalogolar/fawori-taşyünü- fiyatları.webp',
+    'Optimix': '/images/markalogolar/fawori-taşyünü- fiyatları.webp',
+    'Fawori': '/images/markalogolar/fawori-taşyünü- fiyatları.webp',
+    'Knauf': '/images/markalogolar/Knauf Mineral yünleri.webp',
+    'Tekno': '/images/markalogolar/Tekno Taşyünü ve EPs Fiyatları.webp',
+    'Filli Boya': '/images/markalogolar/filli-boya-mantolama.webp'
 };
 
 export function Step1ProductSelection({

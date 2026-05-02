@@ -1,6 +1,9 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { MOCK_TRANSACTIONS } from "@/lib/data/marketData";
 import WizardCalculator from "@/components/wizard/WizardCalculator";
+import { buildMetadata } from '@/lib/seo/buildMetadata';
+import { buildBreadcrumbList } from '@/lib/seo/buildBreadcrumbList';
+import { SITE_ORIGIN } from '@/lib/seo/siteConfig';
 
 // DİKKAT: Params artık bir Promise
 type Props = {
@@ -10,14 +13,16 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Params'ı önce bekliyoruz (await)
   const resolvedParams = await params;
-  
+
   const city = resolvedParams.sehir.charAt(0).toUpperCase() + resolvedParams.sehir.slice(1);
   const district = resolvedParams.ilce.charAt(0).toUpperCase() + resolvedParams.ilce.slice(1);
-  
-  return {
-    title: `${city} ${district} Taşyünü ve Mantolama Fiyatları | Lojistik Destekli`,
+
+  return buildMetadata({
+    title: `${city} ${district} Taşyünü ve Mantolama Fiyatları`,
     description: `${city} ${district} bölgesi için güncel taşyünü fiyatları, tır bazlı sevkiyat avantajları.`,
-  }
+    path: `/bolge/${resolvedParams.sehir}/${resolvedParams.ilce}`,
+    type: 'website',
+  });
 }
 
 export default async function BolgePage({ params }: Props) {
@@ -28,13 +33,25 @@ export default async function BolgePage({ params }: Props) {
   const district = resolvedParams.ilce.charAt(0).toUpperCase() + resolvedParams.ilce.slice(1);
 
   // O bölgeye ait referansları filtrele
-  const localRefs = MOCK_TRANSACTIONS.filter(t => 
-    t.city.toLowerCase() === city.toLowerCase() || 
+  const localRefs = MOCK_TRANSACTIONS.filter(t =>
+    t.city.toLowerCase() === city.toLowerCase() ||
     t.district.toLowerCase() === district.toLowerCase()
+  );
+
+  const breadcrumbSchema = buildBreadcrumbList(
+    [
+      { name: 'Anasayfa', path: '/' },
+      { name: `${city} ${district}`, path: `/bolge/${resolvedParams.sehir}/${resolvedParams.ilce}` },
+    ],
+    SITE_ORIGIN,
   );
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 pt-24 pb-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* HERO ALANI */}

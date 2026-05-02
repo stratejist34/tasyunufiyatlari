@@ -26,6 +26,9 @@ export function WizardStep2({ selectedKalinlik, setSelectedKalinlik }: WizardSte
             transition={{ duration: 0.25 }}
         >
             <label className="block text-sm font-semibold text-white mb-4">Yalıtım Kalınlığını Seçin</label>
+            <p className="mt-2 text-sm text-fe-muted leading-relaxed">
+                Apartman/villa için <strong className="text-fe-text">5–6 cm</strong> ılıman bölgelerde, <strong className="text-fe-text">8–10 cm</strong> soğuk bölgelerde standart. 10 cm &quot;Popüler&quot; çünkü EKB hedefini büyük çoğunlukla karşılar.
+            </p>
             <div className="grid grid-cols-3 gap-3">
                 {KALINLIKLAR.map(k => (
                     <button
@@ -46,10 +49,6 @@ export function WizardStep2({ selectedKalinlik, setSelectedKalinlik }: WizardSte
                     </button>
                 ))}
             </div>
-
-            <p className="mt-5 text-xs text-fe-muted text-center">
-                Dış cephe mantolama için genellikle 8–10 cm önerilir.
-            </p>
         </motion.div>
     );
 }
