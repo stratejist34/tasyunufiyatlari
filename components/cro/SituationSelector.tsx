@@ -30,28 +30,28 @@ const SITUATIONS: Situation[] = [
   {
     key: 'isi_yalitimi',
     Icon: Thermometer as IconType,
-    label: 'Isı yalıtımı yaptırmak istiyorum',
-    helper: 'Doğalgaz/elektrik faturası düşürmek hedefse — taşyünü veya EPS önerelim.',
+    label: 'Isı kaybını düşürmek istiyorum',
+    helper: 'Doğalgaz/elektrik faturası hedefse — sistem önerelim.',
     scrollTarget: '#mantolama-hesaplayici',
   },
   {
     key: 'ses_yalitimi',
     Icon: SpeakerSimpleHigh as IconType,
-    label: 'Ses yalıtımı önemli',
+    label: 'Ses yalıtımı benim için önemli',
     helper: 'Komşu, sokak veya iş yeri gürültüsü için yoğunluk farkı kritik.',
     scrollTarget: '#mantolama-hesaplayici',
   },
   {
     key: 'cati_yalitimi',
     Icon: House as IconType,
-    label: 'Çatı/teras katı için',
+    label: 'Çatı/teras için doğru çözümü arıyorum',
     helper: 'Üst kat ısı kaybı ve nem için farklı kalınlık önerilir.',
     scrollTarget: '#mantolama-hesaplayici',
   },
   {
     key: 'emin_degilim',
     Icon: Question as IconType,
-    label: 'Henüz emin değilim',
+    label: 'Kararsızım, birlikte seçelim',
     helper: 'Sahanızı paylaşın, doğru paketi sizin için biz belirleyelim.',
     scrollTarget: '/iletisim',
   },
@@ -73,7 +73,7 @@ export function SituationSelector() {
   return (
     <section
       aria-labelledby="situation-baslik"
-      className="bg-fe-bg py-16 sm:py-24"
+      className="bg-fe-bg pt-10 pb-12 sm:pt-12 sm:pb-16"
     >
       <div className="max-w-[1100px] mx-auto px-4">
         <div className="text-center max-w-[640px] mx-auto">
@@ -82,15 +82,15 @@ export function SituationSelector() {
           </p>
           <h2
             id="situation-baslik"
-            className="mt-3 font-heading font-extrabold text-[28px] sm:text-[36px] leading-[1.15] tracking-tight text-fe-text"
+            className="mt-2 font-heading font-extrabold text-[28px] sm:text-[36px] leading-[1.15] tracking-tight text-fe-text"
           >
             Hangi sorun için araştırıyorsunuz?
           </h2>
-          <p className="mt-3 text-sm sm:text-base text-fe-muted leading-relaxed">
-            Seçiminiz hesaplayıcıyı doğru yönlendirir. Kararsızsanız son seçenek size özel.
+          <p className="mt-2 text-sm text-fe-muted leading-relaxed">
+            Seçiminiz hesaplayıcıyı doğru yönlendirir.
           </p>
         </div>
-        <ul className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <ul className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {SITUATIONS.map((s) => (
             <li key={s.key}>
               <button
