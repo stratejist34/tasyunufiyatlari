@@ -41,7 +41,10 @@ export function ProofBlock() {
               <h3 className="text-lg font-semibold text-fe-text">Örnek PDF teklif</h3>
             </div>
             <p className="mt-2 text-sm text-fe-muted leading-relaxed">
-              Resmi başlık, kalem listesi, nakliye dahil tutar, referans numarası ve 24 saat geçerlilik. Aşağıda anonimleştirilmiş gerçek bir örnek.
+              Resmi başlık, kalem listesi, nakliye dahil tutar, referans numarası ve 24 saat geçerlilik.
+              <span className="block mt-1.5 text-xs text-fe-muted/80">
+                Aşağıdaki örnek anonimleştirilmiştir; tarih ve referans numarası gerçek teklifte sizin tarihinizle yenilenir.
+              </span>
             </p>
             <div className="mt-5 overflow-hidden rounded-lg border border-fe-border/30 bg-fe-surface/40">
               <Image

@@ -10,6 +10,7 @@ import {
 import type { ComponentType, SVGProps } from 'react';
 import { ICON_WEIGHT } from '@/lib/design/tokens';
 import { notifySituationSelected, type SituationKey } from '@/lib/notifyWizardEvent';
+import { useWizardStore, type SituationPresetKey } from '@/lib/store/wizardStore';
 
 type IconType = ComponentType<{
   size?: number | string;
@@ -23,7 +24,8 @@ type Situation = {
   Icon: IconType;
   label: string;
   helper: string;
-  scrollTarget: '#mantolama-hesaplayici' | '/iletisim';
+  // '#' ile başlıyorsa scrollIntoView, başka her şey için router.push
+  scrollTarget: string;
 };
 
 const SITUATIONS: Situation[] = [
@@ -45,8 +47,8 @@ const SITUATIONS: Situation[] = [
     key: 'cati_yalitimi',
     Icon: House as IconType,
     label: 'Çatı/teras için doğru çözümü arıyorum',
-    helper: 'Üst kat ısı kaybı ve nem için farklı kalınlık önerilir.',
-    scrollTarget: '#mantolama-hesaplayici',
+    helper: 'Üst kat için VF80 toz grubu ürünümüze yönlendirelim.',
+    scrollTarget: '/urunler/tasyunu-levha/expert-vf80-tasyunu?kalinlik=8cm',
   },
   {
     key: 'emin_degilim',
@@ -57,11 +59,22 @@ const SITUATIONS: Situation[] = [
   },
 ];
 
+// Niyet → wizard preset eşleşmesi olan kartlar.
+// cati_yalitimi ve emin_degilim wizard'a girmez — doğrudan başka URL'lere gider.
+const PRESET_KEYS = new Set<SituationKey>(['isi_yalitimi', 'ses_yalitimi']);
+
 export function SituationSelector() {
   const router = useRouter();
+  const setSituationPreset = useWizardStore((state) => state.setSituationPreset);
 
   const onSelect = (s: Situation) => {
     notifySituationSelected({ situationKey: s.key, situationLabel: s.label });
+
+    // Wizard preset (4. kart "emin_degilim" iletişime gider, preset yok)
+    if (PRESET_KEYS.has(s.key)) {
+      setSituationPreset(s.key as SituationPresetKey);
+    }
+
     if (s.scrollTarget.startsWith('#')) {
       const el = document.querySelector(s.scrollTarget);
       if (el instanceof HTMLElement) el.scrollIntoView({ behavior: 'smooth', block: 'start' });

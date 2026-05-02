@@ -5,6 +5,22 @@ import { devtools, persist } from 'zustand/middleware';
 // WIZARD STATE INTERFACE
 // ==========================================
 
+// Niyet kartı (SituationSelector) → wizard preset eşleşmesi
+// SituationSelector seçildiğinde set edilir, WizardCalculator mount edildiğinde
+// consumeSituationPreset() ile bir kez okunup temizlenir.
+export type SituationPresetKey = 'isi_yalitimi' | 'ses_yalitimi' | 'cati_yalitimi';
+
+export interface SituationPreset {
+  key: SituationPresetKey;
+  material: 'tasyunu' | 'eps';
+  thicknessCm: number;
+  // Opsiyonel marka/model preseti — DB'den çekilen brands/plates yüklendikten sonra
+  // WizardCalculator tarafında ada göre çözümlenir (brandName → brandId, modelShortName → plate.short_name).
+  // Eşleşme bulunamazsa sessizce atlanır (graceful degradation).
+  brandName?: string;
+  modelShortName?: string;
+}
+
 interface WizardState {
   // ===== WIZARD ADIMI =====
   step: number;
@@ -27,6 +43,9 @@ interface WizardState {
   // ===== ADIM 3: Paket Seçimi =====
   secilenPaket: any | null;
   showResults: boolean;
+
+  // ===== Niyet preseti (SituationSelector → WizardCalculator köprüsü) =====
+  situationPreset: SituationPreset | null;
 
   // ==========================================
   // ACTIONS
@@ -52,6 +71,10 @@ interface WizardState {
   previousStep: () => void;
   goToStep: (step: number) => void;
   reset: () => void;
+
+  // ----- Niyet preseti -----
+  setSituationPreset: (key: SituationPresetKey) => void;
+  consumeSituationPreset: () => SituationPreset | null;
 }
 
 // ==========================================
@@ -73,6 +96,27 @@ const initialState = {
   ilceAdi: null,
   secilenPaket: null,
   showResults: false,
+  situationPreset: null as SituationPreset | null,
+};
+
+// Niyet kartı → preset değer haritası.
+// Not: cati_yalitimi presetten ÇIKARILDI — çatı için toz grubu wizard'da yok,
+// kart artık SituationSelector'dan doğrudan ürün sayfasına yönlendirir.
+const SITUATION_PRESETS: Partial<Record<SituationPresetKey, SituationPreset>> = {
+  isi_yalitimi: {
+    key: 'isi_yalitimi',
+    material: 'tasyunu',
+    thicknessCm: 6,
+    brandName: 'Expert',     // Fawori - Expert
+    modelShortName: 'HD150',
+  },
+  ses_yalitimi: {
+    key: 'ses_yalitimi',
+    material: 'tasyunu',
+    thicknessCm: 8,
+    brandName: 'Dalmaçyalı',
+    modelShortName: 'SW035',
+  },
 };
 
 // ==========================================
@@ -224,11 +268,33 @@ export const useWizardStore = create<WizardState>()(
             false,
             'reset'
           ),
+
+        // ===== NIYET PRESET =====
+        setSituationPreset: (key) => {
+          const preset = SITUATION_PRESETS[key];
+          if (!preset) return; // map'te yoksa (ör. cati_yalitimi) sessizce atla
+          set(
+            {
+              situationPreset: preset,
+            },
+            false,
+            'setSituationPreset'
+          );
+        },
+
+        consumeSituationPreset: () => {
+          const current = get().situationPreset;
+          if (current) {
+            set({ situationPreset: null }, false, 'consumeSituationPreset');
+          }
+          return current;
+        },
       }),
       {
         name: 'tasyunu-wizard', // localStorage key
         partialize: (state) => ({
-          // Sadece kullanıcı seçimlerini kaydet, UI state'lerini kaydetme
+          // Sadece kullanıcı seçimlerini kaydet, UI state'lerini kaydetme.
+          // situationPreset sessiyon-geçişli — persist edilmez (consume modeli).
           levhaTipi: state.levhaTipi,
           markaId: state.markaId,
           markaAdi: state.markaAdi,

@@ -24,6 +24,7 @@ import {
     generateWhatsAppMessage,
     generateWhatsAppURL
 } from "@/lib/utils/packageHelpers";
+import { useWizardStore } from "@/lib/store/wizardStore";
 import type { PdfOfferFormData } from "@/lib/schemas/pdfOffer.schema";
 import type {
     ShippingZone,
@@ -171,8 +172,10 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         customerEmail: "",
         customerPhone: "",
         customerCompany: "",
-        customerAddress: ""
+        customerAddress: "",
+        kvkkConsent: false,
     });
+    const [quoteFormError, setQuoteFormError] = useState<string | null>(null);
     const [isSubmittingQuote, setIsSubmittingQuote] = useState(false);
     const [expandedCards, setExpandedCards] = useState<number[]>([]);
 
@@ -183,6 +186,56 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
 
     // Scroll ref
     const resultsRef = useRef<HTMLDivElement>(null);
+
+    // ============================================================
+    // Niyet kartı preset → wizard pre-fill (iki fazlı uygulama)
+    //
+    // Faz 1: material + thicknessCm anında uygulanır (data gerektirmez).
+    // Faz 2: brandName + modelShortName ertelenir; brands/plates yüklendikten
+    //        sonra ada göre çözümlenir ve uygulanır.
+    //
+    // Pending değer useRef'te tutulur — store'dan tüketildikten sonra
+    // brand/model yüklenmeden kaybolmasın.
+    // ============================================================
+    const situationPresetFromStore = useWizardStore((state) => state.situationPreset);
+    const pendingBrandModelRef = useRef<{ brandName?: string; modelShortName?: string } | null>(null);
+
+    // Faz 1: material + thickness anlık uygulama
+    useEffect(() => {
+        if (!situationPresetFromStore) return;
+        setSelectedMalzeme(situationPresetFromStore.material);
+        setSelectedKalinlik(String(situationPresetFromStore.thicknessCm));
+
+        if (situationPresetFromStore.brandName || situationPresetFromStore.modelShortName) {
+            pendingBrandModelRef.current = {
+                brandName: situationPresetFromStore.brandName,
+                modelShortName: situationPresetFromStore.modelShortName,
+            };
+        }
+
+        // Preset'i tüket — bir sonraki render'da tekrar uygulanmasın
+        useWizardStore.getState().consumeSituationPreset();
+    }, [situationPresetFromStore]);
+
+    // Faz 2: brands yüklenince pending brand/model çözümle ve uygula
+    useEffect(() => {
+        const pending = pendingBrandModelRef.current;
+        if (!pending) return;
+        if (!brands.length) return;
+
+        if (pending.brandName) {
+            const target = pending.brandName.toLocaleLowerCase('tr-TR');
+            const found = brands.find(
+                (b) => b.name.toLocaleLowerCase('tr-TR') === target
+            );
+            if (found) setSelectedBrandId(found.id);
+        }
+        if (pending.modelShortName) {
+            setSelectedModel(pending.modelShortName);
+        }
+
+        pendingBrandModelRef.current = null;
+    }, [brands.length]);
 
     const PRIORITY_CITIES = ["İstanbul", "Kocaeli", "Bolu", "Sakarya", "Düzce", "Tekirdağ", "Yalova", "Bursa", "Balıkesir"];
     const sortShippingZones = (zones: ShippingZone[]) => {
@@ -1023,6 +1076,13 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
         e.preventDefault();
         if (!selectedPackageForQuote) return;
 
+        setQuoteFormError(null);
+
+        if (!quoteForm.kvkkConsent) {
+            setQuoteFormError('Devam etmek için KVKK onayı gereklidir.');
+            return;
+        }
+
         setIsSubmittingQuote(true);
 
         try {
@@ -1081,7 +1141,8 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                 customerEmail: "",
                 customerPhone: "",
                 customerCompany: "",
-                customerAddress: ""
+                customerAddress: "",
+                kvkkConsent: false,
             });
             setSelectedPackageForQuote(null);
 
@@ -1399,9 +1460,10 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-fe-text mb-1">E-posta</label>
+                                    <label className="block text-sm font-medium text-fe-text mb-1">
+                                        E-posta <span className="text-fe-muted text-xs">(opsiyonel)</span>
+                                    </label>
                                     <input
-                                        required
                                         type="email"
                                         value={quoteForm.customerEmail}
                                         onChange={e => setQuoteForm({ ...quoteForm, customerEmail: e.target.value })}
@@ -1429,10 +1491,35 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                                         placeholder="Opsiyonel teslimat adresi"
                                     />
                                 </div>
+
+                                {/* KVKK — PdfOfferModal ile aynı standart */}
+                                <div className="flex items-start gap-2.5 pt-1">
+                                    <input
+                                        type="checkbox"
+                                        id="quoteWaKvkkConsent"
+                                        checked={quoteForm.kvkkConsent}
+                                        onChange={e => {
+                                            setQuoteForm({ ...quoteForm, kvkkConsent: e.target.checked });
+                                            if (e.target.checked) setQuoteFormError(null);
+                                        }}
+                                        disabled={isSubmittingQuote}
+                                        className="mt-0.5 w-4 h-4 rounded accent-brand-500 cursor-pointer"
+                                    />
+                                    <label htmlFor="quoteWaKvkkConsent" className="text-xs text-fe-muted cursor-pointer leading-relaxed">
+                                        Kişisel verilerimin teklif oluşturma amacıyla işlenmesini kabul ediyorum.{' '}
+                                        <a href="/kvkk" target="_blank" rel="noopener noreferrer" className="text-brand-400 underline hover:text-brand-300">
+                                            Aydınlatma Metni
+                                        </a>
+                                    </label>
+                                </div>
+                                {quoteFormError && (
+                                    <p className="text-red-400 text-xs">{quoteFormError}</p>
+                                )}
+
                                 <button
                                     type="submit"
                                     disabled={isSubmittingQuote}
-                                    className="w-full py-4 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+                                    className="w-full py-4 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
                                     {isSubmittingQuote ? "Yönlendiriliyor..." : (
                                         <>
@@ -1444,8 +1531,8 @@ export default function WizardCalculator({ preSelectedCityName }: WizardCalculat
                                     )}
                                 </button>
 
-                                <p className="text-center text-xs text-fe-muted mt-4">
-                                    "Teklif İste" butonuna tıklayarak Aydınlatma Metni'ni okuduğunuzu ve kabul ettiğinizi beyan edersiniz.
+                                <p className="text-center text-xs text-fe-muted mt-3">
+                                    Teklifiniz sistemde kayıt altına alınır; sipariş onayı için WhatsApp üzerinden ilerlersiniz.
                                 </p>
                             </form>
                         </motion.div>

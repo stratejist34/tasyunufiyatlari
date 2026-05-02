@@ -11,7 +11,9 @@ export const quoteSchema = z.object({
     .string()
     .email('Geçerli bir e-posta adresi girin')
     .toLowerCase()
-    .trim(),
+    .trim()
+    .optional()
+    .or(z.literal('')),
 
   customerPhone: z
     .string()
@@ -20,6 +22,10 @@ export const quoteSchema = z.object({
 
   customerCompany: z.string().max(255, 'En fazla 255 karakter').optional().or(z.literal('')),
   customerAddress: z.string().max(500, 'En fazla 500 karakter').optional().or(z.literal('')),
+
+  kvkkConsent: z.boolean().refine(val => val === true, {
+    message: 'Devam etmek için KVKK onayı gereklidir',
+  }),
 })
 
 export type QuoteFormData = z.infer<typeof quoteSchema>

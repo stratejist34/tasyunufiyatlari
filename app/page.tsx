@@ -10,8 +10,7 @@ import RevealOnScroll from "@/components/shared/RevealOnScroll";
 import WizardCalculator from "@/components/wizard/WizardCalculator";
 import { TrustStrip } from '@/components/cro/TrustStrip';
 import { SituationSelector } from '@/components/cro/SituationSelector';
-import { RiskBlock } from '@/components/cro/RiskBlock';
-import { WrongDecisionBlock } from '@/components/cro/WrongDecisionBlock';
+import { RiskMistakesBlock } from '@/components/cro/RiskMistakesBlock';
 import { ProofBlock } from '@/components/cro/ProofBlock';
 import { BrandStrip } from '@/components/cro/BrandStrip';
 import { Truck, Package, Check, ArrowRight, CaretRight, Star } from "@phosphor-icons/react";
@@ -162,7 +161,7 @@ export default function Home() {
                             href="#mantolama-hesaplayici"
                             className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3.5 text-base font-semibold text-fe-bg shadow-lg shadow-brand/20 transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-fe-bg"
                         >
-                            Paket fiyatımı hesapla
+                            Hesabı başlat
                             <ArrowRight size={18} weight={ICON_WEIGHT} />
                         </Link>
                         <Link
@@ -215,8 +214,7 @@ export default function Home() {
                 </div>
             </section>
 
-            <RiskBlock />
-            <WrongDecisionBlock />
+            <RiskMistakesBlock />
 
             {/* HOW IT WORKS — 3 adımlı timeline (BURASI gerçek sıralı akış, NumberMarker burada KALIR) */}
             <section className="bg-fe-surface section-pad-md border-t border-fe-border">
@@ -339,7 +337,7 @@ export default function Home() {
                             Üç paket de aynı hesapta birlikte gelir. Şehir + kalınlık + m² yeterli.
                         </p>
                         <a href="#mantolama-hesaplayici" className="btn-primary">
-                            Üç paketi de hesapla
+                            Üç paketi karşılaştır
                             <ArrowRight weight={ICON_WEIGHT} size={18} className="btn-arrow" />
                         </a>
                     </div>
@@ -450,7 +448,7 @@ export default function Home() {
                             href="#mantolama-hesaplayici"
                             className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3.5 text-base font-semibold text-fe-bg shadow-lg shadow-brand/20 transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-fe-bg"
                         >
-                            Paket fiyatımı hesapla
+                            Teklifi şimdi oluştur
                             <ArrowRight size={18} weight={ICON_WEIGHT} />
                         </Link>
                         <a

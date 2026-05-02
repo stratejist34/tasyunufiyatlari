@@ -40,11 +40,11 @@ export function QuoteModal({
             customerEmail: '',
             customerPhone: '',
             customerCompany: '',
-            customerAddress: ''
+            customerAddress: '',
+            kvkkConsent: false,
         }
     });
 
-    // Body scroll lock
     useEffect(() => {
         if (!isOpen) return;
         const prev = document.body.style.overflow;
@@ -52,7 +52,6 @@ export function QuoteModal({
         return () => { document.body.style.overflow = prev; };
     }, [isOpen]);
 
-    // ESC ile kapat
     useEffect(() => {
         if (!isOpen) return;
         const onKey = (e: KeyboardEvent) => {
@@ -76,188 +75,193 @@ export function QuoteModal({
 
     return (
         <div
-            className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-fe-bg/80 backdrop-blur-sm"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
             aria-label="Teklif Talebi"
         >
             <div
-                className="bg-white w-full sm:max-w-2xl shadow-2xl flex flex-col rounded-t-2xl sm:rounded-2xl max-h-[100dvh] sm:max-h-[90dvh]"
+                className="bg-fe-bg border border-fe-border w-full sm:max-w-lg shadow-2xl flex flex-col rounded-t-2xl sm:rounded-2xl max-h-[100dvh] sm:max-h-[90dvh]"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* HEADER — sticky top */}
-                <div className="shrink-0 bg-gradient-to-r from-brand-500 to-brand-600 text-white px-6 py-5 rounded-t-2xl">
-                    <div className="flex justify-between items-start gap-3">
-                        <div>
-                            <h3 className="text-xl sm:text-2xl font-bold mb-1">Teklif Talebi</h3>
-                            <p className="text-brand-100 text-sm">
-                                {selectedPackage.definition.name} • {metraj} m²
-                            </p>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-white hover:bg-white/20 transition-colors shrink-0"
-                            aria-label="Kapat"
-                        >
-                            <X weight={ICON_WEIGHT} size={20} />
-                        </button>
-                    </div>
+                {/* HEADER */}
+                <div className="shrink-0 px-6 pt-6 pb-4 border-b border-fe-border/60 relative">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="absolute top-4 right-4 inline-flex items-center justify-center w-9 h-9 rounded-lg text-fe-muted hover:text-white hover:bg-fe-surface/60 transition-colors"
+                        disabled={isSubmitting}
+                        aria-label="Kapat"
+                    >
+                        <X weight={ICON_WEIGHT} size={20} />
+                    </button>
+                    <h3 className="text-xl font-bold text-white mb-1">Teklif Talebi</h3>
+                    <p className="text-sm text-fe-muted">
+                        {selectedPackage.definition.name} • {metraj} m²
+                    </p>
                 </div>
 
-                {/* SCROLL BODY */}
-                <div className="flex-1 overflow-y-auto px-6 py-5">
-                    {/* Sipariş Özeti */}
-                    <div className="bg-brand-50 rounded-xl p-4 mb-6 border border-brand-200">
-                        <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                            <ClipboardText weight={ICON_WEIGHT} size={18} /> Sipariş Özeti
-                        </h4>
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                            <div>
-                                <span className="text-gray-600">Paket:</span>
-                                <div className="font-medium text-gray-800">{selectedPackage.definition.name}</div>
-                            </div>
-                            <div>
-                                <span className="text-gray-600">Malzeme:</span>
-                                <div className="font-medium text-gray-800">
-                                    {selectedMalzeme === "tasyunu" ? "Taşyünü" : "EPS"} {selectedKalinlik}cm
+                {/* FORM */}
+                <form
+                    id="quote-form"
+                    onSubmit={handleSubmit(onSubmitForm)}
+                    className="flex flex-col flex-1 min-h-0"
+                >
+                    {/* SCROLL BODY */}
+                    <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+                        {/* Sipariş Özeti */}
+                        <div className="rounded-xl border border-fe-border/60 bg-fe-surface/60 p-4">
+                            <h4 className="font-semibold text-fe-text mb-3 flex items-center gap-2 text-sm">
+                                <ClipboardText weight={ICON_WEIGHT} size={16} className="text-brand" /> Sipariş Özeti
+                            </h4>
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <span className="text-fe-muted text-xs">Paket</span>
+                                    <div className="font-medium text-fe-text">{selectedPackage.definition.name}</div>
                                 </div>
-                            </div>
-                            <div>
-                                <span className="text-gray-600">Metraj:</span>
-                                <div className="font-medium text-gray-800">{metraj} m²</div>
-                            </div>
-                            <div>
-                                <span className="text-gray-600">Toplam Fiyat:</span>
-                                <div className="font-bold text-brand-600">
-                                    {selectedPackage.grandTotal.toLocaleString("tr-TR")} ₺
+                                <div>
+                                    <span className="text-fe-muted text-xs">Malzeme</span>
+                                    <div className="font-medium text-fe-text">
+                                        {selectedMalzeme === "tasyunu" ? "Taşyünü" : "EPS"} {selectedKalinlik}cm
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <span className="text-gray-600">Şehir:</span>
-                                <div className="font-medium text-gray-800">{selectedCityName}</div>
-                            </div>
-                            <div>
-                                <span className="text-gray-600">Paket Sayısı:</span>
-                                <div className="font-medium text-gray-800">
-                                    {selectedPackage.logistics?.packageCount || 0} paket
+                                <div>
+                                    <span className="text-fe-muted text-xs">Metraj</span>
+                                    <div className="font-medium text-fe-text">{metraj} m²</div>
+                                </div>
+                                <div>
+                                    <span className="text-fe-muted text-xs">Toplam Fiyat</span>
+                                    <div className="font-bold text-brand">
+                                        {selectedPackage.grandTotal.toLocaleString("tr-TR")} ₺
+                                    </div>
+                                </div>
+                                <div>
+                                    <span className="text-fe-muted text-xs">Şehir</span>
+                                    <div className="font-medium text-fe-text">{selectedCityName}</div>
+                                </div>
+                                <div>
+                                    <span className="text-fe-muted text-xs">Paket Sayısı</span>
+                                    <div className="font-medium text-fe-text">
+                                        {selectedPackage.logistics?.packageCount || 0} paket
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    {/* İletişim Formu */}
-                    <form
-                        id="quote-form"
-                        onSubmit={handleSubmit(onSubmitForm)}
-                        className="space-y-4"
-                    >
-                        <h4 className="font-semibold text-gray-800 mb-2">İletişim Bilgileriniz</h4>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Ad Soyad <span className="text-red-500">*</span>
+                            <label className="block text-sm font-medium text-fe-text mb-1">
+                                Ad Soyad <span className="text-red-400">*</span>
                             </label>
                             <input
                                 {...register('customerName')}
                                 type="text"
                                 placeholder="Örn: Ahmet Yılmaz"
-                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none ${
-                                    errors.customerName ? 'border-red-500' : 'border-gray-300'
-                                }`}
+                                disabled={isSubmitting}
+                                className="w-full px-4 py-3 bg-fe-surface border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none"
                             />
                             {errors.customerName && (
-                                <p className="text-red-600 text-sm mt-1">{errors.customerName.message}</p>
+                                <p className="text-red-400 text-xs mt-1">{errors.customerName.message}</p>
                             )}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                E-posta <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                {...register('customerEmail')}
-                                type="email"
-                                placeholder="Örn: ahmet@example.com"
-                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none ${
-                                    errors.customerEmail ? 'border-red-500' : 'border-gray-300'
-                                }`}
-                            />
-                            {errors.customerEmail && (
-                                <p className="text-red-600 text-sm mt-1">{errors.customerEmail.message}</p>
-                            )}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Telefon <span className="text-red-500">*</span>
+                            <label className="block text-sm font-medium text-fe-text mb-1">
+                                Telefon <span className="text-red-400">*</span>
                             </label>
                             <input
                                 {...register('customerPhone')}
                                 type="tel"
-                                placeholder="Örn: 05321234567"
-                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none ${
-                                    errors.customerPhone ? 'border-red-500' : 'border-gray-300'
-                                }`}
+                                placeholder="05321234567"
+                                disabled={isSubmitting}
+                                className="w-full px-4 py-3 bg-fe-surface border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none"
                             />
                             {errors.customerPhone && (
-                                <p className="text-red-600 text-sm mt-1">{errors.customerPhone.message}</p>
+                                <p className="text-red-400 text-xs mt-1">{errors.customerPhone.message}</p>
                             )}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Firma Adı <span className="text-gray-400 text-xs">(Opsiyonel)</span>
+                            <label className="block text-sm font-medium text-fe-text mb-1">
+                                E-posta <span className="text-fe-muted text-xs">(opsiyonel)</span>
+                            </label>
+                            <input
+                                {...register('customerEmail')}
+                                type="email"
+                                placeholder="mail@firma.com"
+                                disabled={isSubmitting}
+                                className="w-full px-4 py-3 bg-fe-surface border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none"
+                            />
+                            {errors.customerEmail && (
+                                <p className="text-red-400 text-xs mt-1">{errors.customerEmail.message}</p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-fe-text mb-1">
+                                Firma Adı <span className="text-fe-muted text-xs">(opsiyonel)</span>
                             </label>
                             <input
                                 {...register('customerCompany')}
                                 type="text"
                                 placeholder="Örn: ABC İnşaat Ltd. Şti."
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none"
+                                disabled={isSubmitting}
+                                className="w-full px-4 py-3 bg-fe-surface border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Teslimat Adresi <span className="text-gray-400 text-xs">(Opsiyonel)</span>
+                            <label className="block text-sm font-medium text-fe-text mb-1">
+                                Teslimat Adresi <span className="text-fe-muted text-xs">(opsiyonel)</span>
                             </label>
                             <textarea
                                 {...register('customerAddress')}
+                                rows={2}
                                 placeholder="Tam adresinizi giriniz..."
-                                rows={3}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none resize-none"
+                                disabled={isSubmitting}
+                                className="w-full px-4 py-3 bg-fe-surface border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none resize-none"
                             />
                         </div>
 
-                        <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                            <p className="text-sm text-blue-800">
-                                <span className="font-semibold">Bilgi:</span> Teklifiniz gönderildikten sonra en kısa sürede size dönüş yapılacaktır.
-                                Fiyat ve teslimat detayları için sizinle iletişime geçilecektir.
-                            </p>
+                        <div className="flex items-start gap-2.5 pt-1">
+                            <input
+                                type="checkbox"
+                                id="quoteKvkkConsent"
+                                {...register('kvkkConsent')}
+                                disabled={isSubmitting}
+                                className="mt-0.5 w-4 h-4 rounded accent-brand-500 cursor-pointer"
+                            />
+                            <label htmlFor="quoteKvkkConsent" className="text-xs text-fe-muted cursor-pointer leading-relaxed">
+                                Kişisel verilerimin teklif oluşturma amacıyla işlenmesini kabul ediyorum.{' '}
+                                <a href="/kvkk" target="_blank" rel="noopener noreferrer" className="text-brand-400 underline hover:text-brand-300">
+                                    Aydınlatma Metni
+                                </a>
+                            </label>
                         </div>
-                    </form>
-                </div>
+                        {errors.kvkkConsent && (
+                            <p className="text-red-400 text-xs">{errors.kvkkConsent.message}</p>
+                        )}
+                    </div>
 
-                {/* FOOTER — sticky bottom */}
-                <div className="shrink-0 px-6 py-4 border-t border-gray-200 bg-white rounded-b-2xl flex gap-3">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-all min-h-[48px]"
-                        disabled={isSubmitting}
-                    >
-                        İptal
-                    </button>
-                    <button
-                        type="submit"
-                        form="quote-form"
-                        disabled={isSubmitting}
-                        className="flex-1 px-6 py-3 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-xl font-semibold hover:from-brand-600 hover:to-brand-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
-                    >
-                        {isSubmitting ? "Gönderiliyor..." : "Teklif Gönder"}
-                    </button>
-                </div>
+                    {/* FOOTER */}
+                    <div className="shrink-0 px-6 py-4 border-t border-fe-border/60 bg-fe-bg rounded-b-2xl flex gap-3">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            disabled={isSubmitting}
+                            className="flex-1 px-6 py-3 border border-fe-border text-fe-muted rounded-xl font-medium hover:text-fe-text hover:bg-fe-surface/40 transition-colors min-h-[48px]"
+                        >
+                            İptal
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="flex-1 px-6 py-3 rounded-xl font-bold text-base text-white bg-brand-600 hover:bg-brand-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors min-h-[48px]"
+                        >
+                            {isSubmitting ? "Gönderiliyor..." : "Teklif Gönder"}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );
