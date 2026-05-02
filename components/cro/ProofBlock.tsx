@@ -29,8 +29,11 @@ export function ProofBlock() {
             id="proof-baslik"
             className="mt-3 font-heading font-extrabold text-[28px] sm:text-[36px] leading-[1.15] tracking-tight text-fe-text"
           >
-            Neye dayanarak güveneceğinizi gösteriyoruz
+            Referanslı PDF teklif, paletli sevkiyat, kayıtlı süreç
           </h2>
+          <p className="mt-4 text-sm sm:text-base text-fe-muted leading-relaxed">
+            Teklifte ürün kalemleri, m² maliyeti, nakliye dahil toplam ve geçerlilik süresi yer alır. Sipariş onayından sonra yükleme ve teslimat süreci başlar.
+          </p>
         </div>
 
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -41,7 +44,7 @@ export function ProofBlock() {
               <h3 className="text-lg font-semibold text-fe-text">Örnek PDF teklif</h3>
             </div>
             <p className="mt-2 text-sm text-fe-muted leading-relaxed">
-              Resmi başlık, kalem listesi, nakliye dahil tutar, referans numarası ve 24 saat geçerlilik.
+              Taşyünü Fiyatları; Filli Boya, Tekno ve Bestkim ürünlerini Özergrup tedarik altyapısı üzerinden hesaplayan teklif ve maliyet ekranıdır.
               <span className="block mt-1.5 text-xs text-fe-muted/80">
                 Aşağıdaki örnek anonimleştirilmiştir; tarih ve referans numarası gerçek teklifte sizin tarihinizle yenilenir.
               </span>
@@ -63,10 +66,10 @@ export function ProofBlock() {
             <div className="rounded-2xl border border-fe-border/40 bg-fe-raised/40 p-6">
               <div className="flex items-center gap-3">
                 <BuildingOffice size={26} weight={ICON_WEIGHT} className="text-brand" aria-hidden />
-                <h3 className="text-lg font-semibold text-fe-text">Aktif depo, paletli sevkiyat</h3>
+                <h3 className="text-lg font-semibold text-fe-text">Depodan paletli yükleme</h3>
               </div>
               <p className="mt-2 text-sm text-fe-muted leading-relaxed">
-                Tuzla deposundan paletli yüklemeyle çıkış. Sahaya kırık ve eksik palet riski en aza iner; yükleme öncesi sayım yapılır.
+                Ürünler sevkiyat öncesi sayılır, paletli hazırlanır ve yükleme kaydıyla çıkar.
               </p>
               <div className="mt-5 overflow-hidden rounded-lg border border-fe-border/30 bg-fe-surface/40">
                 <Image
@@ -83,8 +86,11 @@ export function ProofBlock() {
             <div className="flex-1 rounded-2xl border border-fe-border/40 bg-fe-raised/40 p-6">
               <div className="flex items-center gap-3">
                 <Truck size={26} weight={ICON_WEIGHT} className="text-brand" aria-hidden />
-                <h3 className="text-lg font-semibold text-fe-text">Onaydan sahaya 3 adım</h3>
+                <h3 className="text-lg font-semibold text-fe-text">Onaydan teslimata 3 adım</h3>
               </div>
+              <p className="mt-2 text-sm text-fe-muted leading-relaxed">
+                PDF onayı, depo yüklemesi ve bölgenize teslim süreci net ilerler.
+              </p>
               <ol className="mt-5 space-y-5">
                 {SEVKIYAT_AKISI.map((s, i) => (
                   <li key={s.t} className="flex items-start gap-4">
