@@ -33,7 +33,7 @@ function setGtagConsent(value: ConsentValue) {
     });
   } else {
     w.gtag('consent', 'update', {
-      analytics_storage: 'denied',
+      analytics_storage: 'granted',
       ad_storage: 'denied',
       ad_user_data: 'denied',
       ad_personalization: 'denied',
@@ -86,8 +86,8 @@ export default function CookieConsent() {
               Çerez ve gizlilik tercihleri
             </h3>
             <p className="text-fe-text/85 text-sm leading-relaxed">
-              Site deneyimini iyileştirmek ve trafik istatistiklerini ölçmek için çerez kullanıyoruz.
-              Onay vermezseniz yalnızca zorunlu çerezler çalışır; analytics çerezleri yüklenmez.
+              Site trafiğini anonim olarak ölçüyoruz. Reklam ve kişiselleştirme amaçlı çerezler ise yalnızca onay verdiğinizde açılır.
+              İsterseniz reklam çerezleri kapalı şekilde devam edebilirsiniz.
               Detay için{' '}
               <Link href="/kvkk" className="text-hub-gold-soft underline hover:text-hub-gold">
                 Aydınlatma Metni
@@ -99,7 +99,7 @@ export default function CookieConsent() {
             type="button"
             onClick={() => persist('rejected')}
             className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-lg text-fe-muted hover:text-white hover:bg-fe-surface/60 transition-colors"
-            aria-label="Reddet ve kapat"
+            aria-label="Kapat"
           >
             <X weight={ICON_WEIGHT} size={18} />
           </button>
@@ -111,7 +111,7 @@ export default function CookieConsent() {
             onClick={() => persist('rejected')}
             className="btn-ghost !px-4"
           >
-            Sadece Zorunlu
+            Reklam Çerezlerini Kapat
           </button>
           <button
             type="button"

@@ -23,10 +23,9 @@ export default function GoogleAnalytics({ measurementId }: Props) {
           ad_storage: 'denied',
           ad_user_data: 'denied',
           ad_personalization: 'denied',
-          analytics_storage: 'denied',
+          analytics_storage: 'granted',
           functionality_storage: 'granted',
           security_storage: 'granted',
-          wait_for_update: 500
         });
         gtag('set', 'ads_data_redaction', true);
       `}</Script>
