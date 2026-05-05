@@ -9,6 +9,7 @@ import NumberMarker from "@/components/shared/NumberMarker";
 import RevealOnScroll from "@/components/shared/RevealOnScroll";
 import WhatsappLink from "@/components/shared/WhatsappLink";
 import BrandTrustLogos from "@/components/shared/BrandTrustLogos";
+import HeroSystemVisual from "@/components/cro/HeroSystemVisual";
 import WizardCalculator from "@/components/wizard/WizardCalculator";
 import { TrustStrip } from '@/components/cro/TrustStrip';
 import { SituationSelector } from '@/components/cro/SituationSelector';
@@ -151,7 +152,7 @@ export default function Home() {
                     }}
                 />
                 <div className="relative max-w-[1200px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-6 sm:pb-8">
-                    <div className="relative lg:pr-[360px] xl:pr-[430px]">
+                    <div className="grid gap-8 lg:grid-cols-[minmax(0,1.18fr)_minmax(360px,0.82fr)] xl:grid-cols-[minmax(0,1.16fr)_minmax(420px,0.84fr)] lg:items-end">
                         <div>
                             <Eyebrow className="mb-4">Fabrika Çıkışlı Mantolama</Eyebrow>
                             <h1 className="max-w-[980px] font-heading font-extrabold text-[40px] sm:text-[52px] lg:text-[64px] leading-[1.05] tracking-tight text-fe-text">
@@ -160,6 +161,9 @@ export default function Home() {
                             <p className="mt-5 max-w-[650px] text-base sm:text-lg text-fe-muted leading-relaxed">
                                 Şehir, metraj ve kalınlık verin — sistemin 8 kalemi (levha, sıva, dübel, file, profil) ve nakliye saniyeler içinde resmi PDF teklif olarak elinizde.
                             </p>
+                            <div className="mt-7 lg:hidden">
+                                <HeroSystemVisual />
+                            </div>
                             <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-4">
                                 <Link
                                     href="#mantolama-hesaplayici"
@@ -177,20 +181,16 @@ export default function Home() {
                                 </Link>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="hidden lg:block lg:absolute lg:right-6 lg:bottom-4 xl:right-8 xl:bottom-4 lg:w-[340px] xl:w-[420px]">
-                        <BrandTrustLogos
-                            variant="hero"
-                            title="Resmi Bayilikler"
-                        />
-                    </div>
-
-                    <div className="mt-8 lg:hidden">
-                        <BrandTrustLogos
-                            compact
-                            title="Resmi Bayilikler"
-                        />
+                        <div className="space-y-5 lg:pb-4">
+                            <div className="hidden lg:block">
+                                <HeroSystemVisual />
+                            </div>
+                            <BrandTrustLogos
+                                title="Resmi Bayilikler"
+                                variant="heroRail"
+                            />
+                        </div>
                     </div>
                 </div>
             </section>
