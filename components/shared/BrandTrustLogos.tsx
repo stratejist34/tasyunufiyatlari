@@ -1,0 +1,111 @@
+'use client';
+
+import Image from 'next/image';
+
+const TRUST_BRANDS = [
+  {
+    src: '/images/markalogolar/filli-boya-mantolama.webp',
+    alt: 'Filli Boya',
+    width: 126,
+    height: 34,
+  },
+  {
+    src: '/images/markalogolar/dalmaçyalı-taşyünü- fiyatları.webp',
+    alt: 'Dalmaçyalı',
+    width: 136,
+    height: 34,
+  },
+  {
+    src: '/images/markalogolar/fawori-taşyünü- fiyatları.webp',
+    alt: 'Fawori',
+    width: 112,
+    height: 34,
+  },
+] as const;
+
+interface BrandTrustLogosProps {
+  compact?: boolean;
+  title?: string;
+  variant?: 'hero' | 'inline';
+}
+
+export default function BrandTrustLogos({
+  compact = false,
+  title = 'Resmi bayilik altyapımızda öne çıkan markalar',
+  variant = 'inline',
+}: BrandTrustLogosProps) {
+  const isHero = variant === 'hero';
+
+  return (
+    <div
+      className={
+        isHero
+          ? 'relative space-y-5'
+          : compact
+            ? 'space-y-3'
+            : 'space-y-4'
+      }
+    >
+      {isHero && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -inset-x-8 -inset-y-6 opacity-80"
+          style={{
+            background:
+              'radial-gradient(220px 120px at 18% 72%, rgba(212,170,84,0.12), transparent 72%), radial-gradient(260px 130px at 84% 64%, rgba(212,170,84,0.10), transparent 74%)',
+          }}
+        />
+      )}
+      <div className={isHero ? 'relative space-y-1.5' : ''}>
+        <p
+          className={
+            isHero
+              ? 'text-[12px] font-semibold uppercase tracking-[0.3em] text-brand/95'
+              : 'text-[11px] font-semibold uppercase tracking-[0.18em] text-brand/85'
+          }
+        >
+          {title}
+        </p>
+        {isHero && (
+          <p className="max-w-[320px] text-sm leading-relaxed text-fe-muted/80">
+            Filli Boya, Dalmaçyalı ve Fawori bayilik altyapısıyla resmi teklif üretimi.
+          </p>
+        )}
+      </div>
+      <ul
+        className={
+          isHero
+            ? 'relative flex items-center justify-start gap-x-6 xl:gap-x-8'
+            : 'flex flex-wrap items-center gap-2.5 sm:gap-3.5'
+        }
+      >
+        {TRUST_BRANDS.map((brand) => (
+          <li
+            key={brand.src}
+            className={
+              isHero
+                ? 'flex h-24 min-w-[132px] items-center justify-center rounded-2xl border border-[#caa35a]/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] px-4 opacity-95 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_rgba(0,0,0,0.18)] transition-all duration-200 hover:opacity-100 hover:translate-y-[-1px] hover:border-[#caa35a]/18'
+                : compact
+                  ? 'flex h-10 items-center opacity-80 transition-opacity hover:opacity-100'
+                  : 'flex h-12 items-center opacity-85 transition-opacity hover:opacity-100'
+            }
+          >
+            <Image
+              src={brand.src}
+              alt={brand.alt}
+              width={brand.width}
+              height={brand.height}
+              className={
+                isHero
+                  ? 'h-14 w-auto object-contain drop-shadow-[0_0_18px_rgba(212,170,84,0.10)]'
+                  : compact
+                    ? 'h-5 w-auto object-contain'
+                    : 'h-7 w-auto object-contain'
+              }
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}

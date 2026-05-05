@@ -8,6 +8,7 @@ import SectionHeader from "@/components/shared/SectionHeader";
 import NumberMarker from "@/components/shared/NumberMarker";
 import RevealOnScroll from "@/components/shared/RevealOnScroll";
 import WhatsappLink from "@/components/shared/WhatsappLink";
+import BrandTrustLogos from "@/components/shared/BrandTrustLogos";
 import WizardCalculator from "@/components/wizard/WizardCalculator";
 import { TrustStrip } from '@/components/cro/TrustStrip';
 import { SituationSelector } from '@/components/cro/SituationSelector';
@@ -150,28 +151,46 @@ export default function Home() {
                     }}
                 />
                 <div className="relative max-w-[1200px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-6 sm:pb-8">
-                    <Eyebrow className="mb-4">Fabrika Çıkışlı Mantolama</Eyebrow>
-                    <h1 className="font-heading font-extrabold text-[40px] sm:text-[52px] lg:text-[64px] leading-[1.05] tracking-tight text-fe-text">
-                        Mantolama maliyetinizin <span className="text-brand">kapı teslim nakliye dahil</span>, net hesabı.
-                    </h1>
-                    <p className="mt-5 max-w-[620px] text-base sm:text-lg text-fe-muted leading-relaxed">
-                        Şehir, metraj ve kalınlık verin — sistemin 8 kalemi (levha, sıva, dübel, file, profil) ve nakliye saniyeler içinde resmi PDF teklif olarak elinizde.
-                    </p>
-                    <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-4">
-                        <Link
-                            href="#mantolama-hesaplayici"
-                            className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3.5 text-base font-semibold text-fe-bg shadow-lg shadow-brand/20 transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-fe-bg"
-                        >
-                            Hesabı başlat
-                            <ArrowRight size={18} weight={ICON_WEIGHT} />
-                        </Link>
-                        <Link
-                            href="/urunler"
-                            className="inline-flex items-center gap-2 text-base font-medium text-fe-muted transition hover:text-fe-text"
-                        >
-                            Önce ürünleri inceleyeyim
-                            <ArrowRight size={16} weight={ICON_WEIGHT} />
-                        </Link>
+                    <div className="relative lg:pr-[360px] xl:pr-[430px]">
+                        <div>
+                            <Eyebrow className="mb-4">Fabrika Çıkışlı Mantolama</Eyebrow>
+                            <h1 className="max-w-[980px] font-heading font-extrabold text-[40px] sm:text-[52px] lg:text-[64px] leading-[1.05] tracking-tight text-fe-text">
+                                <span className="text-brand">Kapı teslim</span> malzeme hesabınızı saniyeler içinde çıkarın, PDF teklifinizi alın.
+                            </h1>
+                            <p className="mt-5 max-w-[650px] text-base sm:text-lg text-fe-muted leading-relaxed">
+                                Şehir, metraj ve kalınlık verin — sistemin 8 kalemi (levha, sıva, dübel, file, profil) ve nakliye saniyeler içinde resmi PDF teklif olarak elinizde.
+                            </p>
+                            <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-4">
+                                <Link
+                                    href="#mantolama-hesaplayici"
+                                    className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3.5 text-base font-semibold text-fe-bg shadow-lg shadow-brand/20 transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-fe-bg"
+                                >
+                                    Ücretsiz PDF Teklif Oluştur
+                                    <ArrowRight size={18} weight={ICON_WEIGHT} />
+                                </Link>
+                                <Link
+                                    href="/urunler"
+                                    className="inline-flex items-center gap-2 text-base font-medium text-fe-muted transition hover:text-fe-text"
+                                >
+                                    Önce ürünleri inceleyeyim
+                                    <ArrowRight size={16} weight={ICON_WEIGHT} />
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="hidden lg:block lg:absolute lg:right-6 lg:bottom-4 xl:right-8 xl:bottom-4 lg:w-[340px] xl:w-[420px]">
+                        <BrandTrustLogos
+                            variant="hero"
+                            title="Resmi Bayilikler"
+                        />
+                    </div>
+
+                    <div className="mt-8 lg:hidden">
+                        <BrandTrustLogos
+                            compact
+                            title="Resmi Bayilikler"
+                        />
                     </div>
                 </div>
             </section>

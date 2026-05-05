@@ -15,6 +15,7 @@ import { unstable_cache } from 'next/cache';
 import SiteHeader from '@/components/shared/SiteHeader';
 import SiteFooter from '@/components/shared/SiteFooter';
 import { ErrorBoundaryWrapper } from '@/components/shared/ErrorBoundaryWrapper';
+import BrandTrustLogos from '@/components/shared/BrandTrustLogos';
 
 // ISR: 60 sn cache, admin güncellemesinde revalidatePath ile invalidate edilebilir
 export const revalidate = 60;
@@ -342,6 +343,12 @@ export default async function UrunDetayPage({ params, searchParams }: Props) {
 
           {/* ── SAĞ: Dönüşüm Paneli ─────────────────────────── */}
           <div className="lg:sticky lg:top-6 order-1 lg:order-2">
+            <div className="mb-4 rounded-2xl border border-fe-border/70 bg-fe-raised/20 px-4 py-4">
+              <BrandTrustLogos
+                compact
+                title="Bayilikler"
+              />
+            </div>
             <Suspense fallback={<PricePanelSkeleton />}>
               <ProductPricePanel
                 product={product}
