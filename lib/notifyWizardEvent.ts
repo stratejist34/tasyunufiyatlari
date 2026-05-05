@@ -15,6 +15,7 @@
 const GA_EVENT_SHOW_PRICES = 'Fiyat_Gosterildi';
 const GA_EVENT_PDF_QUOTE   = 'Pdf_Teklif_Talebi';
 const GA_EVENT_WHATSAPP    = 'Whatsapp_Siparis';
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-VCHRKVJCEN';
 
 // ─── Ortak event params (3 event aynı taksonomiye sahip) ─────────────
 export interface WizardBasePayload {
@@ -49,6 +50,8 @@ export interface PdfQuoteRequestedPayload extends WizardBasePayload {
   ref_code: string;
   /** Customer kanal (kullanıcının formdaki firma adı varsa "company" yoksa "individual") */
   customer_type?: 'company' | 'individual';
+  /** Kaynak kanal: wizard veya katalog/PDP */
+  source_channel?: 'wizard' | 'catalog';
 }
 
 // 3) Whatsapp_Siparis (form submit + WA pencere açıldı)
@@ -57,6 +60,7 @@ export interface WhatsappOrderRequestedPayload extends WizardBasePayload {
   selected_package_total: number;
   selected_per_m2: number;
   ref_code: string;
+  source_channel?: 'wizard' | 'catalog';
 }
 
 type GtagWindow = Window & {
@@ -74,6 +78,7 @@ function emit(eventName: string, params: Record<string, unknown>): void {
   w.gtag('event', eventName, {
     ...params,
     page_path: window.location.pathname,
+    send_to: GA_MEASUREMENT_ID,
   });
 }
 
@@ -113,6 +118,7 @@ export function notifyPdfQuoteRequested(p: PdfQuoteRequestedPayload): void {
     selected_per_m2:         p.selected_per_m2,
     ref_code:                p.ref_code,
     customer_type:           p.customer_type ?? 'individual',
+    source_channel:          p.source_channel ?? 'wizard',
   });
 }
 
@@ -132,6 +138,7 @@ export function notifyWhatsappOrderRequested(p: WhatsappOrderRequestedPayload): 
     selected_package_total:  p.selected_package_total,
     selected_per_m2:         p.selected_per_m2,
     ref_code:                p.ref_code,
+    source_channel:          p.source_channel ?? 'wizard',
   });
 }
 

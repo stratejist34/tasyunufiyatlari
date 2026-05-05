@@ -1,17 +1,18 @@
-import { NextResponse }    from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { NextResponse } from 'next/server';
 import { applyImportFile } from '@/lib/importApplier';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 
 // POST /api/import/[id]/apply
-// Kanonik apply endpoint — staging → production.
+// Kanonik apply endpoint - staging -> production.
 // { ok: true, result } | { ok: false, error }
 
 export async function POST(
-    _req: Request,
+    req: Request,
     { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
     const supabase = createServerSupabaseClient();
     const { id } = await params;
+    let allowExtremeDeviation = false;
 
     if (!id) {
         return NextResponse.json(
@@ -48,7 +49,14 @@ export async function POST(
     }
 
     try {
-        const result = await applyImportFile(supabase, id);
+        const body = await req.json().catch(() => null) as { allowExtremeDeviation?: boolean } | null;
+        allowExtremeDeviation = body?.allowExtremeDeviation === true;
+    } catch {
+        allowExtremeDeviation = false;
+    }
+
+    try {
+        const result = await applyImportFile(supabase, id, { allowExtremeDeviation });
         return NextResponse.json({ ok: true, result });
     } catch (err) {
         const error = err instanceof Error ? err.message : 'Beklenmeyen hata';

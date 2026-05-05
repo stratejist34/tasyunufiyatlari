@@ -2,8 +2,10 @@
 
 import { motion } from "framer-motion";
 import { useEffect } from "react";
-import { Check } from "@phosphor-icons/react";
+import { Check, WhatsappLogo } from "@phosphor-icons/react";
 import type { Brand } from "@/lib/types";
+import { WHATSAPP_ORDER } from "@/lib/config";
+import { notifyWhatsappIntent } from "@/lib/notifyWhatsappIntent";
 
 const DIS_CEPHE_MODELLER = [
     'SW035', 'Premium', 'HD150', 'LD125', 'TR7.5',
@@ -46,6 +48,10 @@ export function WizardStep1({
 
     const filteredModels = availableModels.filter(m => DIS_CEPHE_MODELLER.includes(m));
 
+    const helpHref = `https://wa.me/${WHATSAPP_ORDER}?text=${encodeURIComponent(
+        'Merhaba, hesaplayıcıda ne seçeceğimden emin değilim, yardımcı olur musunuz?'
+    )}`;
+
     return (
         <motion.div
             key="step1"
@@ -54,6 +60,24 @@ export function WizardStep1({
             exit={{ opacity: 0, x: -30 }}
             transition={{ duration: 0.25 }}
         >
+            {/* Erken yardım kapısı — kararsız kullanıcı için kaçış kapısı */}
+            <a
+                href={helpHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => notifyWhatsappIntent({ source: 'wizard_help_step1' })}
+                className="mb-4 flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg border border-[#25D366]/25 bg-[#25D366]/5 hover:bg-[#25D366]/10 transition-colors"
+            >
+                <span className="text-xs sm:text-sm text-fe-text/85 leading-snug">
+                    <span className="font-medium text-white">Ne seçeceğinizi bilmiyor musunuz?</span>{' '}
+                    <span className="text-fe-muted">WhatsApp&apos;tan yardımcı olalım.</span>
+                </span>
+                <span className="inline-flex items-center gap-1 shrink-0 text-[#25D366] text-xs font-semibold">
+                    <WhatsappLogo weight="fill" size={16} />
+                    <span className="hidden sm:inline">Yardım</span>
+                </span>
+            </a>
+
             {/* Malzeme Tipi */}
             <div className="mb-5">
                 <label className="block text-sm font-semibold text-white mb-3">Malzeme Tipi</label>

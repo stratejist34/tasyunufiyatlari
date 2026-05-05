@@ -54,6 +54,11 @@ interface ColumnMap {
     brand?:         number;
 }
 
+interface PriceCandidate {
+    idx: number;
+    score: number;
+}
+
 // ==========================================
 // HEADER NORMALIZATION
 // ==========================================
@@ -67,12 +72,73 @@ interface ColumnMap {
 function normalizeHeader(s: unknown): string {
     return String(s ?? '')
         .replace(/\n/g, ' ')
-        .replace(/İ/g, 'i').replace(/ı/g, 'i').replace(/ğ/g, 'g')
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/İ/g, 'i').replace(/I/g, 'i').replace(/ı/g, 'i').replace(/ğ/g, 'g')
         .replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ö/g, 'o').replace(/ü/g, 'u')
         .replace(/Ğ/g, 'g').replace(/Ş/g, 's').replace(/Ç/g, 'c').replace(/Ö/g, 'o').replace(/Ü/g, 'u')
         .toLowerCase()
         .replace(/\s+/g, ' ')
         .trim();
+}
+
+function hasAnyKeyword(h: string, keywords: string[]): boolean {
+    return keywords.some((kw) => h.includes(kw));
+}
+
+function isMonthPeriodHeader(h: string): boolean {
+    return /\b\d{4}\s*-\s*\d{1,2}\b/.test(h) || /\b\d{1,2}\s*-\s*\d{4}\b/.test(h);
+}
+
+function isForbiddenPriceHeader(h: string): boolean {
+    if (!h) return true;
+
+    if (h.includes('iskontolu')) return true;
+    if ((h.includes('tl') || h.includes('/')) && h.includes('m2') && (h.includes('kdv') || h.includes('fiyat'))) return true;
+    if (h.startsWith('tl /m') || h.startsWith('tl/m')) return true;
+    if (h.includes('fiyat fark')) return true;
+    if (h === 'bolge' || h === 'il' || h.includes('plaka') || h.includes('istanbul')) return true;
+    if (h.includes('optimix%') || h.includes('filli%') || (h.includes('iskonto') && !h.includes('kdv'))) return true;
+
+    return false;
+}
+
+function isLikelyPriceHeader(h: string): boolean {
+    if (!h || isForbiddenPriceHeader(h)) return false;
+
+    if ((h.includes('haric') || h.includes('dahil')) && hasAnyKeyword(h, ['fiyat', 'liste', 'ambalaj', 'paket', 'bedel', 'tutar'])) {
+        return true;
+    }
+
+    if ((h.includes('haric') || h.includes('dahil')) && isMonthPeriodHeader(h)) {
+        return true;
+    }
+
+    return false;
+}
+
+function scorePriceHeader(h: string, kind: 'net' | 'gross'): number {
+    if (!h || isForbiddenPriceHeader(h)) return Number.NEGATIVE_INFINITY;
+
+    const wantsNet = kind === 'net';
+    const hasTargetKdv = wantsNet ? h.includes('haric') : h.includes('dahil');
+    const hasOppositeKdv = wantsNet ? h.includes('dahil') : h.includes('haric');
+
+    if (!hasTargetKdv || hasOppositeKdv) return Number.NEGATIVE_INFINITY;
+
+    let score = 0;
+
+    if (h.includes('kdv')) score += 5;
+    if (h.includes('liste')) score += 5;
+    if (h.includes('fiyat')) score += 5;
+    if (h.includes('ambalaj')) score += 4;
+    if (h.includes('paket')) score += 2;
+    if (h.includes('bedel') || h.includes('tutar')) score += 2;
+    if (isMonthPeriodHeader(h)) score += 3;
+    if (/(ocak|subat|mart|nisan|mayis|haziran|temmuz|agustos|eylul|ekim|kasim|aralik)\s+\d{4}/.test(h)) score += 3;
+    if (h.length > 8) score += 1;
+
+    return score;
 }
 
 // ==========================================
@@ -95,17 +161,7 @@ function classifyColumn(raw: unknown, iskCountSoFar: number): ColumnRole {
 
     // ---- FORBIDDEN: kesinlikle price olarak seçilmez ----
     // Türetilmiş iskontolu fiyatlar
-    if (h.includes('iskontolu')) return 'skip';
-    // m² birim fiyatı (TL/m²) — base_price değil
-    if ((h.includes('tl') || h.includes('/')) && h.includes('m2') && (h.includes('kdv') || h.includes('fiyat'))) return 'skip';
-    if (h.startsWith('tl /m') || h.startsWith('tl/m')) return 'skip';
-    // Geçmiş dönem fiyatları ("2025-7", "OCAK 2026-1", "EYLUL 2025-6", "fiyat farki")
-    if (h.includes('fiyat fark')) return 'skip';
-    if (/\d{4}-\d/.test(h) && h.includes('kdv')) return 'skip';  // "2025-7 KDV..."
-    if (/(ocak|subat|mart|nisan|mayis|haziran|temmuz|agustos|eylul|ekim|kasim|aralik)\s+\d{4}/.test(h)) return 'skip';
-    // Şehir/bölge iskonto sütunları sağda ("İSTANBUL", "İL PLAKA KOD", "% İSKONTO", "BÖLGE", "OPTİMİX% İSKONTO")
-    if (h === 'bolge' || h === 'il' || h.includes('plaka') || h.includes('istanbul')) return 'skip';
-    if (h.includes('optimix%') || h.includes('filli%') || (h.includes('iskonto') && !h.includes('kdv'))) return 'skip';
+    if (isForbiddenPriceHeader(h)) return 'skip';
 
     // ---- NAME ----
     if (h.includes('malzeme') || h.includes('urun') || h.includes('isim') || h.includes('adi') || h.includes('mamul')) {
@@ -117,13 +173,18 @@ function classifyColumn(raw: unknown, iskCountSoFar: number): ColumnRole {
     if (h.includes('ambalaj') && h.includes('haric') && h.includes('liste')) return 'price_net';
     // "KDV HARİÇ LİSTE FİYATI"
     if (h.includes('haric') && h.includes('liste') && h.includes('fiyat')) return 'price_net';
-    // "KDV HARİÇ FİYAT" (liste YOK) → ambiguous: iskontolu türetilmiş olabilir; seçme.
+    // Daha esnek fallback:
+    // "2026-5 KDV HARİÇ", "AMBALAJ KDV HARİÇ", "KDV HARİÇ BEDEL/TUTAR" gibi varyasyonları da kabul et.
+    if (h.includes('haric') && isLikelyPriceHeader(h)) return 'price_net';
 
     // ---- PRICE_GROSS (KDV dahil liste fiyatı) — tier 2 ----
     // "AMBALAJ KDV DAHİL LİSTE FİYATI" veya "2026-2 KDV DAHİL LİSTE FİYATI"
     if (h.includes('dahil') && h.includes('liste') && h.includes('fiyat') && !h.includes('m2')) return 'price_gross';
     // "KDV DAHİL LİSTE FİYATI" (eski format Col1)
     if (h.includes('kdv') && h.includes('dahil') && h.includes('fiyat') && !h.includes('m2') && !h.includes('iskontolu')) return 'price_gross';
+    // Daha esnek fallback:
+    // "2026-5 KDV DAHİL", "AMBALAJ KDV DAHİL", "KDV DAHİL BEDEL/TUTAR" gibi.
+    if (h.includes('dahil') && isLikelyPriceHeader(h)) return 'price_gross';
 
     // ---- İSK (iskonto) — maks 6, sonrası skip ----
     // "İSK 1", "İSK\n2", "İSK 3" gibi
@@ -194,9 +255,12 @@ function detectHeaderRow(rows: unknown[][]): number {
 function mapColumnsFromHeader(headerRow: unknown[]): ColumnMap {
     const map: ColumnMap = { isk: [] };
     let iskCount = 0;
+    const netCandidates: PriceCandidate[] = [];
+    const grossCandidates: PriceCandidate[] = [];
 
     for (let idx = 0; idx < headerRow.length; idx++) {
         const cell = headerRow[idx];
+        const normalized = normalizeHeader(cell);
         const role = classifyColumn(cell, iskCount);
 
         switch (role) {
@@ -205,11 +269,11 @@ function mapColumnsFromHeader(headerRow: unknown[]): ColumnMap {
                 break;
 
             case 'price_net':
-                if (map.priceNet === undefined) map.priceNet = idx;
+                netCandidates.push({ idx, score: scorePriceHeader(normalized, 'net') });
                 break;
 
             case 'price_gross':
-                if (map.priceGross === undefined) map.priceGross = idx;
+                grossCandidates.push({ idx, score: scorePriceHeader(normalized, 'gross') });
                 break;
 
             case 'isk':
@@ -235,6 +299,17 @@ function mapColumnsFromHeader(headerRow: unknown[]): ColumnMap {
             default:
                 break;
         }
+    }
+
+    netCandidates.sort((a, b) => b.score - a.score || a.idx - b.idx);
+    grossCandidates.sort((a, b) => b.score - a.score || a.idx - b.idx);
+
+    if (netCandidates.length > 0 && Number.isFinite(netCandidates[0].score)) {
+        map.priceNet = netCandidates[0].idx;
+    }
+
+    if (grossCandidates.length > 0 && Number.isFinite(grossCandidates[0].score)) {
+        map.priceGross = grossCandidates[0].idx;
     }
 
     return map;

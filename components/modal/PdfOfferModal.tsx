@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { X } from '@phosphor-icons/react';
+import { X, CaretDown } from '@phosphor-icons/react';
 import { pdfOfferSchema, type PdfOfferFormData } from '@/lib/schemas/pdfOffer.schema';
 import { ICON_WEIGHT } from '@/lib/design/tokens';
 
@@ -24,6 +24,10 @@ export function PdfOfferModal({
   defaultCompanyName,
   defaultCity,
 }: PdfOfferModalProps) {
+  // Detay toggle — Akkaya tipi kararlı kullanıcı için opsiyonel alanları
+  // gizli ama erişilebilir tutar; sürtünme azaltır.
+  const [showDetails, setShowDetails] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -45,6 +49,7 @@ export function PdfOfferModal({
 
   useEffect(() => {
     if (!isOpen) return;
+    setShowDetails(false);
     reset((prev) => ({
       ...prev,
       relatedPerson: '',
@@ -115,22 +120,7 @@ export function PdfOfferModal({
         >
           {/* SCROLL BODY */}
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-fe-text mb-1">
-                Firma Adı <span className="text-fe-muted text-xs">(opsiyonel)</span>
-              </label>
-              <input
-                type="text"
-                {...register('customerCompany')}
-                className="w-full px-4 py-3 bg-fe-surface border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none"
-                placeholder="Örn: Gültekin Yapı İnşaat"
-                disabled={isSubmitting}
-              />
-              {errors.customerCompany && (
-                <p className="text-red-400 text-xs mt-1">{errors.customerCompany.message}</p>
-              )}
-            </div>
-
+            {/* ── Zorunlu 3 alan: İlgili kişi + Telefon + İl ── */}
             <div>
               <label className="block text-sm font-medium text-fe-text mb-1">
                 İlgili Kişi <span className="text-red-400">*</span>
@@ -150,17 +140,19 @@ export function PdfOfferModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-fe-text mb-1">
-                  İlçe <span className="text-red-400">*</span>
+                  Telefon <span className="text-red-400">*</span>
                 </label>
                 <input
-                  type="text"
-                  {...register('district')}
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  {...register('phone')}
                   className="w-full px-4 py-3 bg-fe-surface border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none"
-                  placeholder="Örn: Pendik"
+                  placeholder="05321234567"
                   disabled={isSubmitting}
                 />
-                {errors.district && (
-                  <p className="text-red-400 text-xs mt-1">{errors.district.message}</p>
+                {errors.phone && (
+                  <p className="text-red-400 text-xs mt-1">{errors.phone.message}</p>
                 )}
               </div>
 
@@ -181,54 +173,100 @@ export function PdfOfferModal({
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-fe-text mb-1">
-                Açık Adres <span className="text-fe-muted text-xs">(opsiyonel)</span>
-              </label>
-              <textarea
-                rows={2}
-                {...register('deliveryAddress')}
-                className="w-full px-4 py-3 bg-fe-surface border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none resize-none"
-                placeholder="Teklif belgesinde görünür, opsiyoneldir"
+            {/* ── Opsiyonel detay toggle ── */}
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => setShowDetails(v => !v)}
                 disabled={isSubmitting}
-              />
-              {errors.deliveryAddress && (
-                <p className="text-red-400 text-xs mt-1">{errors.deliveryAddress.message}</p>
+                aria-expanded={showDetails}
+                aria-controls="pdf-modal-details"
+                className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl border border-fe-border bg-fe-surface/40 hover:bg-fe-surface text-sm text-fe-text transition-colors"
+              >
+                <span className="text-left">
+                  <span className="block font-medium text-white">
+                    Daha fazla detay eklemek ister misiniz?
+                  </span>
+                  <span className="block text-xs text-fe-muted mt-0.5">
+                    Firma / e-posta / adres bilgilerini ekleyin
+                  </span>
+                </span>
+                <CaretDown
+                  weight={ICON_WEIGHT}
+                  size={18}
+                  className={`text-fe-muted transition-transform duration-200 ${showDetails ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {showDetails && (
+                <div id="pdf-modal-details" className="mt-4 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-fe-text mb-1">
+                      Firma Adı <span className="text-fe-muted text-xs">(opsiyonel)</span>
+                    </label>
+                    <input
+                      type="text"
+                      {...register('customerCompany')}
+                      className="w-full px-4 py-3 bg-fe-surface border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none"
+                      placeholder="Örn: Gültekin Yapı İnşaat"
+                      disabled={isSubmitting}
+                    />
+                    {errors.customerCompany && (
+                      <p className="text-red-400 text-xs mt-1">{errors.customerCompany.message}</p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-fe-text mb-1">
+                        İlçe <span className="text-fe-muted text-xs">(opsiyonel)</span>
+                      </label>
+                      <input
+                        type="text"
+                        {...register('district')}
+                        className="w-full px-4 py-3 bg-fe-surface border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none"
+                        placeholder="Örn: Pendik"
+                        disabled={isSubmitting}
+                      />
+                      {errors.district && (
+                        <p className="text-red-400 text-xs mt-1">{errors.district.message}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-fe-text mb-1">
+                        E-posta <span className="text-fe-muted text-xs">(opsiyonel)</span>
+                      </label>
+                      <input
+                        type="email"
+                        autoComplete="email"
+                        {...register('email')}
+                        className="w-full px-4 py-3 bg-fe-surface border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none"
+                        placeholder="mail@firma.com"
+                        disabled={isSubmitting}
+                      />
+                      {errors.email && (
+                        <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-fe-text mb-1">
+                      Açık Adres <span className="text-fe-muted text-xs">(opsiyonel)</span>
+                    </label>
+                    <textarea
+                      rows={2}
+                      {...register('deliveryAddress')}
+                      className="w-full px-4 py-3 bg-fe-surface border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none resize-none"
+                      placeholder="Teklif belgesinde görünür, opsiyoneldir"
+                      disabled={isSubmitting}
+                    />
+                    {errors.deliveryAddress && (
+                      <p className="text-red-400 text-xs mt-1">{errors.deliveryAddress.message}</p>
+                    )}
+                  </div>
+                </div>
               )}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-fe-text mb-1">
-                  Telefon <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="tel"
-                  {...register('phone')}
-                  className="w-full px-4 py-3 bg-fe-surface border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none"
-                  placeholder="05321234567"
-                  disabled={isSubmitting}
-                />
-                {errors.phone && (
-                  <p className="text-red-400 text-xs mt-1">{errors.phone.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-fe-text mb-1">
-                  Mail <span className="text-fe-muted text-xs">(opsiyonel)</span>
-                </label>
-                <input
-                  type="email"
-                  {...register('email')}
-                  className="w-full px-4 py-3 bg-fe-surface border border-fe-border rounded-xl text-white focus:ring-2 focus:ring-brand-500 outline-none"
-                  placeholder="mail@firma.com"
-                  disabled={isSubmitting}
-                />
-                {errors.email && (
-                  <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>
-                )}
-              </div>
             </div>
 
             <div className="flex items-start gap-2.5 pt-1">

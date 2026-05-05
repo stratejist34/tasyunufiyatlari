@@ -45,6 +45,9 @@ interface Props {
 }
 
 const PROFIT_MARGIN = 0.1;
+const roundM2 = (value: number): number => Math.round(value * 10) / 10;
+const formatM2Input = (value: number): string =>
+  Number.isInteger(value) ? String(value) : String(roundM2(value));
 
 export default function ProductPricePanel({
   product,
@@ -112,11 +115,11 @@ export default function ProductPricePanel({
   const packageSizeM2 = realPkgM2;
   const lorryM2 =
     lorryPackages != null && realPkgM2 != null && Number.isFinite(realPkgM2)
-      ? lorryPackages * realPkgM2
+      ? roundM2(lorryPackages * realPkgM2)
       : null;
   const truckM2 =
     truckPackages != null && realPkgM2 != null && Number.isFinite(realPkgM2)
-      ? truckPackages * realPkgM2
+      ? roundM2(truckPackages * realPkgM2)
       : null;
 
   const discKamyon = zone ? parseFloat(String(zone.discount_kamyon)) : 0;
@@ -150,7 +153,7 @@ export default function ProductPricePanel({
   // depotStock > 0 ise depo yolu aktif; prefill gereksiz.
   useEffect(() => {
     if (lorryM2 !== null && depotStock === 0) {
-      const val = String(lorryM2);
+      const val = formatM2Input(lorryM2);
       setNeededM2(val);
       setDebouncedM2(val);
       setMetrajMode("lorry");
@@ -424,7 +427,12 @@ export default function ProductPricePanel({
             </button>
             <button
               type="button"
-              onClick={() => { setNeededM2(String(lorryM2)); setDebouncedM2(String(lorryM2)); setMetrajMode("lorry"); }}
+              onClick={() => {
+                const val = formatM2Input(lorryM2);
+                setNeededM2(val);
+                setDebouncedM2(val);
+                setMetrajMode("lorry");
+              }}
               className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
                 metrajMode === "lorry"
                   ? "border-brand-500/60 bg-brand-500/15 text-brand-300"
@@ -435,7 +443,12 @@ export default function ProductPricePanel({
             </button>
             <button
               type="button"
-              onClick={() => { setNeededM2(String(truckM2)); setDebouncedM2(String(truckM2)); setMetrajMode("truck"); }}
+              onClick={() => {
+                const val = formatM2Input(truckM2);
+                setNeededM2(val);
+                setDebouncedM2(val);
+                setMetrajMode("truck");
+              }}
               className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
                 metrajMode === "truck"
                   ? "border-brand-500/60 bg-brand-500/15 text-brand-300"
@@ -462,8 +475,9 @@ export default function ProductPricePanel({
             ihtiyac={neededM2Num}
             onChange={handleSepetChange}
             onSetIhtiyac={(m2) => {
-              setNeededM2(String(m2));
-              setDebouncedM2(String(m2));
+              const val = formatM2Input(m2);
+              setNeededM2(val);
+              setDebouncedM2(val);
               setMetrajMode(m2 === lorryM2 ? "lorry" : m2 === truckM2 ? "truck" : "custom");
             }}
             hideMinWarning={isTyping}

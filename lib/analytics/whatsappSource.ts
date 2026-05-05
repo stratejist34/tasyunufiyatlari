@@ -3,20 +3,25 @@
 
 // ─── WhatsApp tıklama kaynakları ─────────────────────────────────
 export type WhatsappSource =
-  | 'header_mobile'       // SiteHeader mobile drawer WA butonu
-  | 'footer_link'         // SiteFooter "WhatsApp Destek" link
-  | 'iletisim_card'       // /iletisim sayfası WhatsApp kartı
-  | 'depomuz_cta'         // /depomuz "WhatsApp ile yazışın"
-  | 'product_detail_cta'  // ürün detay sayfası WhatsApp CTA
-  | 'site_general';       // fallback / belirsiz
+  | 'header_desktop'        // SiteHeader masaüstü görünür WhatsApp butonu
+  | 'header_mobile'         // SiteHeader mobile drawer içindeki WA butonu
+  | 'header_mobile_topbar'  // SiteHeader mobile üst bar (drawer dışı) ikon
+  | 'wizard_help_step1'     // Wizard Step 1 erken yardım linki
+  | 'footer_link'           // SiteFooter "WhatsApp Destek" link
+  | 'iletisim_card'         // /iletisim sayfası WhatsApp kartı
+  | 'depomuz_cta'           // /depomuz "WhatsApp ile yazışın"
+  | 'product_detail_cta'    // ürün detay sayfası WhatsApp CTA
+  | 'site_general';         // fallback / belirsiz
 
 // ─── Telefon tıklama kaynakları ──────────────────────────────────
 export type PhoneSource =
-  | 'header_mobile'       // SiteHeader mobile drawer "Ara" butonu
-  | 'topbar_phone'        // hub TrustStrip telefon link
-  | 'iletisim_phone'      // /iletisim telefon kartı / "Hemen Ara"
-  | 'depomuz_phone'       // /depomuz telefon link
-  | 'kvkk_phone'          // /kvkk başvuru kartı telefon
+  | 'header_desktop'        // SiteHeader masaüstü görünür Hemen Ara
+  | 'header_mobile'         // SiteHeader mobile drawer "Ara" butonu
+  | 'header_mobile_topbar'  // SiteHeader mobile üst bar (drawer dışı) ikon
+  | 'topbar_phone'          // hub TrustStrip telefon link
+  | 'iletisim_phone'        // /iletisim telefon kartı / "Hemen Ara"
+  | 'depomuz_phone'         // /depomuz telefon link
+  | 'kvkk_phone'            // /kvkk başvuru kartı telefon
   | 'site_general';
 
 export interface WhatsappIntentPayload {
@@ -35,21 +40,26 @@ export interface PhoneCallPayload {
 
 // ─── İnsan-okur etiketler (CallMeBot mesajında ve GA4 dashboard'da) ─
 export const WHATSAPP_SOURCE_LABEL: Record<WhatsappSource, string> = {
-  header_mobile:      'Mobil menü',
-  footer_link:        'Footer linki',
-  iletisim_card:      'İletişim sayfası kartı',
-  depomuz_cta:        'Depomuz sayfası',
-  product_detail_cta: 'Ürün detay sayfası',
-  site_general:       'Site geneli',
+  header_desktop:        'Masaüstü header',
+  header_mobile:         'Mobil menü',
+  header_mobile_topbar:  'Mobil header ikon',
+  wizard_help_step1:     'Hesaplayıcı yardım (Step 1)',
+  footer_link:           'Footer linki',
+  iletisim_card:         'İletişim sayfası kartı',
+  depomuz_cta:           'Depomuz sayfası',
+  product_detail_cta:    'Ürün detay sayfası',
+  site_general:          'Site geneli',
 };
 
 export const PHONE_SOURCE_LABEL: Record<PhoneSource, string> = {
-  header_mobile:   'Mobil menü',
-  topbar_phone:    'Üst şerit',
-  iletisim_phone:  'İletişim sayfası',
-  depomuz_phone:   'Depomuz sayfası',
-  kvkk_phone:      'KVKK sayfası',
-  site_general:    'Site geneli',
+  header_desktop:        'Masaüstü header',
+  header_mobile:         'Mobil menü',
+  header_mobile_topbar:  'Mobil header ikon',
+  topbar_phone:          'Üst şerit',
+  iletisim_phone:        'İletişim sayfası',
+  depomuz_phone:         'Depomuz sayfası',
+  kvkk_phone:            'KVKK sayfası',
+  site_general:          'Site geneli',
 };
 
 // ─── GA4 Event isimleri (Türkçe, anlaşılır) ──────────────────────

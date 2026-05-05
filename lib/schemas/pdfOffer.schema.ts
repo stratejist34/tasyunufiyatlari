@@ -21,11 +21,14 @@ export const pdfOfferSchema = z.object({
     .max(50, 'En fazla 50 karakter')
     .regex(/^[a-zA-ZğüşıöçĞÜŞİÖÇ.\-\s]+$/, 'Geçerli bir il adı girin'),
 
+  // İlçe artık opsiyonel — sürtünme azaltma için ana akıştan çıkarıldı,
+  // detay toggle'ı altında talep edilir.
   district: z
     .string()
-    .min(2, 'En az 2 karakter girin')
     .max(50, 'En fazla 50 karakter')
-    .regex(/^[a-zA-ZğüşıöçĞÜŞİÖÇ.\-\s]+$/, 'Geçerli bir ilçe adı girin'),
+    .regex(/^[a-zA-ZğüşıöçĞÜŞİÖÇ.\-\s]*$/, 'Geçerli bir ilçe adı girin')
+    .optional()
+    .or(z.literal('')),
 
   deliveryAddress: z
     .string()

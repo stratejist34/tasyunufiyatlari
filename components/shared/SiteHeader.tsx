@@ -154,14 +154,56 @@ export default function SiteHeader({ tone, theme }: SiteHeaderProps) {
                 );
               })}
 
+              {/* Desktop iletişim CTA'ları — WhatsApp + Hemen Ara (sürekli görünür) */}
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => notifyWhatsappIntent({ source: 'header_desktop' })}
+                className="hidden sm:inline-flex items-center gap-1.5 ml-2 px-3 py-2 rounded-lg bg-[#25D366]/15 border border-[#25D366]/35 text-[#25D366] hover:bg-[#25D366]/25 text-sm font-semibold transition-colors"
+                aria-label="WhatsApp ile yazın"
+              >
+                <WhatsappLogo weight="fill" size={16} />
+                <span>WhatsApp</span>
+              </a>
+              <a
+                href={`tel:${PHONE_TEL}`}
+                onClick={() => notifyPhoneCall({ source: 'header_desktop' })}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-fe-border text-fe-text/90 hover:text-hub-gold-soft hover:border-hub-gold-soft/50 text-sm font-semibold transition-colors"
+                aria-label="Hemen ara"
+              >
+                <Phone weight={ICON_WEIGHT} size={16} />
+                <span>Hemen Ara</span>
+              </a>
+
               {/* Desktop CTA */}
               <Link
                 href="/"
                 prefetch={false}
-                className="btn-primary !py-2 !px-4 !text-sm ml-1 sm:ml-3 hidden sm:inline-flex"
+                className="btn-primary !py-2 !px-4 !text-sm ml-1 sm:ml-2 hidden sm:inline-flex"
               >
                 Hesap Makinesi
               </Link>
+
+              {/* Mobile iletişim ikonları — hamburger soluna sürekli görünür */}
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => notifyWhatsappIntent({ source: 'header_mobile_topbar' })}
+                className="sm:hidden inline-flex items-center justify-center w-11 h-11 rounded-lg text-[#25D366] hover:bg-[#25D366]/15 transition-colors"
+                aria-label="WhatsApp ile yazın"
+              >
+                <WhatsappLogo weight="fill" size={22} />
+              </a>
+              <a
+                href={`tel:${PHONE_TEL}`}
+                onClick={() => notifyPhoneCall({ source: 'header_mobile_topbar' })}
+                className="sm:hidden inline-flex items-center justify-center w-11 h-11 rounded-lg text-fe-text/90 hover:text-hub-gold-soft hover:bg-fe-surface-raised/50 transition-colors"
+                aria-label="Hemen ara"
+              >
+                <Phone weight={ICON_WEIGHT} size={22} />
+              </a>
 
               {/* Mobile hamburger */}
               <button

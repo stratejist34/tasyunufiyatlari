@@ -2,6 +2,7 @@
 // Sayfa siyah çerçeve içinde krem içerik mantığı.
 
 import Link from 'next/link';
+import PhoneCallLink from '@/components/shared/PhoneCallLink';
 
 export default function TrustStrip() {
   return (
@@ -17,12 +18,13 @@ export default function TrustStrip() {
           <span>KDV hariç</span>
         </div>
         <div className="flex items-center gap-4">
-          <a
+          <PhoneCallLink
             href="tel:+905322041825"
+            source="topbar_phone"
             className="text-hub-warm font-medium hover:text-hub-gold-soft transition-colors"
           >
             0 532 204 18 25
-          </a>
+          </PhoneCallLink>
           <Link
             href="/#mantolama-hesaplayici"
             prefetch={false}

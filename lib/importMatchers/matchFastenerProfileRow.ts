@@ -55,6 +55,7 @@ export function matchFastenerProfileRow(
         : undefined;
     const rowNormalized = normalizeTextForMatch(row.rawProductName);
     const rowSpecialTerms = SPECIAL_FASTENER_TERMS.filter(term => rowNormalized.includes(term));
+    const isSizeOptionalDowel = row.productClass === 'dowel' && rowSpecialTerms.includes('pul');
 
     const candidates = accessories
         .map(accessory => {
@@ -207,7 +208,7 @@ export function matchFastenerProfileRow(
     //   NOT: sizeToken var ama DB'de eşleşmedi → scoring'de -0.50 ceza → max confidence = 0.34 < 0.70.
     //        Bu matematiksel olarak matched'ı engeller; kod düzeyinde ayrıca guard eklenmemiştir.
     let status = baseStatus;
-    if (status === 'matched' && row.productClass === 'dowel' && sizeToken === undefined) {
+    if (status === 'matched' && row.productClass === 'dowel' && sizeToken === undefined && !isSizeOptionalDowel) {
         status = 'ambiguous';
     }
     if (status === 'matched' && bestMissingSpecialTerms) {

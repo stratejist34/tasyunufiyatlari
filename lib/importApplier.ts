@@ -158,6 +158,14 @@ interface SafetyCheckResult {
     warnings: string[];
 }
 
+interface ApplySafetyOptions {
+    allowExtremeDeviation?: boolean;
+}
+
+export interface ApplyImportOptions {
+    allowExtremeDeviation?: boolean;
+}
+
 /**
  * Apply başlamadan önce matchRows üzerinde güvenlik kontrolleri yapar.
  * Ek DB çağrısı yapmaz; sadece mevcut satır verisini kullanır (O(n)).
@@ -173,7 +181,10 @@ interface SafetyCheckResult {
  *
  * Defensive: price_change_pct yoksa veya sayı değilse o kural ignore edilir.
  */
-function validateApplySafety(rows: MatchResultDbRow[]): SafetyCheckResult {
+function validateApplySafety(
+    rows: MatchResultDbRow[],
+    options: ApplySafetyOptions = {},
+): SafetyCheckResult {
     const blockers: string[] = [];
     const warnings: string[] = [];
 
@@ -187,8 +198,11 @@ function validateApplySafety(rows: MatchResultDbRow[]): SafetyCheckResult {
         const pct = r.price_change_pct;
         return typeof pct === 'number' && isFinite(pct) && Math.abs(pct) > 100;
     });
-    if (hasExtremeDeviation) {
+    if (hasExtremeDeviation && !options.allowExtremeDeviation) {
         blockers.push('Extreme price deviation detected (>100%)');
+    }
+    if (hasExtremeDeviation && options.allowExtremeDeviation) {
+        warnings.push('Extreme price deviation override active');
     }
 
     // ---- HARD BLOCK: error severity uyarısı ----
@@ -487,6 +501,7 @@ export async function applyVariantMissingRow(
 export async function applyImportFile(
     supabase: SupabaseClient,
     fileId: string,
+    options: ApplyImportOptions = {},
 ): Promise<ApplyResult> {
     // ---- 1. APPLY LOCK ----
     // Atomic conditional UPDATE: sadece status='matched' ise 'applying'e geçer.
@@ -555,7 +570,9 @@ export async function applyImportFile(
         // ---- 5. PRE-APPLY SAFETY GUARD ----
         // raw_kdv_hint zaten inject edildi; safety check buradan geçmezse throw eder,
         // catch bloğu apply lock'u 'matched'e geri çeker.
-        const safety = validateApplySafety(matchRows);
+        const safety = validateApplySafety(matchRows, {
+            allowExtremeDeviation: options.allowExtremeDeviation,
+        });
 
         if (safety.warnings.length > 0) {
             console.warn(`[applyImportFile] Safety warnings (file=${fileId}):`, safety.warnings.join(' | '));

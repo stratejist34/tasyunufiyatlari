@@ -7,6 +7,7 @@ import Eyebrow from "@/components/shared/Eyebrow";
 import SectionHeader from "@/components/shared/SectionHeader";
 import NumberMarker from "@/components/shared/NumberMarker";
 import RevealOnScroll from "@/components/shared/RevealOnScroll";
+import WhatsappLink from "@/components/shared/WhatsappLink";
 import WizardCalculator from "@/components/wizard/WizardCalculator";
 import { TrustStrip } from '@/components/cro/TrustStrip';
 import { SituationSelector } from '@/components/cro/SituationSelector';
@@ -451,15 +452,14 @@ export default function Home() {
                             Teklifi şimdi oluştur
                             <ArrowRight size={18} weight={ICON_WEIGHT} />
                         </Link>
-                        <a
+                        <WhatsappLink
                             href="https://wa.me/905322041825"
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            source="site_general"
                             className="inline-flex items-center gap-2 text-base font-medium text-fe-muted transition hover:text-fe-text"
                         >
-                            WhatsApp'tan danış
+                            WhatsApp&#39;tan danış
                             <ArrowRight size={16} weight={ICON_WEIGHT} />
-                        </a>
+                        </WhatsappLink>
                     </div>
                 </RevealOnScroll>
             </section>

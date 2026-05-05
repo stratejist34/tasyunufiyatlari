@@ -7,6 +7,8 @@ import {
   type PhoneCallPayload,
 } from './analytics/whatsappSource';
 
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-VCHRKVJCEN';
+
 export function notifyPhoneCall(payload: PhoneCallPayload): void {
   if (typeof window === 'undefined') return;
 
@@ -28,6 +30,7 @@ export function notifyPhoneCall(payload: PhoneCallPayload): void {
       source: fullPayload.source,
       page_path: fullPayload.page,
       product_name: fullPayload.productName,
+      send_to: GA_MEASUREMENT_ID,
     });
   }
 }

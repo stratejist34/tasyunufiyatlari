@@ -5,9 +5,11 @@ import { createPortal } from 'react-dom';
 import { PdfOfferModal } from '@/components/modal/PdfOfferModal';
 import { generateQuotePDF } from '@/lib/pdfGenerator';
 import { uploadPdfToStorage } from '@/lib/uploadPdfToStorage';
+import { notifyPdfQuoteRequested } from '@/lib/notifyWizardEvent';
 import type { PdfOfferFormData } from '@/lib/schemas/pdfOffer.schema';
 import type { CatalogProductView } from '@/lib/catalog/types';
 import { WHATSAPP_ORDER } from '@/lib/config';
+import { formatBrandProductName, formatBrandName } from '@/lib/brandFormat';
 
 interface Props {
   product: CatalogProductView;
@@ -56,14 +58,29 @@ export default function SingleProductQuoteButton({
       const matType: 'tasyunu' | 'eps' = product.material_type === 'eps' ? 'eps' : 'tasyunu';
       const refCode       = `TY${String(Date.now()).slice(-7)}`;
 
+      // Marka+ürün adını duplikasyonsuz, Fawori parent ekleyerek formatla
+      const brandProductName = formatBrandProductName(product.brand.name, product.name);
+      const plateBrandLabel  = formatBrandName(product.brand.name);
+
+      // Aktif kalınlığa karşılık gelen paket başına m² → paket sayısı
+      const activeRow = activeThickness != null
+        ? product.thickness_prices?.find(r => r.thickness === activeThickness) ?? null
+        : null;
+      const packageSizeM2 = activeRow?.package_m2 && activeRow.package_m2 > 0
+        ? activeRow.package_m2
+        : null;
+      const computedPackageCount = packageSizeM2
+        ? Math.max(1, Math.ceil(areaM2 / packageSizeM2))
+        : 0;
+
       // 1. PDF üret (müşteri otomatik indirir)
       const whatsappMsg = encodeURIComponent(
         `Merhaba, ${refCode} no'lu teklif hakkında bilgi almak istiyorum.`
       );
       const pdfResult = await generateQuotePDF({
-        packageName:        product.name,
-        packageDescription: `${product.brand.name} ${product.name}`,
-        plateBrandName:     product.brand.name,
+        packageName:        brandProductName,
+        packageDescription: brandProductName,
+        plateBrandName:     plateBrandLabel,
         accessoryBrandName: '-',
         metraj:             areaM2,
         thickness,
@@ -86,18 +103,18 @@ export default function SingleProductQuoteButton({
         email:              formData.email || '',
         city:               formData.city,
         district:           formData.district,
-        systemDescription:  `${product.brand.name} ${product.name}${activeThickness ? ` — ${thickness} cm` : ''}`,
+        systemDescription:  `${brandProductName}${activeThickness ? ` — ${thickness} cm` : ''}`,
         isShippingIncluded,
         items: [
           {
-            description:     `${product.brand.name} ${product.name}${activeThickness ? ` (${thickness} cm)` : ''}`,
+            description:     `${brandProductName}${activeThickness ? ` (${thickness} cm)` : ''}`,
             quantity:        areaM2,
             unit:            'm²',
             consumptionRate: 1,
             unitPrice:       pricePerM2,
             totalPrice:      totalKdvHaric,
             isPlate:         true,
-            packageCount:    0,
+            packageCount:    computedPackageCount,
           },
         ],
       });
@@ -112,7 +129,7 @@ export default function SingleProductQuoteButton({
 
       // 3. DB kaydet
       try {
-        await fetch('/api/quotes', {
+        const quoteRes = await fetch('/api/quotes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -134,9 +151,9 @@ export default function SingleProductQuoteButton({
             cityName,
             districtCode:    null,
             districtName:    formData.district || null,
-            packageName:     product.name,
-            packageDescription: `${product.brand.name} ${product.name}${activeThickness ? ` ${thickness}cm` : ''}`,
-            plateBrandName:  product.brand.name,
+            packageName:     brandProductName,
+            packageDescription: `${brandProductName}${activeThickness ? ` ${thickness}cm` : ''}`,
+            plateBrandName:  plateBrandLabel,
             accessoryBrandName: '-',
             totalPrice:      grandTotal,
             pricePerM2,
@@ -144,8 +161,8 @@ export default function SingleProductQuoteButton({
             discountPercentage: 0,
             priceWithoutVat: totalKdvHaric,
             vatAmount,
-            packageCount:    1,
-            packageSizeM2:   1,
+            packageCount:    computedPackageCount || 1,
+            packageSizeM2:   packageSizeM2 ?? 1,
             itemsPerPackage: 1,
             vehicleType:     vehicleType === 'depot' ? 'none' : (vehicleType ?? null),
             lorryCapacityPackages: null,
@@ -158,6 +175,26 @@ export default function SingleProductQuoteButton({
             pdfStoragePath:  storedPdfPath,
           }),
         });
+
+        if (quoteRes.ok) {
+          notifyPdfQuoteRequested({
+            material_type:         matType,
+            brand_name:            product.brand.name,
+            model_name:            product.name,
+            thickness_cm:          Math.min(15, Math.max(2, activeThickness ?? 5)),
+            city_code:             cityCode,
+            city_name:             cityName,
+            area_m2:               areaM2,
+            total_m2:              areaM2,
+            package_count:         computedPackageCount || 1,
+            selected_package_name: brandProductName,
+            selected_package_total: grandTotal,
+            selected_per_m2:       pricePerM2,
+            ref_code:              refCode,
+            customer_type:         formData.customerCompany ? 'company' : 'individual',
+            source_channel:        'catalog',
+          });
+        }
       } catch { /* DB hatası PDF'i engellemez */ }
 
       // 4. Yeni sekmede aç

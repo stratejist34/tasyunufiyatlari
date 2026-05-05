@@ -7,6 +7,8 @@ import {
   type WhatsappIntentPayload,
 } from './analytics/whatsappSource';
 
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-VCHRKVJCEN';
+
 export function notifyWhatsappIntent(payload: WhatsappIntentPayload): void {
   if (typeof window === 'undefined') return;
 
@@ -41,6 +43,7 @@ export function notifyWhatsappIntent(payload: WhatsappIntentPayload): void {
       source: fullPayload.source,
       page_path: fullPayload.page,
       product_name: fullPayload.productName,
+      send_to: GA_MEASUREMENT_ID,
     });
   }
 }

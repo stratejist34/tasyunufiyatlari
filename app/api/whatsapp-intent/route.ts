@@ -26,7 +26,10 @@ function isRateLimited(key: string): boolean {
 }
 
 const ALLOWED_SOURCES: WhatsappSource[] = [
+  'header_desktop',
   'header_mobile',
+  'header_mobile_topbar',
+  'wizard_help_step1',
   'footer_link',
   'iletisim_card',
   'depomuz_cta',
