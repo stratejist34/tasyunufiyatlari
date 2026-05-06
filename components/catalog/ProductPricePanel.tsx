@@ -419,31 +419,37 @@ export default function ProductPricePanel({
                       <p className="mt-1 text-[10px] text-red-400">Geçerli m² giriniz</p>
                     )}
 
-                    {/* SİPARİŞ TOPLAMI — input'un hemen altında, sol kolonda */}
-                    {neededM2Num > 0 && heroPrice !== null && !inputInvalid && (
-                      <div className="mt-2 rounded-xl border border-brand-500/30 bg-brand-500/[0.07] px-3 py-2.5">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-300/80">
-                          Sipariş Toplamı
-                        </p>
-                        <p className="mt-1 text-[18px] font-extrabold leading-none">
-                          <span className="text-brand-300">₺</span>
-                          <span className="text-white">
-                            {(neededM2Num * heroPrice).toLocaleString("tr-TR", {
+                    {/* SİPARİŞ TOPLAMI — sepet doluyken gerçek araç toplamı (PDF ile aynı),
+                        sepet boşken kullanıcının girdiği metraj × hero fiyatı */}
+                    {(() => {
+                      const orderM2 = sepetState.totalM2 > 0 ? sepetState.totalM2 : neededM2Num;
+                      if (orderM2 <= 0 || heroPrice === null || inputInvalid) return null;
+                      const orderTotal = orderM2 * heroPrice;
+                      return (
+                        <div className="mt-2 rounded-xl border border-brand-500/30 bg-brand-500/[0.07] px-3 py-2.5">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-300/80">
+                            Sipariş Toplamı
+                          </p>
+                          <p className="mt-1 text-[18px] font-extrabold leading-none">
+                            <span className="text-brand-300">₺</span>
+                            <span className="text-white">
+                              {orderTotal.toLocaleString("tr-TR", {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0,
+                              })}
+                            </span>
+                          </p>
+                          <p className="mt-1 text-[9px] leading-snug text-fe-muted">
+                            KDV hariç · {orderM2.toLocaleString("tr-TR")} m² × ₺
+                            {heroPrice.toLocaleString("tr-TR", {
                               minimumFractionDigits: 0,
-                              maximumFractionDigits: 0,
+                              maximumFractionDigits: 2,
                             })}
-                          </span>
-                        </p>
-                        <p className="mt-1 text-[9px] leading-snug text-fe-muted">
-                          KDV hariç · {neededM2Num.toLocaleString("tr-TR")} m² × ₺
-                          {heroPrice.toLocaleString("tr-TR", {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 2,
-                          })}
-                          /m²
-                        </p>
-                      </div>
-                    )}
+                            /m²
+                          </p>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
