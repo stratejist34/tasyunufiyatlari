@@ -1,7 +1,28 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+// Türkçe karakterli klasör yolu (Tasyunufİyatlari) Windows + Node + Webpack
+// enhanced-resolve kombinasyonunda segment kaybına yol açıyor — resolver
+// "tasyunu-front" parçasını düşürüp üst dizinde tailwindcss arıyor. Webpack'in
+// modül arama köklerini sabit `tasyunu-front/node_modules` ile başlatarak
+// bu davranışı engelliyoruz.
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
+const projectNodeModules = path.join(projectRoot, "node_modules");
 
 const nextConfig: NextConfig = {
+  webpack(config) {
+    config.resolve = config.resolve ?? {};
+    const existingModules = Array.isArray(config.resolve.modules)
+      ? config.resolve.modules
+      : ["node_modules"];
+    config.resolve.modules = [projectNodeModules, ...existingModules];
+    return config;
+  },
+  turbopack: {
+    root: projectRoot,
+  },
   images: {
     // Supabase Storage'a yüklenen görseller zaten optimize boyut/format'ta
     // (WebP, doğru en-boy oranı). Vercel'in image optimization katmanı bu

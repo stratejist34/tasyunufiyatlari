@@ -6,6 +6,8 @@ import type { Metadata } from 'next';
 import ProductImage     from '@/components/catalog/ProductImage';
 import ThicknessSelector from '@/components/catalog/ThicknessSelector';
 import ProductPricePanel from '@/components/catalog/ProductPricePanel';
+import MobileProductHero from '@/components/catalog/MobileProductHero';
+import { ProductInteractiveProvider } from '@/components/catalog/ProductInteractiveContext';
 import { getCatalogProduct } from '@/lib/catalog/server';
 import { buildMetadata } from '@/lib/seo/buildMetadata';
 import { buildBreadcrumbList } from '@/lib/seo/buildBreadcrumbList';
@@ -140,6 +142,16 @@ export default async function UrunDetayPage({ params, searchParams }: Props) {
 
   const badge = BADGE_MAP[product.rules.sales_mode] ?? BADGE_MAP.quote_only;
   const kategoriLabel = KATEGORI_LABELS[kategori] ?? kategori;
+  const defaultZone = shippingZones.find((zone) => zone.city_code === 34) ?? shippingZones[0] ?? null;
+
+  // Provider initial values (mobil hero + panel + picker hepsi context'ten beslenir)
+  const initialCityCode = defaultZone?.city_code ?? 34;
+  const initialThickness = isValidThickness
+    ? selectedThickness
+    : (activePrefill?.kalinlik ??
+       (Array.isArray(product.thickness_options) && product.thickness_options.length > 0
+         ? product.thickness_options[0]
+         : null));
 
   // ─── Schema.org JSON-LD ──────────────────────────────────────
   const productUrl = `${SITE_ORIGIN}/urunler/${kategori}/${slug}`;
@@ -186,7 +198,7 @@ export default async function UrunDetayPage({ params, searchParams }: Props) {
 
       {/* Breadcrumb */}
       <div className="bg-fe-surface/80 border-b border-fe-border/60">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-3.5">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3.5">
           <nav className="flex items-center gap-1 text-xs text-fe-muted flex-wrap">
             <Link href="/" className="hover:text-brand-400 transition-colors">Ana Sayfa</Link>
             <ChevronRight className="w-3 h-3 flex-shrink-0" />
@@ -202,68 +214,67 @@ export default async function UrunDetayPage({ params, searchParams }: Props) {
       </div>
 
       {/* Ana İçerik */}
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 lg:py-12">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-4 lg:py-12">
         <ErrorBoundaryWrapper>
+        <ProductInteractiveProvider
+          initialCityCode={initialCityCode}
+          initialThickness={initialThickness}
+        >
 
         {/* Mobile: thumbnail + kimlik + kalınlık — fiyat paneli öncesinde bağlam */}
-        <div className="lg:hidden mb-5 space-y-4">
+        <div className="lg:hidden mb-3 space-y-3">
 
-          {/* Ürün kimliği: 60×60 thumbnail + marka/ad/SKU tek satır */}
-          <div className="flex items-start gap-3">
-            <ProductImage
-              src={product.image_cover}
-              alt={product.name}
-              className="w-[60px] h-[60px] shrink-0 rounded-xl"
-            />
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                <span className="text-xs text-brand-500 font-semibold uppercase tracking-wider">
-                  {product.brand.name}
-                </span>
-                <span className="text-fe-muted/60">·</span>
-                <span className="text-xs text-fe-muted">{product.category.name}</span>
+          <div className="grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)] items-start gap-2">
+            <div className="min-w-0">
+              <div className="flex items-start gap-3">
+                <ProductImage
+                  src={product.image_cover}
+                  alt={product.name}
+                  className="w-[60px] h-[60px] shrink-0 rounded-xl"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                    <span className="text-xs text-brand-500 font-semibold uppercase tracking-wider">
+                      {product.brand.name}
+                    </span>
+                    <span className="text-fe-muted/60">·</span>
+                    <span className="text-xs text-fe-muted">{product.category.name}</span>
+                  </div>
+                  <h1 className="text-xl font-bold text-white leading-tight">
+                    {product.name}
+                  </h1>
+                </div>
               </div>
-              <h1 className="text-xl font-bold text-white leading-tight">
-                {product.name}
-              </h1>
-              {product.model && (
-                <p className="text-fe-muted text-xs mt-0.5">{product.model}</p>
-              )}
-              <span className={`inline-block mt-1.5 text-xs px-2 py-0.5 rounded border font-medium ${badge.cls}`}>
-                {badge.label}
-              </span>
+              <MobileProductHero
+                product={product}
+                shippingZones={shippingZones}
+                logisticsCapacity={logisticsCapacity}
+              />
             </div>
+
+            {product.thickness_options && product.thickness_options.length > 0 && (
+              <div className="min-w-0">
+                <Suspense fallback={
+                  <div className="w-full rounded-[24px] border border-fe-border bg-fe-raised/40 p-3 text-center text-sm text-fe-muted">
+                    Kalınlık
+                  </div>
+                }>
+                  <ThicknessSelector
+                    thicknessOptions={product.thickness_options}
+                    popularThickness={product.wizard_prefill?.kalinlik ?? null}
+                    mobileMode="inline"
+                  />
+                </Suspense>
+              </div>
+            )}
           </div>
 
-          {/* Kalınlık seçici */}
-          {product.thickness_options && product.thickness_options.length > 0 && (
-            <div>
-              <p className="text-xs text-fe-muted uppercase tracking-wide font-medium mb-2.5">
-                Kalınlık
-              </p>
-              <Suspense fallback={
-                <div className="flex flex-wrap gap-2">
-                  {product.thickness_options.map(t => (
-                    <span key={t} className="px-3 py-1.5 bg-fe-raised/60 text-fe-text text-sm rounded-lg border border-fe-border">
-                      {t} cm
-                    </span>
-                  ))}
-                </div>
-              }>
-                <ThicknessSelector
-                  thicknessOptions={product.thickness_options}
-                  popularThickness={product.wizard_prefill?.kalinlik ?? null}
-                />
-              </Suspense>
-            </div>
-          )}
-
-          <p className="text-[10px] text-fe-muted">
+          <p className="hidden text-[10px] text-fe-muted">
             Seçtiğiniz kalınlığa göre fiyatlar aşağıda gösterilir
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 lg:gap-12 items-start">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[3fr_2fr] lg:gap-12 items-start">
 
           {/* ── SOL: Ürün Bilgileri ─────────────────────────── */}
           <div className="space-y-6 order-2 lg:order-1">
@@ -343,7 +354,7 @@ export default async function UrunDetayPage({ params, searchParams }: Props) {
 
           {/* ── SAĞ: Dönüşüm Paneli ─────────────────────────── */}
           <div className="lg:sticky lg:top-6 order-1 lg:order-2">
-            <div className="mb-4 rounded-2xl border border-fe-border/70 bg-fe-raised/20 px-4 py-4">
+            <div className="hidden lg:block mb-4 rounded-2xl border border-fe-border/70 bg-fe-raised/20 px-4 py-4">
               <BrandTrustLogos
                 compact
                 title="Bayilikler"
@@ -357,11 +368,19 @@ export default async function UrunDetayPage({ params, searchParams }: Props) {
                 shippingZones={shippingZones}
                 logisticsCapacity={logisticsCapacity}
                 selectedThickness={isValidThickness ? selectedThickness : null}
+                hideHeroPriceOnMobile
               />
             </Suspense>
+            <div className="mt-4 rounded-2xl border border-fe-border/70 bg-fe-raised/20 px-4 py-4 lg:hidden">
+              <BrandTrustLogos
+                compact
+                title="Bayilikler"
+              />
+            </div>
           </div>
 
         </div>
+        </ProductInteractiveProvider>
         </ErrorBoundaryWrapper>
       </div>
 

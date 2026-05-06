@@ -56,7 +56,10 @@ export default function SiteHeader({ tone, theme }: SiteHeaderProps) {
 
   // Route değişince drawer'ı kapat
   useEffect(() => {
-    setMobileOpen(false);
+    const closeDrawer = window.setTimeout(() => {
+      setMobileOpen(false);
+    }, 0);
+    return () => window.clearTimeout(closeDrawer);
   }, [pathname]);
 
   // Drawer açıkken body scroll lock
@@ -97,7 +100,7 @@ export default function SiteHeader({ tone, theme }: SiteHeaderProps) {
   return (
     <>
       {showTopBar && (
-        <div className="bg-fe-surface border-b border-fe-border text-center py-2 px-4 text-xs sm:text-sm">
+        <div className="hidden bg-fe-surface border-b border-fe-border text-center sm:block sm:py-2 sm:text-sm sm:px-4">
           <span className="font-semibold text-white">Fabrika Çıkışlı Satış</span>
           <span className="hidden sm:inline mx-2 sm:mx-4 text-fe-muted">|</span>
           <span className="hidden sm:inline text-fe-text/80">Depo: İstanbul/Tuzla &amp; Gebze</span>
@@ -110,7 +113,7 @@ export default function SiteHeader({ tone, theme }: SiteHeaderProps) {
         className={`sticky top-0 z-50 transition-[background-color,border-color,box-shadow] duration-200 ease-out ${headerBg}`}
       >
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-          <div className="flex justify-between items-center h-16 sm:h-20">
+          <div className="flex justify-between items-center h-11 sm:h-16">
             {/* Logo */}
             <Link
               href="/"
@@ -124,7 +127,7 @@ export default function SiteHeader({ tone, theme }: SiteHeaderProps) {
                 width={260}
                 height={54}
                 priority
-                className="h-7 sm:h-9 w-auto"
+                className="h-6 sm:h-9 w-auto"
               />
             </Link>
 
@@ -191,7 +194,7 @@ export default function SiteHeader({ tone, theme }: SiteHeaderProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => notifyWhatsappIntent({ source: 'header_mobile_topbar' })}
-                className="sm:hidden inline-flex items-center justify-center w-11 h-11 rounded-lg text-[#25D366] hover:bg-[#25D366]/15 transition-colors"
+                className="sm:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg text-[#25D366] hover:bg-[#25D366]/15 transition-colors"
                 aria-label="WhatsApp ile yazın"
               >
                 <WhatsappLogo weight="fill" size={22} />
@@ -199,7 +202,7 @@ export default function SiteHeader({ tone, theme }: SiteHeaderProps) {
               <a
                 href={`tel:${PHONE_TEL}`}
                 onClick={() => notifyPhoneCall({ source: 'header_mobile_topbar' })}
-                className="sm:hidden inline-flex items-center justify-center w-11 h-11 rounded-lg text-fe-text/90 hover:text-hub-gold-soft hover:bg-fe-surface-raised/50 transition-colors"
+                className="sm:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg text-fe-text/90 hover:text-hub-gold-soft hover:bg-fe-surface-raised/50 transition-colors"
                 aria-label="Hemen ara"
               >
                 <Phone weight={ICON_WEIGHT} size={22} />
@@ -209,7 +212,7 @@ export default function SiteHeader({ tone, theme }: SiteHeaderProps) {
               <button
                 type="button"
                 onClick={() => setMobileOpen(true)}
-                className="sm:hidden inline-flex items-center justify-center w-11 h-11 rounded-lg text-fe-text/90 hover:text-hub-gold-soft hover:bg-fe-surface-raised/50 transition-colors"
+                className="sm:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg text-fe-text/90 hover:text-hub-gold-soft hover:bg-fe-surface-raised/50 transition-colors"
                 aria-label="Menüyü aç"
                 aria-expanded={mobileOpen}
                 aria-controls="mobile-drawer"

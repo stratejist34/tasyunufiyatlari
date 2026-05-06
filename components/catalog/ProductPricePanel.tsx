@@ -12,10 +12,11 @@ import { notifyWhatsappIntent } from "@/lib/notifyWhatsappIntent";
 
 import type { CatalogProductView, DecisionContext, WizardPrefill } from "@/lib/catalog/types";
 import { getPriceDisplay } from "@/lib/catalog/decision";
-import SepetUI, { type SepetState, type SepetScenario } from "./SepetUI";
+import SepetUI, { type SepetState } from "./SepetUI";
 import SingleProductQuoteButton from "./SingleProductQuoteButton";
 import StokAlternatifSection from "./StokAlternatifSection";
 import WizardLinkButton from "./WizardLinkButton";
+import { useProductInteractiveOptional } from "./ProductInteractiveContext";
 
 interface ShippingZone {
   city_code: number;
@@ -42,6 +43,7 @@ interface Props {
   shippingZones: ShippingZone[];
   logisticsCapacity: LogisticsCap[];
   selectedThickness: number | null;
+  hideHeroPriceOnMobile?: boolean;
 }
 
 const PROFIT_MARGIN = 0.1;
@@ -56,9 +58,17 @@ export default function ProductPricePanel({
   shippingZones,
   logisticsCapacity,
   selectedThickness,
+  hideHeroPriceOnMobile = false,
 }: Props) {
   const defaultCity = shippingZones.find((z) => z.city_code === 34) ?? shippingZones[0];
-  const [selectedCode, setSelectedCode] = useState<number>(defaultCity?.city_code ?? 34);
+  const interactive = useProductInteractiveOptional();
+  const [localCode, setLocalCode] = useState<number>(defaultCity?.city_code ?? 34);
+  // Provider varsa city state context'ten; yoksa local (geri uyumlu)
+  const selectedCode = interactive?.cityCode ?? localCode;
+  const setSelectedCode = (code: number) => {
+    if (interactive) interactive.setCityCode(code);
+    else setLocalCode(code);
+  };
   const [neededM2, setNeededM2] = useState<string>("");
   const [debouncedM2, setDebouncedM2] = useState<string>("");
   type MetrajMode = "custom" | "lorry" | "truck";
@@ -69,6 +79,8 @@ export default function ProductPricePanel({
     const t = setTimeout(() => setDebouncedM2(neededM2), 350);
     return () => clearTimeout(t);
   }, [neededM2]);
+  const [vehicleCardsSlot, setVehicleCardsSlot] = useState<HTMLDivElement | null>(null);
+
   const [sepetState, setSepetState] = useState<SepetState>({
     kamyon: 0,
     tir: 0,
@@ -88,9 +100,13 @@ export default function ProductPricePanel({
   const zone = shippingZones.find((z) => z.city_code === selectedCode) ?? defaultCity;
   const { rules, base_price, minimum_order, thickness_prices } = product;
 
+  // Provider varsa kalınlık context'ten; yoksa prop. Context yazıldığında
+  // panel anında reaktif (URL navigasyonu beklemeden).
+  const effectiveThickness = interactive?.activeThickness ?? selectedThickness;
+
   const activeThicknessPrice = thickness_prices
-    ? selectedThickness
-      ? thickness_prices.find((p) => p.thickness === selectedThickness) ?? thickness_prices[0]
+    ? effectiveThickness
+      ? thickness_prices.find((p) => p.thickness === effectiveThickness) ?? thickness_prices[0]
       : thickness_prices.find((p) => p.thickness === (prefill?.kalinlik ?? null)) ?? thickness_prices[0]
     : null;
 
@@ -154,9 +170,12 @@ export default function ProductPricePanel({
   useEffect(() => {
     if (lorryM2 !== null && depotStock === 0) {
       const val = formatM2Input(lorryM2);
-      setNeededM2(val);
-      setDebouncedM2(val);
-      setMetrajMode("lorry");
+      const syncPrefill = window.setTimeout(() => {
+        setNeededM2(val);
+        setDebouncedM2(val);
+        setMetrajMode("lorry");
+      }, 0);
+      return () => window.clearTimeout(syncPrefill);
     }
   }, [lorryM2, depotStock]);
 
@@ -180,11 +199,11 @@ export default function ProductPricePanel({
   const ctaLabel = (() => {
     switch (sepetState.scenario) {
       case 'below_minimum': return `Teklif için en az ${minOrderM2 ?? ""} m² giriniz`;
-      case 'depot_optimal': return "Anında Teklif Oluştur";
-      case 'lorry_optimal': return sepetState.kamyon === 1 ? "1 Kamyon İçin Teklif Oluştur" : `${sepetState.kamyon} Kamyon İçin Teklif Oluştur`;
-      case 'tir_optimal':   return sepetState.tir === 1    ? "1 TIR İçin Teklif Oluştur"    : `${sepetState.tir} TIR İçin Teklif Oluştur`;
-      case 'large_project': return "Büyük Metraj Teklifi Al";
-      default:              return "Anında Teklif Oluştur";
+      case 'depot_optimal': return "PDF Teklif Al";
+      case 'lorry_optimal': return `${sepetState.kamyon} Kamyon için PDF Teklif Al`;
+      case 'tir_optimal':   return `${sepetState.tir} TIR için PDF Teklif Al`;
+      case 'large_project': return "Büyük Metraj için PDF Teklif Al";
+      default:              return "PDF Teklif Al";
     }
   })();
   const isTyping = neededM2 !== debouncedM2;
@@ -200,6 +219,12 @@ export default function ProductPricePanel({
       : sepetState.stokOnerisi && depotPrice !== null
         ? depotPrice
         : truckPrice ?? lorryPrice;
+
+  // Context'e yaz → MobileProductHero senaryo-aware fiyatı okur (sepet doluyken
+  // effectivePrice, boşken TIR çıpa). Mobil hero ile TOPLAM hesabı tek kaynaklı.
+  useEffect(() => {
+    interactive?.setHeroPrice(heroPrice);
+  }, [heroPrice, interactive]);
 
   const showTierPrice =
     rules.pricing_visibility_mode === "from_price" ||
@@ -278,7 +303,7 @@ export default function ProductPricePanel({
           // Görünmez kategori (hidden / quote_required) — yine de açıklama satırı göster
           if (!display.visible) {
             return (
-              <div className="mb-4">
+              <div className={`mb-4 ${hideHeroPriceOnMobile ? "hidden lg:block" : ""}`}>
                 <p className="mb-1 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
                   Fiyat
                 </p>
@@ -297,7 +322,7 @@ export default function ProductPricePanel({
           // from_price / exact_price → statik başlangıç etiketi
           const isFromPrice = rules.pricing_visibility_mode === 'from_price';
           return (
-            <div className="mb-5">
+            <div className={`mb-5 ${hideHeroPriceOnMobile ? "hidden lg:block" : ""}`}>
               <p className="mb-1 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
                 {isFromPrice ? 'Başlangıç Fiyatı' : 'Fiyat'}
               </p>
@@ -314,7 +339,7 @@ export default function ProductPricePanel({
 
         {/* ─── Hero Fiyat (dinamik — şehir/metraj seçildiğinde) ─── */}
         {showTierPrice && heroPrice !== null && (
-          <div className="mb-5" aria-live="polite" aria-atomic="true">
+          <div className={`mb-5 ${hideHeroPriceOnMobile ? "hidden lg:block" : ""}`} aria-live="polite" aria-atomic="true">
             <p className="mb-1 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
               m² Fiyatı
             </p>
@@ -333,130 +358,101 @@ export default function ProductPricePanel({
           </div>
         )}
 
-        {/* ─── Teslimat Şehri + Proje Metrajı (yan yana desktop) ─── */}
+        {/* ─── Teslimat Şehri + Metraj (sol) · Kamyon/TIR (sağ) ─── */}
         {shippingZones.length > 0 && (
-          <div className="mb-4 grid grid-cols-1 gap-3 border-b border-fe-border/60 pb-4 sm:grid-cols-2">
-            <div>
-              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
-                Teslimat Şehri
-              </p>
-              <div className="relative">
-                <select
-                  value={selectedCode}
-                  onChange={(e) => setSelectedCode(Number(e.target.value))}
-                  className="w-full appearance-none rounded-lg border border-fe-border bg-fe-surface px-3 py-2.5 pr-8 text-sm text-fe-text transition-colors hover:bg-fe-raised focus:outline-none focus:border-brand-500/60 [color-scheme:dark]"
-                >
-                  {shippingZones.map((z) => (
-                    <option
-                      key={z.city_code}
-                      value={z.city_code}
-                      className="bg-fe-surface text-fe-text"
+          <div className="mb-4 space-y-3 border-b border-fe-border/60 pb-4">
+            <div className="grid grid-cols-2 items-stretch gap-3">
+              {/* SOL — şehir + metraj */}
+              <div className="space-y-3">
+                <div>
+                  <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-fe-muted-strong">
+                    Teslimat Şehri
+                  </p>
+                  <div className="relative">
+                    <select
+                      value={selectedCode}
+                      onChange={(e) => setSelectedCode(Number(e.target.value))}
+                      className="w-full appearance-none rounded-lg border border-fe-border bg-fe-surface px-3 py-2 pr-7 text-sm text-fe-text transition-colors hover:bg-fe-raised focus:outline-none focus:border-brand-500/60 [color-scheme:dark]"
                     >
-                      {z.city_name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-fe-muted" />
-              </div>
-              {zone && (
-                <p className="mt-1.5 text-[10px] text-fe-muted">
-                  {zone.city_code === 34
-                    ? "📍 Depoya en yakın — en hızlı teslim"
-                    : [41, 16, 14, 54, 81].includes(zone.city_code)
-                      ? "📍 Bölgesel avantajlı teslim"
-                      : null}
-                </p>
-              )}
-            </div>
-
-            {showSepet && (
-              <div>
-                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-fe-muted-strong">
-                  İhtiyaç Metrajı (m²)
-                </p>
-                <div className="relative">
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    value={neededM2}
-                    onChange={(e) => { setNeededM2(e.target.value); setMetrajMode("custom"); }}
-                    placeholder="örn. 1200"
-                    className={`w-full rounded-lg border bg-fe-bg/80 px-3 py-2.5 pr-10 text-sm text-fe-text transition-colors placeholder:text-fe-muted focus:outline-none ${
-                      inputInvalid
-                        ? "border-red-500/60 focus:border-red-500/80"
-                        : "border-brand-500/40 focus:border-brand-500/70 focus:shadow-[0_0_0_2px_rgba(212,132,90,0.10)]"
-                    }`}
-                  />
-                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-fe-muted">
-                    m²
-                  </span>
+                      {shippingZones.map((z) => (
+                        <option
+                          key={z.city_code}
+                          value={z.city_code}
+                          className="bg-fe-surface text-fe-text"
+                        >
+                          {z.city_name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-fe-muted" />
+                  </div>
+                  {zone && (zone.city_code === 34 || [41, 16, 14, 54, 81].includes(zone.city_code)) && (
+                    <p className="mt-1 text-[10px] text-fe-muted">
+                      {zone.city_code === 34 ? "📍 Depoya en yakın" : "📍 Bölgesel avantaj"}
+                    </p>
+                  )}
                 </div>
-                {inputInvalid ? (
-                  <p className="mt-1.5 text-[10px] text-red-400">Geçerli m² giriniz</p>
-                ) : metrajMode === "lorry" ? (
-                  <p className="mt-1.5 text-[10px] text-fe-muted">
-                    Başlangıç önerisi: 1 Kamyon tam yükleme. İsterseniz kendi metrajınızı yazabilirsiniz.
-                  </p>
-                ) : metrajMode === "truck" ? (
-                  <p className="mt-1.5 text-[10px] text-fe-muted">
-                    1 TIR tam yükleme seçili. İsterseniz kendi metrajınızı yazabilirsiniz.
-                  </p>
-                ) : (
-                  <p className="mt-1.5 text-[10px] text-fe-muted">
-                    Kendi metrajınızı yazabilirsiniz. Ara metrajlarda sistem önce depo stoklarını kontrol eder.
-                  </p>
+
+                {showSepet && (
+                  <div>
+                    <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-fe-muted-strong">
+                      İhtiyaç Metrajı
+                    </p>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={neededM2}
+                        onChange={(e) => { setNeededM2(e.target.value); setMetrajMode("custom"); }}
+                        placeholder="örn. 1200"
+                        className={`w-full rounded-lg border bg-fe-bg/80 px-3 py-2 pr-9 text-sm text-fe-text transition-colors placeholder:text-fe-muted focus:outline-none ${
+                          inputInvalid
+                            ? "border-red-500/60 focus:border-red-500/80"
+                            : "border-brand-500/40 focus:border-brand-500/70 focus:shadow-[0_0_0_2px_rgba(212,132,90,0.10)]"
+                        }`}
+                      />
+                      <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-fe-muted">
+                        m²
+                      </span>
+                    </div>
+                    {inputInvalid && (
+                      <p className="mt-1 text-[10px] text-red-400">Geçerli m² giriniz</p>
+                    )}
+
+                    {/* SİPARİŞ TOPLAMI — input'un hemen altında, sol kolonda */}
+                    {neededM2Num > 0 && heroPrice !== null && !inputInvalid && (
+                      <div className="mt-2 rounded-xl border border-brand-500/30 bg-brand-500/[0.07] px-3 py-2.5">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-300/80">
+                          Sipariş Toplamı
+                        </p>
+                        <p className="mt-1 text-[18px] font-extrabold leading-none">
+                          <span className="text-brand-300">₺</span>
+                          <span className="text-white">
+                            {(neededM2Num * heroPrice).toLocaleString("tr-TR", {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0,
+                            })}
+                          </span>
+                        </p>
+                        <p className="mt-1 text-[9px] leading-snug text-fe-muted">
+                          KDV hariç · {neededM2Num.toLocaleString("tr-TR")} m² × ₺
+                          {heroPrice.toLocaleString("tr-TR", {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 2,
+                          })}
+                          /m²
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-        )}
 
-        {/* ─── Quick Selection Chips ─── */}
-        {showSepet && lorryM2 !== null && truckM2 !== null && (
-          <div className="mb-4 flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              onClick={() => { setNeededM2(""); setDebouncedM2(""); setMetrajMode("custom"); }}
-              className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
-                metrajMode === "custom"
-                  ? "border-brand-500/60 bg-brand-500/15 text-brand-300"
-                  : "border-fe-border bg-fe-raised/40 text-fe-muted hover:border-brand-500/40 hover:text-brand-200"
-              }`}
-            >
-              Kendi metrajım
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const val = formatM2Input(lorryM2);
-                setNeededM2(val);
-                setDebouncedM2(val);
-                setMetrajMode("lorry");
-              }}
-              className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
-                metrajMode === "lorry"
-                  ? "border-brand-500/60 bg-brand-500/15 text-brand-300"
-                  : "border-fe-border bg-fe-raised/40 text-fe-muted hover:border-brand-500/40 hover:text-brand-200"
-              }`}
-            >
-              1 Kamyon · {Math.round(lorryM2).toLocaleString("tr-TR")} m²
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const val = formatM2Input(truckM2);
-                setNeededM2(val);
-                setDebouncedM2(val);
-                setMetrajMode("truck");
-              }}
-              className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
-                metrajMode === "truck"
-                  ? "border-brand-500/60 bg-brand-500/15 text-brand-300"
-                  : "border-fe-border bg-fe-raised/40 text-fe-muted hover:border-brand-500/40 hover:text-brand-200"
-              }`}
-            >
-              1 TIR · {Math.round(truckM2).toLocaleString("tr-TR")} m²
-            </button>
+              {/* SAĞ — Kamyon + TIR vehicle cards (SepetUI'dan portal ile gelir) */}
+              {showSepet && (
+                <div ref={setVehicleCardsSlot} className="flex min-w-0 flex-col justify-end" />
+              )}
+            </div>
           </div>
         )}
 
@@ -481,6 +477,7 @@ export default function ProductPricePanel({
               setMetrajMode(m2 === lorryM2 ? "lorry" : m2 === truckM2 ? "truck" : "custom");
             }}
             hideMinWarning={isTyping}
+            vehicleCardsSlot={vehicleCardsSlot}
           />
         )}
 
@@ -551,6 +548,17 @@ export default function ProductPricePanel({
                 ? "WhatsApp ile Hızlı Sipariş →"
                 : "Sormak istediğiniz mi var? → WhatsApp"}
             </a>
+          </div>
+        )}
+
+        {/* Eğitsel Kutu — CTA altında, en altta */}
+        {showSepet && (
+          <div className="mt-4 rounded-lg border border-brand-700/25 bg-brand-950/20 px-3 py-3">
+            <p className="mb-1 text-xs font-semibold text-brand-200">Neden tam araç avantajlı?</p>
+            <p className="text-[11px] leading-relaxed text-brand-200/70">
+              Fabrika çıkışlı alımlarda tam araç yüklemesi gerekir. Ara metraj ihtiyaçlarında sistem
+              önce depo stoklarını kontrol eder.
+            </p>
           </div>
         )}
       </div>

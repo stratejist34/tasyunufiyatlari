@@ -269,9 +269,9 @@ export default function SingleProductQuoteButton({
       <button
         type="button"
         onClick={() => setShowModal(true)}
-        className="w-full py-3 bg-brand-600 hover:bg-brand-500 active:bg-brand-700 text-white rounded-xl font-bold text-sm transition-colors"
+        className="w-full py-3 rounded-xl border-2 border-brand-500/70 bg-fe-raised text-brand-200 font-bold text-sm transition-colors hover:bg-brand-500/10 hover:border-brand-500 hover:text-white active:bg-brand-500/15"
       >
-        {label ?? "Anında Teklif Oluştur"}
+        {label ?? "PDF Teklif Al"}
       </button>
 
       {showModal && createPortal(
